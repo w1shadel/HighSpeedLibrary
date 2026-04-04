@@ -26,7 +26,6 @@ public class S2CScreenShakePacket {
 
     public static void handle(S2CScreenShakePacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-
             ClientEffectManager.startShake(msg.intensity, msg.duration);
         });
         ctx.get().setPacketHandled(true);

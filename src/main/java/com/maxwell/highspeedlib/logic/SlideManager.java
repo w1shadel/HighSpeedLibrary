@@ -6,9 +6,6 @@ import com.maxwell.highspeedlib.network.packets.S2CSyncSlidePacket;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
@@ -17,26 +14,28 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class SlideManager {
     private static final Set<UUID> slidingPlayers = new HashSet<>();
+    private static final Map<UUID, Integer> airTicksMap = new HashMap<>();
 
     public static void toggleSlide(ServerPlayer player, boolean start) {
         if (start) {
             slidingPlayers.add(player.getUUID());
-            player.setPose(Pose.SWIMMING);
         } else {
             slidingPlayers.remove(player.getUUID());
-            player.setPose(Pose.STANDING);
         }
-
-        PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CSyncSlidePacket(start));
+        player.refreshDimensions();
+        PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+                new S2CSyncSlidePacket(player.getId(), start));
     }
 
     public static boolean isSliding(Player player) {
+        if (player == null) return false;
+        if (player.level().isClientSide) {
+            return com.maxwell.highspeedlib.client.ClientSlideHandler.isPlayerSliding(player.getId());
+        }
         return slidingPlayers.contains(player.getUUID());
     }
 
@@ -49,24 +48,31 @@ public class SlideManager {
 
             if (isSliding(player)) {
                 if (!player.onGround()) {
-                    toggleSlide((ServerPlayer) player, false);
-                    return;
+
+                    int airTicks = airTicksMap.getOrDefault(player.getUUID(), 0) + 1;
+                    airTicksMap.put(player.getUUID(), airTicks);
+
+
+                    if (airTicks > 10) {
+                        toggleSlide((ServerPlayer) player, false);
+                        airTicksMap.remove(player.getUUID());
+                        return;
+                    }
+                } else {
+
+                    airTicksMap.put(player.getUUID(), 0);
+                    if (player.tickCount % 2 == 0) {
+                        ((ServerLevel) player.level()).sendParticles(
+                                ParticleTypes.CRIT,
+                                player.getX(), player.getY(), player.getZ(),
+                                1, 0, 0, 0, 0.05
+                        );
+                    }
+                    Vec3 look = player.getLookAngle();
+                    Vec3 slideVec = new Vec3(look.x, 0, look.z).normalize().scale(0.6);
+                    player.setDeltaMovement(slideVec.x, player.getDeltaMovement().y, slideVec.z);
+                    player.hurtMarked = true;
                 }
-                if (player.tickCount % 2 == 0) {
-                    ((ServerLevel)player.level()).sendParticles(
-                            ParticleTypes.CRIT,
-                            player.getX(), player.getY(), player.getZ(),
-                            1, 0, 0, 0, 0.05
-                    );
-                }
-                if (player.tickCount % 10 == 0) {
-                    player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                            SoundEvents.ARMOR_EQUIP_NETHERITE, SoundSource.PLAYERS, 0.5f, 1.5f);
-                }
-                Vec3 look = player.getLookAngle();
-                Vec3 slideVec = new Vec3(look.x, 0, look.z).normalize().scale(0.6);
-                player.setDeltaMovement(slideVec.x, player.getDeltaMovement().y, slideVec.z);
-                player.hurtMarked = true;
             }
         }
 

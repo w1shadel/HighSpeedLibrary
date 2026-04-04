@@ -18,13 +18,11 @@ public class S2CParryPacket {
     public static S2CParryPacket decode(FriendlyByteBuf buffer) {
         return new S2CParryPacket();
     }
+
     public static void handle(S2CParryPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-
-            ParryArmRenderer.startHitstop(5); 
-
+            ParryArmRenderer.startHitstop(5);
             ClientEffectManager.triggerParryFlash();
-
             Minecraft mc = Minecraft.getInstance();
             if (mc.player != null) {
                 mc.player.setDeltaMovement(0, 0, 0);

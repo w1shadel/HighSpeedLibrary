@@ -1,5 +1,6 @@
 package com.maxwell.highspeedlib.logic;
 
+import com.maxwell.highspeedlib.entity.ThrownCoinEntity;
 import com.maxwell.highspeedlib.network.PacketHandler;
 import com.maxwell.highspeedlib.network.packets.S2CParryPacket;
 import com.maxwell.highspeedlib.network.packets.S2CScreenShakePacket;
@@ -31,7 +32,6 @@ public class ParrySystem {
         double range = 5.0;
         Vec3 sensorCenter = eyePos.add(lookVec.scale(2.0));
         AABB hitBox = new AABB(sensorCenter.subtract(3, 3, 3), sensorCenter.add(3, 3, 3));
-
         boolean success = false;
         List<Projectile> projectiles = level.getEntitiesOfClass(Projectile.class, hitBox);
         for (Projectile p : projectiles) {
@@ -39,6 +39,15 @@ public class ParrySystem {
             double dot = lookVec.dot(toEntity);
             if (dot > 0.4) {
                 performProjectileParry(p, player);
+                success = true;
+                break;
+            }
+        }
+        List<ThrownCoinEntity> coins = level.getEntitiesOfClass(ThrownCoinEntity.class, hitBox);
+        for (ThrownCoinEntity coin : coins) {
+            if (coin.canBeParried()) {
+                performCoinRichoshot(coin, player);
+                coin.setParryCooldown(5);
                 success = true;
                 break;
             }
@@ -54,13 +63,79 @@ public class ParrySystem {
                 }
             }
         }
-
         if (success) {
             PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CParryPacket());
             PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CScreenShakePacket(2.0f, 5));
         }
     }
+    public static void performCoinRichoshot(ThrownCoinEntity coin, ServerPlayer player) {
+        Level level = coin.level();
 
+        List<LivingEntity> enemies = level.getEntitiesOfClass(LivingEntity.class,
+                coin.getBoundingBox().inflate(20.0), e -> e != player && e.isAlive());
+
+        LivingEntity target = enemies.stream()
+                .min((e1, e2) -> Float.compare(e1.distanceTo(coin), e2.distanceTo(coin)))
+                .orElse(null);
+
+        if (target != null) {
+            target.hurt(player.damageSources().magic(), 10.0f);
+            ((ServerLevel)level).sendParticles(ParticleTypes.ELECTRIC_SPARK,
+                    target.getX(), target.getEyeY(), target.getZ(), 10, 0.1, 0.1, 0.1, 0.1);
+
+            level.playSound(null, coin.getX(), coin.getY(), coin.getZ(),
+                    SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 2.0f);
+        }
+        Vec3 look = player.getLookAngle();
+        Vec3 teleportPos = player.getEyePosition().add(look.scale(1.5));
+        coin.setPos(teleportPos.x, teleportPos.y, teleportPos.z);
+        coin.shoot(look.x, look.y + 0.6, look.z, 0.8f, 0f);
+        ((ServerLevel)level).sendParticles(ParticleTypes.FLASH, coin.getX(), coin.getY(), coin.getZ(), 1, 0, 0, 0, 0);
+    }
+    public static void performCoinPunch(ThrownCoinEntity coin, LivingEntity attacker) {
+        Level level = coin.level();
+
+        List<LivingEntity> enemies = level.getEntitiesOfClass(LivingEntity.class,
+                coin.getBoundingBox().inflate(20.0), e -> e != attacker && e.isAlive());
+
+        LivingEntity target = enemies.stream()
+                .min((e1, e2) -> Float.compare(e1.distanceTo(coin), e2.distanceTo(coin)))
+                .orElse(null);
+
+        if (target != null) {
+
+            float damage = 5.0f + (coin.getParryCount() * 2.0f);
+            target.hurt(attacker.damageSources().magic(), damage);
+
+            if (level instanceof ServerLevel serverLevel) {
+                spawnBeam(serverLevel, coin.position(), target.getEyePosition());
+            }
+        }
+        coin.increaseParryCount();
+
+        Vec3 look = attacker.getLookAngle();
+
+        Vec3 teleportPos = attacker.getEyePosition().add(look.scale(1.5));
+        coin.setPos(teleportPos.x, teleportPos.y, teleportPos.z);
+
+        coin.shoot(look.x, look.y + 0.5, look.z, 0.8f, 0f);
+
+        level.playSound(null, coin.getX(), coin.getY(), coin.getZ(),
+                SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 2.0f);
+
+        if (level instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(ParticleTypes.FLASH, coin.getX(), coin.getY(), coin.getZ(), 1, 0, 0, 0, 0);
+        }
+    }
+
+    public static void spawnBeam(ServerLevel level, Vec3 start, Vec3 end) {
+        Vec3 dir = end.subtract(start);
+        double dist = dir.length();
+        for (double i = 0; i < dist; i += 0.5) {
+            Vec3 pos = start.add(dir.scale(i / dist));
+            level.sendParticles(ParticleTypes.ELECTRIC_SPARK, pos.x, pos.y, pos.z, 1, 0, 0, 0, 0);
+        }
+    }
     private static void performProjectileParry(Projectile p, ServerPlayer player) {
         Vec3 look = player.getLookAngle();
         p.setDeltaMovement(look.scale(3.0));

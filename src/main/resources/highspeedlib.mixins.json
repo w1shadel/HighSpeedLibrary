@@ -6,7 +6,9 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "HumanoidModelMixin",
-    "LivingEntityMixin"
+    "LivingEntityMixin",
+    "PlayerMixin",
+    "CameraMixin"
   ],
   "client": [
   ],

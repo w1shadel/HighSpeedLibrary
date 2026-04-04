@@ -7,9 +7,11 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public class S2CStartPunchAnimationPacket {
-    private final int entityId; 
+    private final int entityId;
 
-    public S2CStartPunchAnimationPacket(int entityId) { this.entityId = entityId; }
+    public S2CStartPunchAnimationPacket(int entityId) {
+        this.entityId = entityId;
+    }
 
     public static void encode(S2CStartPunchAnimationPacket msg, FriendlyByteBuf buffer) {
         buffer.writeInt(msg.entityId);
@@ -21,7 +23,6 @@ public class S2CStartPunchAnimationPacket {
 
     public static void handle(S2CStartPunchAnimationPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-
             ThirdPersonPunchManager.startAnimation(msg.entityId);
         });
         ctx.get().setPacketHandled(true);

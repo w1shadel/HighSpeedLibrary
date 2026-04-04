@@ -12,6 +12,7 @@ public class KeyInputHandler {
     public static KeyMapping DASH_KEY;
     public static KeyMapping PARRY_KEY;
     public static KeyMapping SLIDING_KEY;
+    public static KeyMapping COIN_KEY;
 
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
@@ -30,8 +31,14 @@ public class KeyInputHandler {
                 InputConstants.KEY_LSHIFT,
                 "category.highspeedlib"
         );
+        COIN_KEY = new KeyMapping(
+                "key.highspeedlib.coin",
+                InputConstants.KEY_Z,
+                "category.highspeedlib"
+        );
         event.register(DASH_KEY);
         event.register(PARRY_KEY);
         event.register(SLIDING_KEY);
+        event.register(COIN_KEY);
     }
 }

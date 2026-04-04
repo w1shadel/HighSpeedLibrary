@@ -17,27 +17,35 @@ public class ClientInputEvents {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
-
         while (KeyInputHandler.PARRY_KEY.consumeClick()) {
             if (!ParryArmRenderer.isPunching()) {
                 PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(1));
                 ParryArmRenderer.startPunch();
             }
         }
-
         while (KeyInputHandler.DASH_KEY.consumeClick()) {
             PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(0));
             ClientEffectManager.setSpeeding(true);
         }
-
+        while (KeyInputHandler.COIN_KEY.consumeClick()) {
+            PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(5));
+        }
         boolean isSliding = KeyInputHandler.SLIDING_KEY.isDown();
         if (isSliding != wasSliding) {
             if (isSliding) {
-                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(3)); 
+                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(3));
             } else {
-                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(4)); 
+                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(4));
             }
             wasSliding = isSliding;
+        }
+
+        while (mc.options.keyJump.consumeClick()) {
+            if (!mc.player.onGround()) {
+                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(6));
+            } else {
+                mc.player.jumpFromGround();
+            }
         }
     }
 }

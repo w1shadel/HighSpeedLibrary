@@ -1,12 +1,7 @@
 package com.maxwell.highspeedlib.client;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.PlayerModel;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -14,9 +9,8 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID ,value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
 public class ThirdPersonPunchManager {
-
     private static final Map<Integer, Float> animationMap = new HashMap<>();
 
     public static void startAnimation(int entityId) {
@@ -33,9 +27,11 @@ public class ThirdPersonPunchManager {
             });
         }
     }
+
     public static float getProgress(int entityId) {
         return animationMap.getOrDefault(entityId, -1f);
     }
+
     public static float getPunchCurve(float progress) {
         if (progress < 0.1f) return (float) Math.sin((progress / 0.1f) * Math.PI / 2);
         else if (progress < 0.25f) return 1.0f;

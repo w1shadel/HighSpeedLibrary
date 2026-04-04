@@ -16,6 +16,8 @@ public class ClientEffectManager {
     private static float parryAlpha = 0f;
     private static boolean isSpeeding = false;
     private static float fovModifier = 0f;
+    private static float shakeIntensity = 0f;
+    private static int shakeTicks = 0;
 
     public static void triggerParryFlash() {
         parryAlpha = 0.5f;
@@ -44,8 +46,6 @@ public class ClientEffectManager {
         if (parryAlpha > 0) {
         }
     }
-    private static float shakeIntensity = 0f;
-    private static int shakeTicks = 0;
 
     public static void startShake(float intensity, int duration) {
         shakeIntensity = intensity;
@@ -59,17 +59,16 @@ public class ClientEffectManager {
             if (shakeTicks <= 0) shakeIntensity = 0;
         }
     }
+
     @SubscribeEvent
     public static void onCameraSetup(ViewportEvent.ComputeCameraAngles event) {
         if (shakeTicks > 0) {
-
             float f = (Objects.requireNonNull(Minecraft.getInstance().level).random.nextFloat() - 0.5f) * shakeIntensity;
             float g = (Minecraft.getInstance().level.random.nextFloat() - 0.5f) * shakeIntensity;
-
             event.setPitch(event.getPitch() + f);
             event.setYaw(event.getYaw() + g);
-
             event.setRoll(event.getRoll() + f * 0.5f);
         }
+
     }
 }
