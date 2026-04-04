@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.maxwell.highspeedlib.mixin",
+  "refmap": "highspeedlib.refmap.json",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "HumanoidModelMixin",
+    "LivingEntityMixin"
+  ],
+  "client": [
+  ],
+  "server": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
