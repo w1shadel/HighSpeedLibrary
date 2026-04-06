@@ -1,6 +1,6 @@
 package com.maxwell.highspeedlib.mixin;
 
-import com.maxwell.highspeedlib.logic.SlideManager;
+import com.maxwell.highspeedlib.common.logic.SlideManager;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
@@ -28,7 +28,6 @@ public abstract class PlayerMixin {
             cir.setReturnValue(EntityDimensions.scalable(0.6F, 0.6F));
         }
     }
-
 
     @Inject(method = "isSwimming", at = @At("HEAD"), cancellable = true)
     private void highspeedlib$overrideIsSwimming(CallbackInfoReturnable<Boolean> cir) {

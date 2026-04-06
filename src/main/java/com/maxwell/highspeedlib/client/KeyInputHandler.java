@@ -13,6 +13,8 @@ public class KeyInputHandler {
     public static KeyMapping PARRY_KEY;
     public static KeyMapping SLIDING_KEY;
     public static KeyMapping COIN_KEY;
+    public static KeyMapping CHANGEARM_KEY;
+    public static KeyMapping WHIPLASH_KEY;
 
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
@@ -36,9 +38,21 @@ public class KeyInputHandler {
                 InputConstants.KEY_Z,
                 "category.highspeedlib"
         );
+        CHANGEARM_KEY = new KeyMapping(
+                "key.highspeedlib.changearm",
+                InputConstants.KEY_Z,
+                "category.highspeedlib"
+        );
+        WHIPLASH_KEY = new KeyMapping(
+                "key.highspeedlib.whiplash",
+                InputConstants.KEY_R,
+                "category.highspeedlib"
+        );
         event.register(DASH_KEY);
         event.register(PARRY_KEY);
         event.register(SLIDING_KEY);
         event.register(COIN_KEY);
+        event.register(CHANGEARM_KEY);
+        event.register(WHIPLASH_KEY);
     }
 }
