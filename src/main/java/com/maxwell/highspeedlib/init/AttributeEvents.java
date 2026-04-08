@@ -11,5 +11,6 @@ public class AttributeEvents {
     @SubscribeEvent
     public static void onAttributeModification(EntityAttributeModificationEvent event) {
         event.add(EntityType.PLAYER, ModAttributes.PUNCH_DAMAGE.get());
+        event.add(EntityType.PLAYER, ModAttributes.SLAM_DAMAGE.get());
     }
 }

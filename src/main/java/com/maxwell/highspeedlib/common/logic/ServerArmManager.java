@@ -1,5 +1,6 @@
 package com.maxwell.highspeedlib.common.logic;
 
+import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
 import com.maxwell.highspeedlib.client.state.ArmManager;
 import com.maxwell.highspeedlib.common.entity.ThrownCoinEntity;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
@@ -14,21 +15,39 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.network.PacketDistributor;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class ServerArmManager {
-    private static final double FEEDBACKER_RANGE = 3.8;
-    private static final double PUNCH_ANGLE_COS = 0.55;
+    private static final double FEEDBACKER_RANGE = 1.5;
+    private static final Map<UUID, Integer> activeParryWindows = new HashMap<>();
+
+    public static void tickParryWindows() {
+        activeParryWindows.entrySet().removeIf(entry -> {
+            entry.setValue(entry.getValue() - 1);
+            return entry.getValue() <= 0;
+        });
+    }
+
+    public static boolean isPlayerParrying(Player player) {
+        return activeParryWindows.containsKey(player.getUUID());
+    }
 
     public static void attemptPunch(ServerPlayer player) {
         ArmType arm = ArmManager.getArm(player);
+        if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Punch(player, arm))) {
+            return;
+        }
         boolean isRed = (arm == ArmType.KNUCKLEBLASTER);
         if (!PunchCooldownManager.tryConsume(player, isRed)) {
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
@@ -40,6 +59,7 @@ public class ServerArmManager {
         if (isRed) {
             performKnuckleBlast(player);
         } else {
+            activeParryWindows.put(player.getUUID(), 3);
             performFeedbackerPunch(player);
         }
     }
@@ -49,9 +69,10 @@ public class ServerArmManager {
         Vec3 eyePos = player.getEyePosition();
         Vec3 lookVec = player.getLookAngle();
         double range = FEEDBACKER_RANGE;
-        AABB searchBox = new AABB(eyePos.subtract(range, range, range), eyePos.add(range, range, range));
+        AABB searchBox = getForwardParryBox(player, range);
         boolean isSpecialHit = false;
-        List<Projectile> projectiles = level.getEntitiesOfClass(Projectile.class, searchBox, p -> !(p instanceof ThrownCoinEntity) && isTargetable(p, eyePos, lookVec, range, PUNCH_ANGLE_COS));
+        List<Projectile> projectiles = level.getEntitiesOfClass(Projectile.class, searchBox,
+                p -> !(p instanceof ThrownCoinEntity));
         for (Projectile p : projectiles) {
             performProjectileParry(p, player);
             isSpecialHit = true;
@@ -75,12 +96,13 @@ public class ServerArmManager {
                 double rawAD = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
                 double adFactor = 1.0 + (rawAD - 1.0) * 0.2;
                 double velocity = player.getDeltaMovement().horizontalDistance();
+                AbilityAuthority.PlayerSettings settings = AbilityAuthority.get(player.getUUID());
+                double configBaseDamage = settings.punchDamageBase;
                 double velocityModifier = Math.min(1.4, 1.0 + (velocity * 0.5));
-                float finalDamage = (float) (punchBase * adFactor * 0.4 * velocityModifier);
+                float finalDamage = (float) ((punchBase + configBaseDamage) * adFactor * 0.4 * velocityModifier);
                 target.hurt(player.damageSources().mobAttack(player), finalDamage);
                 target.setDeltaMovement(lookVec.scale(0.5).add(0, 0.1, 0));
                 target.hurtMarked = true;
-                player.heal(20.0f);
                 if (level instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(ParticleTypes.CRIT, target.getX(), target.getEyeY(), target.getZ(), 5, 0.1, 0.1, 0.1, 0.1);
                 }
@@ -93,6 +115,17 @@ public class ServerArmManager {
         }
     }
 
+    private static AABB getForwardParryBox(ServerPlayer player, double range) {
+        Vec3 eyePos = player.getEyePosition();
+        Vec3 lookVec = player.getLookAngle();
+        Vec3 center = eyePos.add(lookVec.scale(1.5));
+        double boxSize = range;
+        return new AABB(
+                center.x - boxSize, center.y - boxSize, center.z - boxSize,
+                center.x + boxSize, center.y + boxSize, center.z + boxSize
+        );
+    }
+
     private static void performKnuckleBlast(ServerPlayer player) {
         ServerLevel level = (ServerLevel) player.level();
         Vec3 look = player.getLookAngle();
@@ -102,7 +135,9 @@ public class ServerArmManager {
         double adFactor = 1.0 + (rawAD - 1.0) * 0.2;
         double velocity = player.getDeltaMovement().horizontalDistance();
         double velocityModifier = Math.min(1.4, 1.0 + (velocity * 0.5));
-        float blastDamage = (float) (punchBase * adFactor * 1.5 * velocityModifier);
+        AbilityAuthority.PlayerSettings settings = AbilityAuthority.get(player.getUUID());
+        double configBaseDamage = settings.punchDamageBase;
+        float blastDamage = (float) ((punchBase + configBaseDamage) * adFactor * 1.5 * velocityModifier);
         AABB area = new AABB(punchPos.subtract(2.5, 2.5, 2.5), punchPos.add(2.5, 2.5, 2.5));
         level.getEntitiesOfClass(LivingEntity.class, area, e -> e != player).forEach(target -> {
             target.hurt(player.damageSources().mobAttack(player), blastDamage);
@@ -123,21 +158,22 @@ public class ServerArmManager {
         return lookVec.dot(toEntity.normalize()) > angleCos;
     }
 
-    private static void triggerParryEffects(ServerPlayer player) {
-        PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CParryPacket());
-        PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CScreenShakePacket(2.0f, 5));
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, SoundSource.PLAYERS, 1.0f, 1.5f);
+    public static void performProjectileParry(Projectile p, Player player) {
+        Vec3 look = player.getLookAngle();
+        p.setPos(player.getX() + look.x, player.getEyeY() + look.y, player.getZ() + look.z);
+        p.shoot(look.x, look.y, look.z, 3.5f, 0.0f);
+        p.setOwner(player);
+        if (!(p instanceof ThrownCoinEntity)) {
+            p.getPersistentData().putBoolean("hs_explosive", true);
+        }
     }
 
-    public static void performProjectileParry(Projectile p, ServerPlayer player) {
-        Vec3 look = player.getLookAngle();
-        p.setPos(p.getX() + look.x * 0.5, p.getY() + look.y * 0.5, p.getZ() + look.z * 0.5);
-        p.shoot(look.x, look.y, look.z, 3.0f, 0.0f);
-        p.setOwner(player);
-        if (p instanceof AbstractArrow arrow) {
-            arrow.setBaseDamage(arrow.getBaseDamage() * 2.0);
-            arrow.setCritArrow(true);
-        }
+    public static void triggerParryEffects(ServerPlayer player) {
+        TimeManager.setHitstop(5);
+        PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CParryPacket());
+        PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CScreenShakePacket(2.0f, 5));
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, SoundSource.PLAYERS, 1.0f, 1.8f);
     }
 
     public static void performCoinPunch(ThrownCoinEntity coin, LivingEntity attacker) {

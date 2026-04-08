@@ -23,12 +23,7 @@ import net.minecraftforge.fml.common.Mod;
 public class ExtendsArmRenderer {
     private static float animationProgress = 0f;
     private static boolean isPunching = false;
-    private static int hitstopTicks = 0;
     private static ArmAnimType currentAnim = ArmAnimType.NONE;
-
-    public static void startHitstop(int ticks) {
-        hitstopTicks = ticks;
-    }
 
     public static boolean isPunching() {
         return isPunching;
@@ -66,10 +61,7 @@ public class ExtendsArmRenderer {
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
-        if (hitstopTicks > 0) {
-            hitstopTicks--;
-            return;
-        }
+        if (!com.maxwell.highspeedlib.common.logic.TimeManager.shouldTick()) return;
         if (isPunching) {
             animationProgress += 0.08f;
             if (animationProgress >= 1.0f) {
@@ -83,11 +75,6 @@ public class ExtendsArmRenderer {
     public static void onRenderHand(RenderHandEvent event) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
-        if (ClientSlideHandler.isPlayerSliding(player.getId())) {
-            event.setCanceled(true);
-            return;
-        }
-
         if (isPunching && event.getHand() == InteractionHand.OFF_HAND) {
             if (currentAnim == ArmAnimType.PUNCH) {
                 renderPunch(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
@@ -98,68 +85,64 @@ public class ExtendsArmRenderer {
             }
             return;
         }
-
-        // ウィプラッシュ（牽引）描画の統合
-        int whiplashTicks = ClientPlayerEvents.getWhiplashTicks(player.getUUID());
-        if (whiplashTicks > 0 && event.getHand() == InteractionHand.OFF_HAND) {
-            renderWhiplashArm(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(), whiplashTicks);
+        com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HookData hookData = com.maxwell.highspeedlib.client.ClientWhiplashManager.getHookData(player.getUUID());
+        int renderTicks = com.maxwell.highspeedlib.client.ClientWhiplashManager.getRenderTicks(player.getUUID());
+        if (renderTicks > 0 && event.getHand() == InteractionHand.OFF_HAND) {
+            float renderProgress = renderTicks / 10.0f;
+            if (renderProgress > 1.0f) renderProgress = 1.0f;
+            renderWhiplashArm(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(), renderProgress, hookData);
             event.setCanceled(true);
         }
     }
 
-    private static void renderWhiplashArm(PoseStack poseStack, MultiBufferSource buffer, int packedLight, int ticks) {
+    private static void renderWhiplashArm(PoseStack poseStack, MultiBufferSource buffer, int packedLight, float progress, com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HookData data) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null) return;
-
-        PlayerRenderer renderer = (PlayerRenderer) mc.getEntityRenderDispatcher().getRenderer(player);
-        PlayerModel<AbstractClientPlayer> model = renderer.getModel();
-
+        PlayerRenderer playerRenderer = (PlayerRenderer) mc.getEntityRenderDispatcher().getRenderer(player);
+        PlayerModel<AbstractClientPlayer> model = playerRenderer.getModel();
         poseStack.pushPose();
-
+        float swing = 1.0f - (float) Math.pow(1.0f - progress, 3);
+        float tensionIntensity = 0f;
+        if (data.state == com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HOOKED) {
+            tensionIntensity = 0.035f;
+        } else if (data.state == com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.RETRACTING) {
+            tensionIntensity = 0.015f;
+        }
+        float tensionShakeX = (float) (Math.sin(player.tickCount * 4.2) * tensionIntensity);
+        float tensionShakeY = (float) (Math.cos(player.tickCount * 3.8) * tensionIntensity);
         float fov = (float) mc.options.fov().get();
         float fovScale = 70.0f / fov;
-
-        // 1. 肩の基準位置（正拳突きと同じような位置）
-        poseStack.translate(-0.85D * fovScale, -0.55D, 0.2D);
-
-        // 2. ウィップラッシュの構え（腕を前に向け、少し開く）
-        poseStack.mulPose(Axis.XP.rotationDegrees(-90f)); // 前に向ける
-        poseStack.mulPose(Axis.YP.rotationDegrees(20f));  // 少し外側に開く
-        poseStack.mulPose(Axis.ZP.rotationDegrees(-10f)); // 若干の捻り
-
-        // フック引き戻し時のオフセットアニメーション
-        if (ticks < 5) {
-            float pull = (5 - ticks) * 0.1f;
-            poseStack.translate(0, -pull, 0); // 腕を手前に引く動き
-        } else {
-            // フック射出中の反動
-            poseStack.translate(0, 0.2, 0);
+        double shoulderX = -1.0D * fovScale;
+        double shoulderY = -0.55D;
+        double shoulderZ = 0.2D;
+        poseStack.translate(shoulderX + tensionShakeX, shoulderY + tensionShakeY, shoulderZ);
+        poseStack.mulPose(Axis.XP.rotationDegrees(-90f));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(15f));
+        float recoilAngle = 40f * (1.0f - swing);
+        if (data.state == com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HOOKED) {
+            recoilAngle += 10f;
         }
-
-        // 3. モデルの回転をリセットして直接描画
+        poseStack.mulPose(Axis.XP.rotationDegrees(recoilAngle));
+        double extension = swing * 1.6D;
+        poseStack.translate(0.0D, extension, 0.0D);
+        poseStack.mulPose(Axis.YP.rotationDegrees(swing * 30f));
         model.leftArm.xRot = 0;
         model.leftArm.yRot = 0;
         model.leftArm.zRot = 0;
         model.leftArm.setPos(0, 0, 0);
-
         boolean oldVisible = model.leftArm.visible;
         boolean oldSleeveVisible = model.leftSleeve.visible;
         model.leftArm.visible = true;
         model.leftSleeve.visible = true;
-
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         int overlay = LivingEntityRenderer.getOverlayCoords(player, 0.0F);
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(player.getSkinTextureLocation()));
-
-        // ウィップラッシュは緑色（または黄色）の腕にするなどの演出も可能
-        model.leftArm.render(poseStack, vertexConsumer, packedLight, overlay, 1.0f, 1.0f, 1.0f, 1.0f);
+        float r = 1.0f, g = 1.0f, b = 1.0f;
+        model.leftArm.render(poseStack, vertexConsumer, packedLight, overlay, r, g, b, 1.0f);
         model.leftSleeve.copyFrom(model.leftArm);
-        model.leftSleeve.render(poseStack, vertexConsumer, packedLight, overlay, 1.0f, 1.0f, 1.0f, 1.0f);
-
+        model.leftSleeve.render(poseStack, vertexConsumer, packedLight, overlay, r, g, b, 1.0f);
         model.leftArm.visible = oldVisible;
         model.leftSleeve.visible = oldSleeveVisible;
-
         poseStack.popPose();
     }
 

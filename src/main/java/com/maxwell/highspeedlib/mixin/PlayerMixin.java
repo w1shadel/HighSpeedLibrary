@@ -36,5 +36,13 @@ public abstract class PlayerMixin {
             cir.setReturnValue(false);
         }
     }
+
+    @Inject(method = "getStandingEyeHeight", at = @At("HEAD"), cancellable = true)
+    private void highspeedlib$overrideStandingEyeHeight(Pose pose, EntityDimensions dimensions, CallbackInfoReturnable<Float> cir) {
+        Player player = (Player) (Object) this;
+        if (SlideManager.isSliding(player)) {
+            cir.setReturnValue(0.4F);
+        }
+    }
 }
 

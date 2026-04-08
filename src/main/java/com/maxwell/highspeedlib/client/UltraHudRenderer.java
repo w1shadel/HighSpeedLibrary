@@ -1,7 +1,9 @@
 package com.maxwell.highspeedlib.client;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
+import com.maxwell.highspeedlib.api.config.HighSpeedClientConfig;
 import com.maxwell.highspeedlib.common.logic.ArmType;
+import com.maxwell.highspeedlib.common.logic.PunchCooldownManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -25,6 +27,12 @@ public class UltraHudRenderer {
     private static final float SCALE_LEFT = 1.0f;
     private static final float SCALE_RIGHT = 0.85f;
     private static final float TILT_UP_RIGHT = -22.0f;
+    public static boolean dashUnlocked = true;
+    public static boolean punchUnlocked = true;
+    public static boolean whiplashUnlocked = true;
+    public static boolean slidingUnlocked = true;
+    public static boolean slamUnlocked = true;
+    public static boolean walljumpUnlocked = true;
     private static double clientStamina = 3.0;
     private static float lastYaw = 0f;
     private static float lastPitch = 0f;
@@ -32,7 +40,17 @@ public class UltraHudRenderer {
     private static float pitchOffset = 0f;
     private static double clientMaxStamina = 3.0;
     private static float staminaColorLerp = 0f;
+    private static double clientCoinStock = 4.0;
+    private static int clientMaxCoins = 4;
     private static ArmType clientArm = ArmType.FEEDBACKER;
+
+    public static void setClientCoinStock(double stock) {
+        clientCoinStock = stock;
+    }
+
+    public static void setMaxCoins(int max) {
+        clientMaxCoins = max;
+    }
 
     public static void setClientStamina(double stamina, double maxStamina) {
         clientStamina = stamina;
@@ -57,6 +75,7 @@ public class UltraHudRenderer {
 
     @SubscribeEvent
     public static void onRenderHud(RenderGuiOverlayEvent.Pre event) {
+        if (!HighSpeedClientConfig.HUD_VISIBLE.get()) return;
         var id = event.getOverlay().id();
         if (id.equals(VanillaGuiOverlay.PLAYER_HEALTH.id()) ||
                 id.equals(VanillaGuiOverlay.HOTBAR.id()) ||
@@ -72,7 +91,7 @@ public class UltraHudRenderer {
 
     private static void renderUltraHud(GuiGraphics graphics) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.options.hideGui) return;
+        if (mc.player == null || mc.options.hideGui || !HighSpeedClientConfig.HUD_VISIBLE.get()) return;
         Player player = mc.player;
         int screenHeight = mc.getWindow().getGuiScaledHeight();
         float partialTick = mc.getPartialTick();
@@ -85,92 +104,116 @@ public class UltraHudRenderer {
         lastPitch = player.getXRot();
         float totalWidth = 124f;
         float hudHeight = 150f;
-        float hudLeft = 30f;
-        float hudTop = screenHeight - 140f;
+        float hudLeft = HighSpeedClientConfig.HUD_OFFSET_X.get().floatValue();
+        float hudTop = screenHeight - HighSpeedClientConfig.HUD_OFFSET_Y.get().floatValue();
         float centerX = hudLeft + (totalWidth / 2.0f);
         float centerY = hudTop + (hudHeight / 2.0f);
         graphics.pose().pushPose();
-        graphics.pose().translate(centerX + yawOffset - (totalWidth / 2.0f), centerY + pitchOffset - (hudHeight / 2.0f), 100);
+        graphics.pose().translate(centerX + yawOffset - (totalWidth / 2.0f), centerY + pitchOffset - (hudHeight / 2.0f), 0);
         float zBg = 0.0f;
-        float zBar = 0.5f;
-        float zTop = 1.0f;
-        float x = 0;
+        float zBar = 0.01f;
+        float zTop = 0.02f;
         float gap = 1f;
+        float currentY = 0f;
         ItemStack heldItem = player.getMainHandItem();
         float boxHeight = 60f;
-        float boxY = 0f;
-        drawTrapezoid(graphics, x, boxY, totalWidth, boxHeight, 0xAA222222, zBg);
+        drawTrapezoid(graphics, 0, currentY, totalWidth, boxHeight, 0xAA222222, zBg);
         if (!heldItem.isEmpty()) {
-            drawItemWithPerspective(graphics, heldItem, x + (totalWidth / 2.0f), boxY + (boxHeight / 2.0f), zTop + 0.5f);
+            drawItemWithPerspective(graphics, heldItem, totalWidth / 2.0f, currentY + (boxHeight / 2.0f), zTop + 0.5f);
         }
+        currentY += boxHeight + gap;
         float hpHeight = 14f;
-        float hpY = boxY + boxHeight + gap;
+        float hpY = currentY;
         float POINTS_PER_HP = 5.0f;
         float currentHP = player.getHealth();
         float absorption = player.getAbsorptionAmount();
         int displayHP = (int) ((currentHP + absorption) * POINTS_PER_HP);
-        drawTrapezoid(graphics, x, hpY, totalWidth, hpHeight, 0xAA222222, zBg);
+        drawTrapezoid(graphics, 0, currentY, totalWidth, hpHeight, 0xAA222222, zBg);
         float barPadding = 2f;
         float barW = totalWidth - (barPadding * 2);
         float hpRatio = Math.min(1.0f, currentHP / 20.0f);
-        if (hpRatio > 0) {
-            drawTrapezoid(graphics, x + barPadding, hpY + barPadding, hpRatio * barW, hpHeight - (barPadding * 2), 0xFFFF2222, zBar);
-        }
+        if (hpRatio > 0)
+            drawTrapezoid(graphics, barPadding, currentY + barPadding, hpRatio * barW, hpHeight - (barPadding * 2), 0xFFFF2222, zBar);
         float overRatio = Math.min(1.0f, absorption / 20.0f);
-        if (overRatio > 0) {
-            drawTrapezoid(graphics, x + barPadding, hpY + barPadding, overRatio * barW, hpHeight - (barPadding * 2), 0xFF44FF44, zTop);
+        if (overRatio > 0)
+            drawTrapezoid(graphics, barPadding, currentY + barPadding, overRatio * barW, hpHeight - (barPadding * 2), 0xFF44FF44, zTop);
+        drawTextWithPerspective(graphics, mc, String.valueOf(displayHP), 5, currentY + 3, 0xFFFFFFFF, zTop + 0.1f);
+        currentY += hpHeight + gap;
+        float actualStaminaH = 0f;
+        if (dashUnlocked) {
+            float staminaHeight = 10f;
+            float targetColorLerp = clientStamina <= 1.0 ? 1.0f : 0.0f;
+            staminaColorLerp = net.minecraft.util.Mth.lerp(0.25f * partialTick, staminaColorLerp, targetColorLerp);
+            int r_s = (int) net.minecraft.util.Mth.lerp(staminaColorLerp, 0x66, 0xFF);
+            int g_s = (int) net.minecraft.util.Mth.lerp(staminaColorLerp, 0xEE, 0x44);
+            int b_s = (int) net.minecraft.util.Mth.lerp(staminaColorLerp, 0xFF, 0x44);
+            int currentStaminaColor = 0xFF000000 | (r_s << 16) | (g_s << 8) | b_s;
+            int segments = (int) clientMaxStamina;
+            if (segments <= 0) segments = 3;
+            float staminaHPadding = 2f;
+            float innerSpacing = 1.0f;
+            float availableStaminaW = totalWidth - (staminaHPadding * 2);
+            float segWidth = (availableStaminaW - (innerSpacing * (segments - 1))) / segments;
+            drawTrapezoid(graphics, 0, currentY, totalWidth, staminaHeight, 0xAA222222, zBg);
+            for (int i = 0; i < segments; i++) {
+                float sx = staminaHPadding + (i * (segWidth + innerSpacing));
+                int bgColor = 0x33000000 | (r_s / 4 << 16) | (g_s / 4 << 8) | b_s / 4;
+                drawTrapezoid(graphics, sx, currentY + 2f, segWidth, staminaHeight - 4f, bgColor, zBar);
+                float ratio = (float) Math.max(0, Math.min(1.0, clientStamina - i));
+                if (ratio > 0)
+                    drawTrapezoid(graphics, sx, currentY + 2f, ratio * segWidth, staminaHeight - 4f, currentStaminaColor, zTop);
+            }
+            actualStaminaH = staminaHeight;
+            currentY += staminaHeight + gap;
         }
-        drawTextWithPerspective(graphics, mc, String.valueOf(displayHP), x + 5, hpY + 3, 0xFFFFFFFF, zTop + 0.1f);
-        float staminaHeight = 10f;
-        float staminaY = hpY + hpHeight + gap;
-        float targetColorLerp = clientStamina <= 1.0 ? 1.0f : 0.0f;
-        staminaColorLerp = net.minecraft.util.Mth.lerp(0.25f * partialTick, staminaColorLerp, targetColorLerp);
-        int r = (int) net.minecraft.util.Mth.lerp(staminaColorLerp, 0x66, 0xFF);
-        int g = (int) net.minecraft.util.Mth.lerp(staminaColorLerp, 0xEE, 0x44);
-        int b = (int) net.minecraft.util.Mth.lerp(staminaColorLerp, 0xFF, 0x44);
-        int currentStaminaColor = 0xFF000000 | (r << 16) | (g << 8) | b;
-        int segments = (int) clientMaxStamina;
-        if (segments <= 0) segments = 3;
-        float innerSpacing = 0.4f;
-        float segWidth = (totalWidth - (innerSpacing * (segments - 1))) / segments;
-        drawTrapezoid(graphics, x, staminaY, totalWidth, staminaHeight, 0xAA222222, zBg);
-        for (int i = 0; i < segments; i++) {
-            float sx = x + (i * (segWidth + innerSpacing));
-            int bgColor = 0x33000000 | (r / 4 << 16) | (g / 4 << 8) | b / 4;
-            drawTrapezoid(graphics, sx, staminaY + 2f, segWidth, staminaHeight - 4f, bgColor, zBar);
-            float ratio = (float) Math.max(0, Math.min(1.0, clientStamina - i));
-            if (ratio > 0) {
-                drawTrapezoid(graphics, sx, staminaY + 2f, ratio * segWidth, staminaHeight - 4f, currentStaminaColor, zTop);
+        if (punchUnlocked) {
+            float armSectionX = totalWidth + 4f;
+            float armSectionW = 24f;
+            float armSectionH = hpHeight + (dashUnlocked ? gap + actualStaminaH : 0);
+            drawTrapezoid(graphics, armSectionX, hpY, armSectionW, armSectionH, 0xAA222222, zBg);
+            float iconSize = 20f;
+            float iconX = armSectionX + (armSectionW - iconSize) / 2f;
+            float iconY = hpY + (armSectionH - iconSize) / 2f;
+            drawTextureWithPerspective(graphics, getArmIcon(clientArm), iconX, iconY, iconSize, iconSize, zTop + 1.0f);
+            double currentEnergy = PunchCooldownManager.getEnergy(player);
+            float cooldownRatio = (float) Math.min(1.0, currentEnergy / 2.0);
+            if (cooldownRatio < 1.0f) {
+                float overlayH = (1.0f - cooldownRatio) * iconSize;
+                drawTrapezoid(graphics, iconX, iconY, iconSize, overlayH, 0x88444444, zTop + 1.1f);
+            }
+            float dotSize = 4f;
+            float dotGap = 2f;
+            float startX = armSectionX + (armSectionW / 2f) - ((clientMaxCoins * (dotSize + dotGap) - dotGap) / 2f);
+            float dotY = hpY + armSectionH - 2f;
+            for (int i = 0; i < clientMaxCoins; i++) {
+                float dx = startX + (i * (dotSize + dotGap));
+                drawTrapezoid(graphics, dx, dotY, dotSize, dotSize, 0xAA222222, zTop + 0.1f);
+                if (clientCoinStock >= i + 1) {
+                    drawTrapezoid(graphics, dx, dotY, dotSize, dotSize, 0xFFFFFF00, zTop + 0.2f);
+                } else if (clientCoinStock > i) {
+                    float chargeRatio = (float) (clientCoinStock - i);
+                    float progressH = dotSize * chargeRatio;
+                    drawTrapezoid(graphics, dx, dotY + (dotSize - progressH), dotSize, progressH, 0x88AAAA00, zTop + 0.2f);
+                }
             }
         }
-        float armSectionX = x + totalWidth + 4f;
-        float armSectionW = 24f;
-        float armSectionH = hpHeight + gap + staminaHeight;
-        drawTrapezoid(graphics, armSectionX, hpY, armSectionW, armSectionH, 0xAA222222, zBg);
-        float iconSize = 20f;
-        float iconX = armSectionX + (armSectionW - iconSize) / 2f;
-        float iconY = hpY + (armSectionH - iconSize) / 2f;
-        drawTextureWithPerspective(graphics, getArmIcon(clientArm), iconX, iconY, iconSize, iconSize, zTop + 1.0f);
         float foodHeight = 6f;
-        float foodY = staminaY + staminaHeight + gap;
-        drawTrapezoid(graphics, x, foodY, totalWidth, foodHeight, 0xAA222222, zBg);
-        float foodFillW = (player.getFoodData().getFoodLevel() / 20.0f) * (totalWidth - 2f);
-        if (foodFillW > 0) {
-            drawTrapezoid(graphics, x + 1f, foodY + 1f, foodFillW, foodHeight - 2f, 0xFFFF8800, zBar);
-        }
+        drawTrapezoid(graphics, 0, currentY, totalWidth, foodHeight, 0xAA222222, zBg);
+        float foodHPadding = 2f;
+        float foodFillW = (player.getFoodData().getFoodLevel() / 20.0f) * (totalWidth - (foodHPadding * 2));
+        if (foodFillW > 0)
+            drawTrapezoid(graphics, foodHPadding, currentY + 1f, foodFillW, foodHeight - 2f, 0xFFFF8800, zBar);
+        currentY += foodHeight + gap;
         float expHeight = 10f;
-        float expY = foodY + foodHeight + gap;
-        drawTrapezoid(graphics, x, expY, totalWidth, expHeight, 0xAA222222, zBg);
-        float expFillW = player.experienceProgress * (totalWidth - 2f);
-        if (expFillW > 0) {
-            drawTrapezoid(graphics, x + 1f, expY + 1f, expFillW, expHeight - 2f, 0xFF00FF00, zBar);
-        }
+        drawTrapezoid(graphics, 0, currentY, totalWidth, expHeight, 0xAA222222, zBg);
+        float expHPadding = 2f;
+        float expFillW = player.experienceProgress * (totalWidth - (expHPadding * 2));
+        if (expFillW > 0)
+            drawTrapezoid(graphics, expHPadding, currentY + 1f, expFillW, expHeight - 2f, 0xFF00FF00, zBar);
         if (player.experienceLevel > 0) {
             String levelStr = String.valueOf(player.experienceLevel);
-            float textWidth = mc.font.width(levelStr);
-            float textX = x + (totalWidth / 2f) - (textWidth / 2f);
-            float textY = expY + (expHeight / 2f) - 4.5f;
-            drawTextWithPerspective(graphics, mc, levelStr, textX, textY, 0xFFFFFFFF, zTop + 0.1f);
+            float textX = (totalWidth / 2f) - (mc.font.width(levelStr) / 2f);
+            drawTextWithPerspective(graphics, mc, levelStr, textX, currentY + (expHeight / 2f) - 4.5f, 0xFFFFFFFF, zTop + 0.1f);
         }
         graphics.pose().popPose();
     }

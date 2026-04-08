@@ -1,6 +1,7 @@
 package com.maxwell.highspeedlib.common.logic;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
+import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.S2CSyncSlidePacket;
 import net.minecraft.core.particles.ParticleTypes;
@@ -8,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -23,6 +25,9 @@ public class SlideManager {
     private static final double SLIDE_SPEED = 0.75;
 
     public static void toggleSlide(ServerPlayer player, boolean start, float xInput, float zInput) {
+        if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Sliding(player))) {
+            return;
+        }
         if (start) {
             if (!slidingPlayers.contains(player.getUUID())) {
                 slidingPlayers.add(player.getUUID());
@@ -36,13 +41,11 @@ public class SlideManager {
                     slideDir = new Vec3(xInput * f2 - zInput * f1, 0, zInput * f2 + xInput * f1).normalize();
                 }
                 slideDirMap.put(player.getUUID(), slideDir);
-                HighSpeedLib.LOGGER.info("Sliding START (Fixed Direction): {}", player.getName().getString());
             }
         } else {
             if (slidingPlayers.contains(player.getUUID())) {
                 slidingPlayers.remove(player.getUUID());
                 slideDirMap.remove(player.getUUID());
-                HighSpeedLib.LOGGER.info("Sliding STOP: {}", player.getName().getString());
             }
         }
         player.refreshDimensions();

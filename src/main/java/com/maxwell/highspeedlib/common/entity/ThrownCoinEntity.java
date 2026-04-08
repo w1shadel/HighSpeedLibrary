@@ -11,6 +11,7 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
@@ -23,6 +24,8 @@ import java.util.List;
 public class ThrownCoinEntity extends ThrowableItemProjectile {
     private int parryCooldown = 0;
     private int parryCount = 0;
+    private int shiningTicks = 0;
+    private boolean hasShone = false;
 
     public ThrownCoinEntity(EntityType<? extends ThrownCoinEntity> type, Level level) {
         super(type, level);
@@ -32,29 +35,40 @@ public class ThrownCoinEntity extends ThrowableItemProjectile {
         super(ModEntities.TCOIN.get(), shooter, level);
     }
 
-    public static void performRicochet(ThrownCoinEntity coin, Entity attacker, float damage) {
+    public static void performRicochet(ThrownCoinEntity coin, Entity attacker, float incomingDamage, int chainCount) {
         if (coin.isRemoved()) return;
         Level level = coin.level();
         if (!(level instanceof ServerLevel serverLevel)) return;
+        boolean isCrit = coin.isShining();
+        int currentChain = chainCount + 1;
         coin.discard();
         List<ThrownCoinEntity> otherCoins = level.getEntitiesOfClass(ThrownCoinEntity.class,
-                coin.getBoundingBox().inflate(15.0),
-                e -> e != coin && !e.isRemoved());
+                coin.getBoundingBox().inflate(15.0), e -> e != coin && !e.isRemoved());
         if (!otherCoins.isEmpty()) {
             ThrownCoinEntity nextCoin = otherCoins.get(0);
             ServerArmManager.spawnBeam(serverLevel, coin.position(), nextCoin.position());
-            performRicochet(nextCoin, attacker, damage + 5.0f);
+            performRicochet(nextCoin, attacker, incomingDamage, currentChain);
         } else {
             List<LivingEntity> enemies = level.getEntitiesOfClass(LivingEntity.class,
                     coin.getBoundingBox().inflate(25.0), e -> e != attacker && e.isAlive());
-            LivingEntity target = enemies.stream()
-                    .min((e1, e2) -> Float.compare(e1.distanceTo(coin), e2.distanceTo(coin)))
-                    .orElse(null);
-            if (target != null) {
-                ServerArmManager.spawnBeam(serverLevel, coin.position(), target.getEyePosition());
-                float finalDamage = damage + 10.0f + (coin.getParryCount() * 5.0f);
-                target.hurt(level.damageSources().magic(), finalDamage);
-                level.playSound(null, target.blockPosition(), SoundEvents.ZOMBIE_VILLAGER_CONVERTED, SoundSource.PLAYERS, 1.0f, 2.0f);
+            enemies.sort((e1, e2) -> Float.compare(e1.distanceTo(coin), e2.distanceTo(coin)));
+            if (!enemies.isEmpty()) {
+                float playerAtk = 1.0f;
+                if (attacker instanceof LivingEntity living) {
+                    playerAtk = (float) living.getAttributeValue(Attributes.ATTACK_DAMAGE);
+                }
+                float multiplier = currentChain + coin.getParryCount();
+                float baseFinalDamage = (incomingDamage + playerAtk) * multiplier;
+                int targetsToHit = (isCrit && enemies.size() >= 2) ? 2 : 1;
+                float damageMultiplier = isCrit ? 2.0f : 1.0f;
+                for (int i = 0; i < targetsToHit; i++) {
+                    LivingEntity target = enemies.get(i);
+                    ServerArmManager.spawnBeam(serverLevel, coin.position(), target.getEyePosition());
+                    float finalDamage = baseFinalDamage * damageMultiplier;
+                    target.hurt(level.damageSources().magic(), finalDamage);
+                    float pitch = isCrit ? 2.0f : 1.5f;
+                    level.playSound(null, target.blockPosition(), SoundEvents.ZOMBIE_VILLAGER_CONVERTED, SoundSource.PLAYERS, 1.0f, pitch);
+                }
             }
         }
         level.playSound(null, coin.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0f, 1.5f);
@@ -95,7 +109,7 @@ public class ThrownCoinEntity extends ThrowableItemProjectile {
             }
         }
         if (directEntity instanceof Projectile) {
-            performRicochet(this, attacker, amount);
+            performRicochet(this, attacker, amount, 0);
             directEntity.discard();
             return true;
         }
@@ -110,14 +124,23 @@ public class ThrownCoinEntity extends ThrowableItemProjectile {
     public void tick() {
         super.tick();
         if (parryCooldown > 0) parryCooldown--;
-        if (this.level().isClientSide) {
-            this.level().addParticle(ParticleTypes.WAX_ON, this.getX(), this.getY(), this.getZ(), 0, 0, 0);
-        }
         if (!this.level().isClientSide) {
-            if (Math.abs(this.getDeltaMovement().y) < 0.05) {
+            double vy = this.getDeltaMovement().y;
+            if (Math.abs(vy) < 0.1 && !hasShone) {
+                this.shiningTicks = 8;
+                this.hasShone = true;
                 ((ServerLevel) this.level()).sendParticles(ParticleTypes.FLASH, this.getX(), this.getY(), this.getZ(), 1, 0, 0, 0, 0);
+                this.level().playSound(null, this.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0f, 2.0f);
             }
+            if (shiningTicks > 0) shiningTicks--;
         }
+        if (this.level().isClientSide && shiningTicks > 0) {
+            this.level().addParticle(ParticleTypes.END_ROD, this.getX(), this.getY(), this.getZ(), 0, 0, 0);
+        }
+    }
+
+    public boolean isShining() {
+        return shiningTicks > 0;
     }
 
     @Override

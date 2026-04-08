@@ -1,10 +1,12 @@
 package com.maxwell.highspeedlib.common.network.packets;
 
+import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
 import com.maxwell.highspeedlib.client.state.ArmManager;
 import com.maxwell.highspeedlib.common.logic.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -39,6 +41,9 @@ public class C2SKeyInputPacket {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
             if (msg.keyType == 0) {
+                if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Dash(player))) {
+                    return;
+                }
                 if (StaminaManager.consumeStamina(player, 1.0)) {
                     float x = msg.xInput;
                     float z = msg.zInput;
@@ -56,6 +61,8 @@ public class C2SKeyInputPacket {
                     DashManager.startDashInvulnerability(player, 10);
                 }
             } else if (msg.keyType == 1) {
+                AbilityAuthority.PlayerSettings settings = AbilityAuthority.get(player.getUUID());
+                if (!settings.punch) return;
                 ServerArmManager.attemptPunch(player);
             } else if (msg.keyType == 3) {
                 if (player.onGround()) {
@@ -69,17 +76,20 @@ public class C2SKeyInputPacket {
             } else if (msg.keyType == 5) {
                 CoinManager.throwCoin(player);
             } else if (msg.keyType == 6) {
+                ServerWhiplashManager.HookData whiplashData = ServerWhiplashManager.getServerData(player);
+                if (whiplashData.state != ServerWhiplashManager.NONE && whiplashData.state != ServerWhiplashManager.RETRACTING) {
+                    ServerWhiplashManager.stop(player);
+                }
                 WallJumpManager.performWallJump(player);
+
             } else if (msg.keyType == 7) {
                 ArmManager.switchArm(player);
             } else if (msg.keyType == 8) {
-                boolean alreadyHasHook = player.level().getEntitiesOfClass(com.maxwell.highspeedlib.common.entity.WhiplashHookEntity.class,
-                        player.getBoundingBox().inflate(64), hook -> hook.getOwner() == player).size() > 0;
-                if (!alreadyHasHook) {
-                    com.maxwell.highspeedlib.common.entity.WhiplashHookEntity hook = new com.maxwell.highspeedlib.common.entity.WhiplashHookEntity(player.level(), player);
-                    player.level().addFreshEntity(hook);
-                    player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                            net.minecraft.sounds.SoundEvents.FISHING_BOBBER_THROW, net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.5f);
+                ServerWhiplashManager.HookData whiplashData = ServerWhiplashManager.getServerData(player);
+                if (whiplashData.state == ServerWhiplashManager.NONE) {
+                    ServerWhiplashManager.start(player);
+                } else {
+                    ServerWhiplashManager.stop(player);
                 }
             }
         });

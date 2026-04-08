@@ -23,6 +23,8 @@ public class ClientSlideHandler {
     private static final float FOV_LERP_SPEED = 0.1f;
     private static final double SLIDE_SPEED = 0.75;
     private static boolean clientIsSliding = false;
+    private static float slideProgress = 0f;
+    private static float prevSlideProgress = 0f;
     private static float currentFovModifier = 1.0f;
     private static Vec3 lockedSlideDir = null;
 
@@ -67,6 +69,7 @@ public class ClientSlideHandler {
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
+            prevSlideProgress = slideProgress;
             Minecraft mc = Minecraft.getInstance();
             if (mc.player != null && clientIsSliding && lockedSlideDir != null) {
                 Vec3 motion = mc.player.getDeltaMovement();
@@ -76,6 +79,9 @@ public class ClientSlideHandler {
             }
             float target = clientIsSliding ? SLIDE_FOV_TARGET : NORMAL_FOV_TARGET;
             currentFovModifier = Mth.lerp(FOV_LERP_SPEED, currentFovModifier, target);
+            float slideTarget = clientIsSliding ? 1.0f : 0.0f;
+            float lerpAlpha = clientIsSliding ? 0.6f : 0.3f;
+            slideProgress = Mth.lerp(lerpAlpha, slideProgress, slideTarget);
         }
     }
 
@@ -94,8 +100,12 @@ public class ClientSlideHandler {
         }
     }
 
+    public static float getSlideProgress(float partialTicks) {
+        return Mth.lerp(partialTicks, prevSlideProgress, slideProgress);
+    }
+
     public static float getSlideProgress() {
-        return Mth.clamp((currentFovModifier - 1.0f) / 0.2f, 0.0f, 1.0f);
+        return slideProgress;
     }
 
     @SubscribeEvent

@@ -8,7 +8,9 @@
     "HumanoidModelMixin",
     "LivingEntityMixin",
     "PlayerMixin",
-    "CameraMixin"
+    "LevelMixin",
+    "ServerLevelMixin",
+    "EntityMixin"
   ],
   "client": [
   ],

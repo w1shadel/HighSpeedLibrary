@@ -34,8 +34,9 @@ public class StaminaManager {
     }
 
     public static double getMaxStamina(Player player) {
-        int level = EnchantmentHelper.getItemEnchantmentLevel(ModEnchantments.STAMINA_BOOST.get(), player.getItemBySlot(EquipmentSlot.LEGS));
-        return 3.0 + level;
+        AbilityAuthority.PlayerSettings settings = AbilityAuthority.get(player.getUUID());
+        int enchantmentLevel = EnchantmentHelper.getItemEnchantmentLevel(ModEnchantments.STAMINA_BOOST.get(), player.getItemBySlot(EquipmentSlot.LEGS));
+        return settings.maxDashCount + enchantmentLevel;
     }
 
     public static boolean consumeStamina(Player player, double amount) {

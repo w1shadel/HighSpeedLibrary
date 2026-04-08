@@ -86,6 +86,7 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     implementation fg.deobf("curse.maven:spark-361579:4738952")
     implementation fg.deobf("curse.maven:timeless-and-classics-zero-1028108:7745481")
+    implementation fg.deobf("curse.maven:time-stop-clock-mod-690991:7821984")
     implementation fg.deobf("curse.maven:fading-time-1502969:7874868")
     implementation fg.deobf("curse.maven:curios-309927:6418456")
     implementation fg.deobf("curse.maven:appleskin-248787:4770828")

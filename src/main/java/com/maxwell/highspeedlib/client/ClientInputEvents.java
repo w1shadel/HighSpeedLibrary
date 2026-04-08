@@ -1,11 +1,11 @@
 package com.maxwell.highspeedlib.client;
 
-import com.maxwell.highspeedlib.common.logic.ArmType;
 import com.maxwell.highspeedlib.client.state.ArmManager;
-
+import com.maxwell.highspeedlib.common.logic.ArmType;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.C2SKeyInputPacket;
 import net.minecraft.client.Minecraft;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -21,42 +21,59 @@ public class ClientInputEvents {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         while (KeyInputHandler.PARRY_KEY.consumeClick()) {
-            ArmType current = ArmManager.getArm(mc.player);
-            boolean isRed = (current == ArmType.KNUCKLEBLASTER);
-            if (!ExtendsArmRenderer.isPunching() && com.maxwell.highspeedlib.common.logic.PunchCooldownManager.tryConsume(mc.player, isRed)) {
-                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(1));
-                ExtendsArmRenderer.startPunch();
+            if (UltraHudRenderer.punchUnlocked) {
+                ArmType current = ArmManager.getArm(mc.player);
+                boolean isRed = (current == ArmType.KNUCKLEBLASTER);
+                if (!ExtendsArmRenderer.isPunching() && com.maxwell.highspeedlib.common.logic.PunchCooldownManager.tryConsume(mc.player, isRed)) {
+                    PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(1));
+                    ExtendsArmRenderer.startPunch();
+                }
+            } else {
+                mc.player.playSound(SoundEvents.DISPENSER_FAIL, 1.0f, 2.0f);
             }
         }
         while (KeyInputHandler.DASH_KEY.consumeClick()) {
-            PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(0, mc.player.xxa, mc.player.zza));
-            ClientEffectManager.setSpeeding(true);
+            if (UltraHudRenderer.dashUnlocked) {
+                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(0, mc.player.xxa, mc.player.zza));
+                ClientEffectManager.setSpeeding(true);
+            }
         }
         while (KeyInputHandler.COIN_KEY.consumeClick()) {
-            PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(5));
+            if (UltraHudRenderer.punchUnlocked) {
+                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(5));
+            }
         }
-        boolean isSliding = KeyInputHandler.SLIDING_KEY.isDown();
-        if (isSliding != wasSliding) {
-            if (isSliding) {
-                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(3, mc.player.xxa, mc.player.zza));
+        boolean isSlidingInput = KeyInputHandler.SLIDING_KEY.isDown();
+        if (isSlidingInput != wasSliding) {
+            if (isSlidingInput) {
+                boolean canPerform = mc.player.onGround() ? UltraHudRenderer.slidingUnlocked : UltraHudRenderer.slamUnlocked;
+                if (canPerform) {
+                    PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(3, mc.player.xxa, mc.player.zza));
+                }
             } else {
                 PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(4));
             }
-            wasSliding = isSliding;
+            wasSliding = isSlidingInput;
         }
         while (mc.options.keyJump.consumeClick()) {
             if (!mc.player.onGround()) {
-                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(6));
+                if (UltraHudRenderer.walljumpUnlocked) {
+                    PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(6));
+                }
             } else {
                 mc.player.jumpFromGround();
             }
         }
         while (KeyInputHandler.CHANGEARM_KEY.consumeClick()) {
-            PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(7));
-            mc.player.playSound(net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC, 1.0f, 1.5f);
+            if (UltraHudRenderer.punchUnlocked) {
+                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(7));
+                mc.player.playSound(net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC, 1.0f, 1.5f);
+            }
         }
         while (KeyInputHandler.WHIPLASH_KEY.consumeClick()) {
-            PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(8));
+            if (UltraHudRenderer.whiplashUnlocked) {
+                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(8));
+            }
         }
     }
 }

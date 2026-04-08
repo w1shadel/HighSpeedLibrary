@@ -16,10 +16,4 @@ public class ModEntities {
                     .clientTrackingRange(10)
                     .updateInterval(20)
                     .build("thr_coin"));
-    public static final RegistryObject<EntityType<com.maxwell.highspeedlib.common.entity.WhiplashHookEntity>> WHIPLASH_HOOK = ENTITIES.register("whiplash_hook",
-            () -> EntityType.Builder.<com.maxwell.highspeedlib.common.entity.WhiplashHookEntity>of(com.maxwell.highspeedlib.common.entity.WhiplashHookEntity::new, MobCategory.MISC)
-                    .sized(0.25F, 0.25F)
-                    .clientTrackingRange(10)
-                    .updateInterval(1)
-                    .build("whiplash_hook"));
-}
+}

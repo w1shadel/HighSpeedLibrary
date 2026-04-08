@@ -6,6 +6,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
@@ -20,19 +22,31 @@ import java.util.UUID;
 
 public class WallJumpManager {
     private static final Map<UUID, Integer> wallJumpCounts = new HashMap<>();
-    private static final int MAX_WALL_JUMPS = 3;
 
     public static void performWallJump(ServerPlayer player) {
+        AbilityAuthority.PlayerSettings settings = AbilityAuthority.get(player.getUUID());
+        if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new com.maxwell.highspeedlib.api.HighSpeedAbilityEvent.Walljump(player))) {
+            return;
+        }
+        if (!settings.wallJump) return;
         if (!player.onGround()) {
             int count = wallJumpCounts.getOrDefault(player.getUUID(), 0);
-            if (count < MAX_WALL_JUMPS) {
+            if (count < settings.maxWallJumpCount) {
                 Direction wallDir = Events.getTouchingWall(player);
                 if (wallDir != null) {
-                    Vec3 push = new Vec3(wallDir.getOpposite().getStepX(), 0.0, wallDir.getOpposite().getStepZ()).normalize().scale(0.75D);
-                    player.setDeltaMovement(push.x, 0.6D, push.z);
+                    double baseJumpPower = player.getAttributeValue(Attributes.JUMP_STRENGTH);
+                    double jumpBoostBonus = 0.0D;
+                    if (player.hasEffect(MobEffects.JUMP)) {
+                        jumpBoostBonus = (double) ((float) (player.getEffect(MobEffects.JUMP).getAmplifier() + 1) * 0.1F);
+                    }
+                    double finalJumpHeight = (baseJumpPower + jumpBoostBonus) * 1.4D;
+                    Vec3 push = new Vec3(wallDir.getOpposite().getStepX(), 0.0, wallDir.getOpposite().getStepZ())
+                            .normalize().scale(0.75D);
+                    player.setDeltaMovement(push.x, finalJumpHeight, push.z);
                     player.hurtMarked = true;
                     wallJumpCounts.put(player.getUUID(), count + 1);
-                    player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 1.8f);
+                    player.level().playSound(null, player.blockPosition(),
+                            SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 1.8f);
                 }
             }
         }

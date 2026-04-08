@@ -1,5 +1,8 @@
 package com.maxwell.highspeedlib.mixin;
 
+import com.maxwell.highspeedlib.client.ClientSlideHandler;
+import com.maxwell.highspeedlib.client.ClientWhiplashManager;
+import com.maxwell.highspeedlib.client.ThirdPersonCoinTossManager;
 import com.maxwell.highspeedlib.client.ThirdPersonPunchManager;
 import com.maxwell.highspeedlib.common.logic.SlideManager;
 import net.minecraft.client.Minecraft;
@@ -37,10 +40,18 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
         if (!(entity instanceof Player player)) return;
         HumanoidModel<?> model = (HumanoidModel<?>) (Object) this;
         float punchProgress = ThirdPersonPunchManager.getProgress(player.getId());
-        float tossProgress = com.maxwell.highspeedlib.client.ThirdPersonCoinTossManager.getProgress(player.getId());
+        float tossProgress = ThirdPersonCoinTossManager.getProgress(player.getId());
+        com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HookData hookData = ClientWhiplashManager.getHookData(player.getUUID());
+        int whiplashTicks = ClientWhiplashManager.getRenderTicks(player.getUUID());
+        boolean hasWhiplash = whiplashTicks > 0;
         boolean isSliding = SlideManager.isSliding(player);
-        float offsetY = isSliding ? 10.0f : 0.0f;
-        float offsetZ = isSliding ? -4.0f : 0.0f;
+        boolean isFirstPerson = (entity == Minecraft.getInstance().player && Minecraft.getInstance().options.getCameraType().isFirstPerson());
+        float progress = isSliding ? 1.0f : 0.0f;
+        if (isSliding && player.level().isClientSide && player == Minecraft.getInstance().player) {
+            progress = ClientSlideHandler.getSlideProgress();
+        }
+        float offsetY = (!isFirstPerson) ? 10.0f * progress : 0.0f;
+        float offsetZ = (!isFirstPerson) ? -4.0f * progress : 0.0f;
         model.body.y = offsetY;
         model.body.z = offsetZ;
         model.head.y = offsetY;
@@ -61,7 +72,7 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
             model.rightLeg.xRot = (float) Math.toRadians(-85.0f);
             model.rightLeg.yRot = (float) Math.toRadians(-15.0f);
             model.rightArm.xRot = (float) Math.toRadians(65.0f);
-            if (punchProgress < 0) {
+            if (punchProgress < 0 && tossProgress < 0 && !hasWhiplash) {
                 model.leftArm.xRot = (float) Math.toRadians(65.0f);
             }
         }
@@ -76,12 +87,23 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
             model.leftArm.xRot = (float) Math.toRadians(-20.0f + (swing * -50.0f));
             model.leftArm.yRot = (float) Math.toRadians(-25.0f);
             model.leftArm.zRot = (float) Math.toRadians(swing * 25.0f);
+        } else if (hasWhiplash) {
+            model.leftArm.xRot = (float) Math.toRadians(-90.0f);
+            model.leftArm.yRot = (float) Math.toRadians(15.0f);
+            model.leftArm.zRot = 0f;
+            if (whiplashTicks < 5) {
+                model.leftArm.xRot -= (float) Math.toRadians(15.0f * (5 - whiplashTicks));
+            }
+            if (hookData.state == com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HOOKED ||
+                    hookData.state == com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.RETRACTING) {
+                float intensity = (hookData.state == com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HOOKED) ? 0.05f : 0.02f;
+                model.leftArm.x += (float) Math.sin(ageInTicks * 1.5) * intensity;
+                model.leftArm.y += (float) Math.cos(ageInTicks * 1.3) * intensity;
+            }
+            model.leftArm.z = offsetZ - 2.0f;
         }
         if (entity == Minecraft.getInstance().player && Minecraft.getInstance().options.getCameraType().isFirstPerson()) {
-            if (isSliding) {
-                model.leftArm.visible = false;
-                model.rightArm.visible = false;
-            } else if (punchProgress >= 0 || tossProgress >= 0) {
+            if (punchProgress >= 0 || tossProgress >= 0 || hasWhiplash) {
                 model.leftArm.visible = false;
             }
         }

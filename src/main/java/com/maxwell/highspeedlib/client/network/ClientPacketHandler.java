@@ -6,7 +6,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 
 public class ClientPacketHandler {
-    
     public static void handleStaminaSync(double stamina, double maxStamina) {
         UltraHudRenderer.setClientStamina(stamina, maxStamina);
     }
@@ -43,7 +42,7 @@ public class ClientPacketHandler {
     }
 
     public static void handleParry() {
-        ExtendsArmRenderer.startHitstop(10);
+        com.maxwell.highspeedlib.common.logic.TimeManager.setHitstop(10);
         ClientEffectManager.triggerParryFlash();
     }
 }
