@@ -1,6 +1,11 @@
 package com.maxwell.highspeedlib.client.network;
 
-import com.maxwell.highspeedlib.client.*;
+import com.maxwell.highspeedlib.client.ClientEffectManager;
+import com.maxwell.highspeedlib.client.ClientSlideHandler;
+import com.maxwell.highspeedlib.client.ThirdPersonCoinTossManager;
+import com.maxwell.highspeedlib.client.ThirdPersonPunchManager;
+import com.maxwell.highspeedlib.client.renderer.ExtendsArmRenderer;
+import com.maxwell.highspeedlib.client.renderer.UltraHudRenderer;
 import com.maxwell.highspeedlib.common.logic.ArmType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;

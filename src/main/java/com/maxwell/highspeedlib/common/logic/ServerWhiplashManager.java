@@ -1,8 +1,10 @@
 package com.maxwell.highspeedlib.common.logic;
 
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
+import com.maxwell.highspeedlib.api.IHighSpeedInteractable;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.S2CSyncWhiplashPacket;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,7 +14,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
@@ -75,7 +79,7 @@ public class ServerWhiplashManager {
             }
             Vec3 rayEnd = eyePos.add(data.shootDir.scale(data.distance));
             Vec3 rayStart = eyePos.add(data.shootDir.scale(Math.max(0, data.distance - FLY_SPEED)));
-            HitResult blockHit = level.clip(new ClipContext(rayStart, rayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+            BlockHitResult blockHit = level.clip(new ClipContext(rayStart, rayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
             Vec3 targetEnd = blockHit.getType() != HitResult.Type.MISS ? blockHit.getLocation() : rayEnd;
             AABB aabb = new AABB(rayStart, targetEnd).inflate(2.0);
             double minDist = Double.MAX_VALUE;
@@ -97,7 +101,22 @@ public class ServerWhiplashManager {
                 data.hitPos = null;
                 data.distance = eyePos.distanceTo(hitEntity.position());
                 sync(player, data);
-            } else if (blockHit.getType() != HitResult.Type.MISS) {
+            } else if (blockHit.getType() == HitResult.Type.BLOCK) {
+                BlockPos pos = blockHit.getBlockPos();
+                BlockState state = level.getBlockState(pos);
+                if (state.getBlock() instanceof IHighSpeedInteractable interactable) {
+                    IHighSpeedInteractable.WhiplashReaction reaction = interactable.onWhiplash(player);
+                    if (reaction == IHighSpeedInteractable.WhiplashReaction.PULL_PLAYER) {
+                        data.state = HOOKED;
+                        data.hitPos = blockHit.getLocation();
+                        sync(player, data);
+                        return;
+                    } else if (reaction == IHighSpeedInteractable.WhiplashReaction.IGNORE) {
+                        data.state = RETRACTING;
+                        sync(player, data);
+                        return;
+                    }
+                }
                 data.state = RETRACTING;
                 data.hitPos = blockHit.getLocation();
                 data.distance = eyePos.distanceTo(data.hitPos);

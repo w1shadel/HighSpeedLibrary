@@ -1,6 +1,6 @@
 package com.maxwell.highspeedlib.common.network.packets;
 
-import com.maxwell.highspeedlib.client.UltraHudRenderer;
+import com.maxwell.highspeedlib.client.renderer.UltraHudRenderer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 

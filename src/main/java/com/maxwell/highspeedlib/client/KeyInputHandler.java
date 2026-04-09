@@ -3,6 +3,7 @@ package com.maxwell.highspeedlib.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -20,7 +21,7 @@ public class KeyInputHandler {
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         DASH_KEY = new KeyMapping(
                 "key.highspeedlib.dash",
-                InputConstants.KEY_LALT,
+                InputConstants.KEY_LSHIFT,
                 "category.highspeedlib"
         );
         PARRY_KEY = new KeyMapping(
@@ -30,7 +31,7 @@ public class KeyInputHandler {
         );
         SLIDING_KEY = new KeyMapping(
                 "key.highspeedlib.sliding",
-                InputConstants.KEY_LSHIFT,
+                InputConstants.KEY_LCONTROL,
                 "category.highspeedlib"
         );
         COIN_KEY = new KeyMapping(
@@ -40,7 +41,7 @@ public class KeyInputHandler {
         );
         CHANGEARM_KEY = new KeyMapping(
                 "key.highspeedlib.changearm",
-                InputConstants.KEY_Z,
+                InputConstants.KEY_G,
                 "category.highspeedlib"
         );
         WHIPLASH_KEY = new KeyMapping(
@@ -54,5 +55,10 @@ public class KeyInputHandler {
         event.register(COIN_KEY);
         event.register(CHANGEARM_KEY);
         event.register(WHIPLASH_KEY);
+    }
+
+    @SubscribeEvent
+    public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(V1WingModel.LAYER_LOCATION, V1WingModel::createBodyLayer);
     }
 }

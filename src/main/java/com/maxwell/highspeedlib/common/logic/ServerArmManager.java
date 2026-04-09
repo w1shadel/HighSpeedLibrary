@@ -1,6 +1,7 @@
 package com.maxwell.highspeedlib.common.logic;
 
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
+import com.maxwell.highspeedlib.api.IHighSpeedInteractable;
 import com.maxwell.highspeedlib.client.state.ArmManager;
 import com.maxwell.highspeedlib.common.entity.ThrownCoinEntity;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
@@ -29,7 +30,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class ServerArmManager {
-    private static final double FEEDBACKER_RANGE = 1.5;
+    private static final double FEEDBACKER_RANGE = 2.5;
     private static final Map<UUID, Integer> activeParryWindows = new HashMap<>();
 
     public static void tickParryWindows() {
@@ -59,7 +60,8 @@ public class ServerArmManager {
         if (isRed) {
             performKnuckleBlast(player);
         } else {
-            activeParryWindows.put(player.getUUID(), 3);
+            AbilityAuthority.PlayerSettings settings = AbilityAuthority.get(player.getUUID());
+            activeParryWindows.put(player.getUUID(), settings.parry_invtime);
             performFeedbackerPunch(player);
         }
     }
@@ -68,6 +70,8 @@ public class ServerArmManager {
         Level level = player.level();
         Vec3 eyePos = player.getEyePosition();
         Vec3 lookVec = player.getLookAngle();
+        ArmType arm = ArmManager.getArm(player);
+        boolean isRed = (arm == ArmType.KNUCKLEBLASTER);
         double range = FEEDBACKER_RANGE;
         AABB searchBox = getForwardParryBox(player, range);
         boolean isSpecialHit = false;
@@ -92,6 +96,12 @@ public class ServerArmManager {
         if (!isSpecialHit) {
             List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, searchBox, e -> e != player && isTargetable(e, eyePos, lookVec, range, 0.6));
             for (LivingEntity target : targets) {
+                if (target instanceof IHighSpeedInteractable interactable) {
+                    if (interactable.onHandPunch(player, !isRed)) {
+                        triggerParryEffects(player);
+                        return;
+                    }
+                }
                 double punchBase = player.getAttributeValue(ModAttributes.PUNCH_DAMAGE.get());
                 double rawAD = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
                 double adFactor = 1.0 + (rawAD - 1.0) * 0.2;
@@ -127,6 +137,8 @@ public class ServerArmManager {
     }
 
     private static void performKnuckleBlast(ServerPlayer player) {
+        ArmType arm = ArmManager.getArm(player);
+        boolean isRed = (arm == ArmType.KNUCKLEBLASTER);
         ServerLevel level = (ServerLevel) player.level();
         Vec3 look = player.getLookAngle();
         Vec3 punchPos = player.getEyePosition().add(look.scale(1.5));
@@ -139,16 +151,25 @@ public class ServerArmManager {
         double configBaseDamage = settings.punchDamageBase;
         float blastDamage = (float) ((punchBase + configBaseDamage) * adFactor * 1.5 * velocityModifier);
         AABB area = new AABB(punchPos.subtract(2.5, 2.5, 2.5), punchPos.add(2.5, 2.5, 2.5));
-        level.getEntitiesOfClass(LivingEntity.class, area, e -> e != player).forEach(target -> {
+        List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, area, e -> e != player);
+        boolean anySpecialHandled = false;
+        for (LivingEntity target : targets) {
+            if (target instanceof IHighSpeedInteractable interactable) {
+                if (interactable.onHandPunch(player, true)) {
+                    anySpecialHandled = true;
+                    continue;
+                }
+            }
             target.hurt(player.damageSources().mobAttack(player), blastDamage);
             target.setDeltaMovement(look.scale(1.2).add(0, 0.4, 0));
             target.hurtMarked = true;
-        });
+        }
+        if (anySpecialHandled) triggerParryEffects(player);
         level.getEntitiesOfClass(Projectile.class, area).forEach(p -> {
             if (p.getOwner() != player) p.discard();
         });
         level.sendParticles(ParticleTypes.CRIT, punchPos.x, punchPos.y, punchPos.z, 10, 0.1, 0.1, 0.1, 0.1);
-        level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.PLAYERS, 1.0f, 1.2f);
+        level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0f, 1.2f);
     }
 
     private static boolean isTargetable(net.minecraft.world.entity.Entity entity, Vec3 eyePos, Vec3 lookVec, double range, double angleCos) {

@@ -1,4 +1,4 @@
-package com.maxwell.highspeedlib.client;
+package com.maxwell.highspeedlib.client.renderer;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.api.config.HighSpeedClientConfig;

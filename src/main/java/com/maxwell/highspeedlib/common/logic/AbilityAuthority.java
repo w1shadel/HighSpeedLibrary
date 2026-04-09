@@ -66,6 +66,7 @@ public class AbilityAuthority {
         public int maxDashCount = 3;
         public int maxWallJumpCount = 3;
         public int maxCoinCount = 4;
+        public int parry_invtime = 12;
 
         public CompoundTag save() {
             CompoundTag nbt = new CompoundTag();
@@ -79,6 +80,7 @@ public class AbilityAuthority {
             nbt.putInt("maxDashCount", maxDashCount);
             nbt.putInt("maxWallJumpCount", maxWallJumpCount);
             nbt.putInt("maxCoinCount", maxCoinCount);
+            nbt.putInt("parry_invtime", parry_invtime);
             return nbt;
         }
 
@@ -93,6 +95,7 @@ public class AbilityAuthority {
             if (nbt.contains("maxDashCount")) maxDashCount = nbt.getInt("maxDashCount");
             if (nbt.contains("maxWallJumpCount")) maxWallJumpCount = nbt.getInt("maxWallJumpCount");
             if (nbt.contains("maxCoinCount")) maxCoinCount = nbt.getInt("maxCoinCount");
+            if (nbt.contains("parry_invtime")) parry_invtime = nbt.getInt("parry_invtime");
         }
     }
 }

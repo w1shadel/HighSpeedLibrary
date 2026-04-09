@@ -1,5 +1,7 @@
 package com.maxwell.highspeedlib.client;
 
+import com.maxwell.highspeedlib.client.renderer.ExtendsArmRenderer;
+import com.maxwell.highspeedlib.client.renderer.UltraHudRenderer;
 import com.maxwell.highspeedlib.client.state.ArmManager;
 import com.maxwell.highspeedlib.common.logic.ArmType;
 import com.maxwell.highspeedlib.common.network.PacketHandler;

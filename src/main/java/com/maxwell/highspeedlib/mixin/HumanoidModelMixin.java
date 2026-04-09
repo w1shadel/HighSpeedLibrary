@@ -2,7 +2,6 @@ package com.maxwell.highspeedlib.mixin;
 
 import com.maxwell.highspeedlib.client.ClientSlideHandler;
 import com.maxwell.highspeedlib.client.ClientWhiplashManager;
-import com.maxwell.highspeedlib.client.ThirdPersonCoinTossManager;
 import com.maxwell.highspeedlib.client.ThirdPersonPunchManager;
 import com.maxwell.highspeedlib.common.logic.SlideManager;
 import net.minecraft.client.Minecraft;
@@ -17,38 +16,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(HumanoidModel.class)
 public abstract class HumanoidModelMixin<T extends LivingEntity> {
-    @Inject(method = "setupAnim", at = @At("HEAD"))
-    private void highspeedlib$resetVisibility(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
-        HumanoidModel<?> model = (HumanoidModel<?>) (Object) this;
-        model.leftArm.visible = true;
-        model.rightArm.visible = true;
-        model.head.visible = true;
-        model.body.visible = true;
-        model.leftLeg.visible = true;
-        model.rightLeg.visible = true;
-        if (model instanceof PlayerModel<?> playerModel) {
-            playerModel.leftSleeve.visible = true;
-            playerModel.rightSleeve.visible = true;
-            playerModel.leftPants.visible = true;
-            playerModel.rightPants.visible = true;
-            playerModel.jacket.visible = true;
-        }
-    }
-
     @Inject(method = "setupAnim", at = @At("TAIL"))
     private void highspeedlib$injectCustomAnimations(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         if (!(entity instanceof Player player)) return;
         HumanoidModel<?> model = (HumanoidModel<?>) (Object) this;
         float punchProgress = ThirdPersonPunchManager.getProgress(player.getId());
-        float tossProgress = ThirdPersonCoinTossManager.getProgress(player.getId());
+        float tossProgress = com.maxwell.highspeedlib.client.ThirdPersonCoinTossManager.getProgress(player.getId());
         com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HookData hookData = ClientWhiplashManager.getHookData(player.getUUID());
         int whiplashTicks = ClientWhiplashManager.getRenderTicks(player.getUUID());
         boolean hasWhiplash = whiplashTicks > 0;
         boolean isSliding = SlideManager.isSliding(player);
         boolean isFirstPerson = (entity == Minecraft.getInstance().player && Minecraft.getInstance().options.getCameraType().isFirstPerson());
-        float progress = isSliding ? 1.0f : 0.0f;
-        if (isSliding && player.level().isClientSide && player == Minecraft.getInstance().player) {
-            progress = ClientSlideHandler.getSlideProgress();
+        float progress = 0f;
+        if (isSliding) {
+            progress = 1.0f;
+            if (player.level().isClientSide && player == Minecraft.getInstance().player) {
+                progress = ClientSlideHandler.getSlideProgress();
+            }
         }
         float offsetY = (!isFirstPerson) ? 10.0f * progress : 0.0f;
         float offsetZ = (!isFirstPerson) ? -4.0f * progress : 0.0f;
@@ -64,6 +48,10 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
         model.rightArm.z = offsetZ;
         model.leftArm.y = 2.0f + offsetY;
         model.leftArm.z = offsetZ;
+        if (!isSliding && punchProgress < 0 && tossProgress < 0 && !hasWhiplash) {
+            syncLayers(model);
+            return;
+        }
         if (isSliding) {
             model.body.xRot = (float) Math.toRadians(-25.0f);
             model.head.xRot = (float) Math.toRadians(10.0f);
@@ -94,19 +82,22 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
             if (whiplashTicks < 5) {
                 model.leftArm.xRot -= (float) Math.toRadians(15.0f * (5 - whiplashTicks));
             }
-            if (hookData.state == com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HOOKED ||
-                    hookData.state == com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.RETRACTING) {
-                float intensity = (hookData.state == com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HOOKED) ? 0.05f : 0.02f;
-                model.leftArm.x += (float) Math.sin(ageInTicks * 1.5) * intensity;
-                model.leftArm.y += (float) Math.cos(ageInTicks * 1.3) * intensity;
+            if (hookData != null && (hookData.state == 2 || hookData.state == 3)) {
+                float vIntensity = (hookData.state == 2) ? 0.05f : 0.02f;
+                model.leftArm.x += (float) Math.sin(ageInTicks * 1.5) * vIntensity;
+                model.leftArm.y += (float) Math.cos(ageInTicks * 1.3) * vIntensity;
             }
             model.leftArm.z = offsetZ - 2.0f;
         }
-        if (entity == Minecraft.getInstance().player && Minecraft.getInstance().options.getCameraType().isFirstPerson()) {
+        if (isFirstPerson) {
             if (punchProgress >= 0 || tossProgress >= 0 || hasWhiplash) {
                 model.leftArm.visible = false;
             }
         }
+        syncLayers(model);
+    }
+
+    private void syncLayers(HumanoidModel<?> model) {
         if (model instanceof PlayerModel<?> playerModel) {
             playerModel.jacket.copyFrom(model.body);
             playerModel.hat.copyFrom(model.head);

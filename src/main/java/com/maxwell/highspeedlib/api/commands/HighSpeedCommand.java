@@ -43,6 +43,9 @@ public class HighSpeedCommand {
                                 .then(Commands.literal("walljump_count")
                                         .then(Commands.argument("value", IntegerArgumentType.integer(0))
                                                 .executes(ctx -> updateConfig(EntityArgument.getPlayer(ctx, "target"), "walljump_count", (double) IntegerArgumentType.getInteger(ctx, "value")))))
+                                .then(Commands.literal("parry_invtime")
+                                        .then(Commands.argument("value", IntegerArgumentType.integer(0))
+                                                .executes(ctx -> updateConfig(EntityArgument.getPlayer(ctx, "target"), "parry_invtime", (double) IntegerArgumentType.getInteger(ctx, "value")))))
                         )
                 )
         );
@@ -68,6 +71,7 @@ public class HighSpeedCommand {
             case "damage" -> s.punchDamageBase = val;
             case "dash_count" -> s.maxDashCount = (int) val;
             case "walljump_count" -> s.maxWallJumpCount = (int) val;
+            case "parry_invtime" -> s.parry_invtime = (int) val;
         }
         AbilityAuthority.sync(player);
         return 1;

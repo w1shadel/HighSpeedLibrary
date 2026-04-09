@@ -1,4 +1,4 @@
-package com.maxwell.highspeedlib.client;
+package com.maxwell.highspeedlib.client.renderer;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
