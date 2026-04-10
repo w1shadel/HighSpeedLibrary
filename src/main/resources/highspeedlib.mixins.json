@@ -10,10 +10,6 @@
     "LevelMixin",
     "LivingEntityMixin",
     "PlayerMixin",
-    "parry.UltimateGhostMixin",
-    "parry.EntityGeometricGhostMixin",
-    "parry.DataInvariantsMixin",
-    "accessor.LivingEntityAccessor",
     "ServerLevelMixin"
   ],
   "client": [
