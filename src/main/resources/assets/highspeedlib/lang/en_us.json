@@ -5,5 +5,7 @@
   "key.highspeedlib.sliding": "Sliding",
   "key.highspeedlib.coin": "Throw coins",
   "key.highspeedlib.changearm": "Change Arm",
-  "key.highspeedlib.whiplash": "Whiplash"
+  "key.highspeedlib.whiplash": "Whiplash",
+  "item.highspeedlib.v1_wings": "Machine wings",
+  "enchantment.highspeedlib.stamina_boost": "Stamina Boost"
 }

@@ -1,6 +1,7 @@
 package com.maxwell.highspeedlib.common.logic;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
+import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.S2CSyncStaminaPacket;
 import com.maxwell.highspeedlib.init.ModEnchantments;
@@ -22,7 +23,7 @@ public class StaminaManager {
     private static final Map<UUID, Double> playerStamina = new HashMap<>();
 
     public static double getStamina(Player player) {
-        return playerStamina.getOrDefault(player.getUUID(), 3.0);
+        return playerStamina.getOrDefault(player.getUUID(), (double) HighSpeedServerConfig.STAMINA_MAX.get());
     }
 
     public static void setStamina(Player player, double value) {
@@ -63,7 +64,7 @@ public class StaminaManager {
         double current = getStamina(player);
         double max = getMaxStamina(player);
         if (current < max) {
-            setStamina(player, current + 0.04);
+            setStamina(player, current + HighSpeedServerConfig.STAMINA_REGEN_PER_TICK.get());
         }
     }
 }

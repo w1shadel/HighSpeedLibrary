@@ -1,5 +1,6 @@
 package com.maxwell.highspeedlib.client;
 
+import com.maxwell.highspeedlib.client.renderer.ClientTrailRenderer;
 import com.maxwell.highspeedlib.client.renderer.ExtendsArmRenderer;
 import com.maxwell.highspeedlib.client.renderer.UltraHudRenderer;
 import com.maxwell.highspeedlib.client.state.ArmManager;
@@ -20,6 +21,7 @@ public class ClientInputEvents {
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+        ClientTrailRenderer.tick();
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         while (KeyInputHandler.PARRY_KEY.consumeClick()) {
@@ -38,6 +40,7 @@ public class ClientInputEvents {
             if (UltraHudRenderer.dashUnlocked) {
                 PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(0, mc.player.xxa, mc.player.zza));
                 ClientEffectManager.setSpeeding(true);
+                ClientDashHandler.spawnDashEffects();
             }
         }
         while (KeyInputHandler.COIN_KEY.consumeClick()) {

@@ -1,4 +1,4 @@
-package com.maxwell.highspeedlib.api;
+package com.maxwell.highspeedlib.api.main;
 
 import net.minecraft.server.level.ServerPlayer;
 

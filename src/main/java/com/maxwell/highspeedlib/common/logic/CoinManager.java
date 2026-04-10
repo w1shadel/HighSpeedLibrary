@@ -2,6 +2,7 @@ package com.maxwell.highspeedlib.common.logic;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
+import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.common.entity.ThrownCoinEntity;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.S2CStartTossAnimationPacket;
@@ -67,7 +68,7 @@ public class CoinManager {
         AbilityAuthority.PlayerSettings settings = AbilityAuthority.get(player.getUUID());
         double current = coinStocks.getOrDefault(player.getUUID(), (double) settings.maxCoinCount);
         if (current < settings.maxCoinCount) {
-            double next = Math.min(settings.maxCoinCount, current + 0.016);
+            double next = Math.min(settings.maxCoinCount, current + HighSpeedServerConfig.COIN_REGEN_PER_TICK.get());
             coinStocks.put(player.getUUID(), next);
             if (player.tickCount % 5 == 0) {
                 syncCoinStock(player);

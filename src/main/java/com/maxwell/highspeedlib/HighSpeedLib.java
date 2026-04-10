@@ -1,6 +1,7 @@
 package com.maxwell.highspeedlib;
 
 import com.maxwell.highspeedlib.api.config.HighSpeedClientConfig;
+import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.client.renderer.V1WingRenderer;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.init.ModAttributes;
@@ -17,6 +18,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 
+@SuppressWarnings("removal")
 @Mod(HighSpeedLib.MODID)
 public class HighSpeedLib {
     public static final String MODID = "highspeedlib";
@@ -30,6 +32,7 @@ public class HighSpeedLib {
         ModEnchantments.ENCHANTMENTS.register(modEventBus);
         ModAttributes.ATTRIBUTES.register(modEventBus);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, HighSpeedClientConfig.SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, HighSpeedServerConfig.SPEC);
         modEventBus.addListener(this::clientSetup);
     }
 

@@ -1,6 +1,7 @@
 package com.maxwell.highspeedlib.common.logic;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
+import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -39,9 +40,10 @@ public class WallJumpManager {
                     if (player.hasEffect(MobEffects.JUMP)) {
                         jumpBoostBonus = (double) ((float) (player.getEffect(MobEffects.JUMP).getAmplifier() + 1) * 0.1F);
                     }
-                    double finalJumpHeight = (baseJumpPower + jumpBoostBonus) * 1.4D;
+                    double finalJumpHeight = (baseJumpPower + jumpBoostBonus) * HighSpeedServerConfig.WALLJUMP_VERTICAL_MULT.get();
+                    double hPower = HighSpeedServerConfig.WALLJUMP_HORIZONTAL_POWER.get();
                     Vec3 push = new Vec3(wallDir.getOpposite().getStepX(), 0.0, wallDir.getOpposite().getStepZ())
-                            .normalize().scale(0.75D);
+                            .normalize().scale(hPower);
                     player.setDeltaMovement(push.x, finalJumpHeight, push.z);
                     player.hurtMarked = true;
                     wallJumpCounts.put(player.getUUID(), count + 1);

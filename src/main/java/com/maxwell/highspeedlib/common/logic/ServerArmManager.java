@@ -1,7 +1,9 @@
 package com.maxwell.highspeedlib.common.logic;
 
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
-import com.maxwell.highspeedlib.api.IHighSpeedInteractable;
+import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
+import com.maxwell.highspeedlib.api.main.IHighSpeedInteractable;
+import com.maxwell.highspeedlib.api.main.IParryable;
 import com.maxwell.highspeedlib.client.state.ArmManager;
 import com.maxwell.highspeedlib.common.entity.ThrownCoinEntity;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
@@ -60,8 +62,8 @@ public class ServerArmManager {
         if (isRed) {
             performKnuckleBlast(player);
         } else {
-            AbilityAuthority.PlayerSettings settings = AbilityAuthority.get(player.getUUID());
-            activeParryWindows.put(player.getUUID(), settings.parry_invtime);
+            int parryTicks = (int) Math.round(HighSpeedServerConfig.PARRY_INVUL_SECONDS.get() * 20.0);
+            activeParryWindows.put(player.getUUID(), parryTicks);
             performFeedbackerPunch(player);
         }
     }
@@ -78,6 +80,9 @@ public class ServerArmManager {
         List<Projectile> projectiles = level.getEntitiesOfClass(Projectile.class, searchBox,
                 p -> !(p instanceof ThrownCoinEntity));
         for (Projectile p : projectiles) {
+            if (p instanceof IParryable parryable && !parryable.canBeParried(player)) {
+                continue;
+            }
             performProjectileParry(p, player);
             isSpecialHit = true;
             break;
@@ -205,7 +210,9 @@ public class ServerArmManager {
                 .min((e1, e2) -> Float.compare(e1.distanceTo(coin), e2.distanceTo(coin)))
                 .orElse(null);
         if (target != null) {
-            float damage = 5.0f + (coin.getParryCount() * 2.0f);
+            float coinBase = HighSpeedServerConfig.COIN_BASE_DAMAGE.get().floatValue();
+            float coinParryBonus = HighSpeedServerConfig.COIN_PARRY_DAMAGE_PER_COUNT.get().floatValue();
+            float damage = coinBase + (coin.getParryCount() * coinParryBonus);
             target.hurt(attacker.damageSources().magic(), damage);
             if (level instanceof ServerLevel serverLevel) {
                 spawnBeam(serverLevel, coin.position(), target.getEyePosition());

@@ -1,6 +1,7 @@
 package com.maxwell.highspeedlib.common.logic;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
+import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.S2CSyncPunchEnergyPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,7 +36,8 @@ public class PunchCooldownManager {
         UUID uuid = player.getUUID();
         double current = punchEnergy.getOrDefault(uuid, 2.0);
         if (current < 2.0) {
-            double next = Math.min(2.0, current + (1.0 / 20.0));
+            double regen = HighSpeedServerConfig.PUNCH_ENERGY_REGEN_PER_TICK.get();
+            double next = Math.min(2.0, current + regen);
             punchEnergy.put(uuid, next);
             if (next >= 2.0 || (int) (current * 5) != (int) (next * 5)) {
                 syncToClient(player, next);

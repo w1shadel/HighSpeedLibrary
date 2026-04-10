@@ -1,5 +1,6 @@
 package com.maxwell.highspeedlib.common.logic;
 
+import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.S2CSyncAbilitiesPacket;
 import net.minecraft.nbt.CompoundTag;
@@ -56,17 +57,31 @@ public class AbilityAuthority {
     }
 
     public static class PlayerSettings {
-        public boolean punch = true;
-        public boolean whiplash = true;
-        public boolean dash = true;
-        public boolean wallJump = true;
-        public boolean sliding = true;
-        public boolean slam = true;
-        public double punchDamageBase = 4.0;
-        public int maxDashCount = 3;
-        public int maxWallJumpCount = 3;
-        public int maxCoinCount = 4;
-        public int parry_invtime = 12;
+        public boolean punch;
+        public boolean whiplash;
+        public boolean dash;
+        public boolean wallJump;
+        public boolean sliding;
+        public boolean slam;
+        public double punchDamageBase;
+        public int maxDashCount;
+        public int maxWallJumpCount;
+        public int maxCoinCount;
+        public int parry_invtime;
+
+        public PlayerSettings() {
+            punch = HighSpeedServerConfig.ABILITY_PUNCH.get();
+            whiplash = HighSpeedServerConfig.ABILITY_WHIPLASH.get();
+            dash = HighSpeedServerConfig.ABILITY_DASH.get();
+            wallJump = HighSpeedServerConfig.ABILITY_WALLJUMP.get();
+            sliding = HighSpeedServerConfig.ABILITY_SLIDE.get();
+            slam = HighSpeedServerConfig.ABILITY_SLAM.get();
+            punchDamageBase = HighSpeedServerConfig.PUNCH_DAMAGE_BASE.get();
+            maxDashCount = HighSpeedServerConfig.DASH_MAX_COUNT.get();
+            maxWallJumpCount = HighSpeedServerConfig.WALLJUMP_MAX_COUNT.get();
+            maxCoinCount = HighSpeedServerConfig.COIN_MAX_COUNT.get();
+            parry_invtime = (int) Math.round(HighSpeedServerConfig.PARRY_INVUL_SECONDS.get() * 20.0);
+        }
 
         public CompoundTag save() {
             CompoundTag nbt = new CompoundTag();

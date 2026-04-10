@@ -2,8 +2,10 @@ package com.maxwell.highspeedlib.common.logic;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
+import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
+import com.maxwell.highspeedlib.common.network.PacketHandler;
+import com.maxwell.highspeedlib.common.network.packets.S2CSyncSlamPacket;
 import com.maxwell.highspeedlib.init.ModAttributes;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -19,6 +21,7 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.*;
 
@@ -35,12 +38,17 @@ public class SlamManager {
         slammingPlayers.add(player.getUUID());
         fallImmunityPlayers.add(player.getUUID());
         slamBuffer.put(player.getUUID(), 10);
-        player.setDeltaMovement(0, -3.0, 0);
+        double downSpeed = HighSpeedServerConfig.SLAM_DOWNWARD_SPEED.get();
+        player.setDeltaMovement(0, -downSpeed, 0);
         player.hurtMarked = true;
+        PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+                new S2CSyncSlamPacket(player.getId(), true));
     }
 
     public static void stopSlam(ServerPlayer player) {
         slammingPlayers.remove(player.getUUID());
+        PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+                new S2CSyncSlamPacket(player.getId(), false));
     }
 
     public static boolean isSlamming(UUID uuid) {
@@ -59,13 +67,13 @@ public class SlamManager {
     public static void onLivingTick(LivingEvent.LivingTickEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (isSlamming(player.getUUID())) {
-            if (player.onGround()) {
+            if (player.onGround() || player.verticalCollision) {
                 performSlamImpact(player);
                 stopSlam(player);
+                PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+                        new S2CSyncSlamPacket(player.getId(), player.position()));
                 SlideManager.toggleSlide(player, true, 0, 1.0f);
             } else {
-                ((ServerLevel) player.level()).sendParticles(ParticleTypes.FLASH,
-                        player.getX(), player.getY(), player.getZ(), 1, 0, 0, 0, 0);
                 player.setDeltaMovement(0, -3.0, 0);
                 player.hurtMarked = true;
             }
@@ -83,12 +91,13 @@ public class SlamManager {
         int featherFallingLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.FALL_PROTECTION, player);
         float enchantMultiplier = 1.0f + (featherFallingLevel * 0.1f);
         float finalDamage = (float) (scalingDamage * enchantMultiplier);
-        level.sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() - 0.2, player.getZ(), 5, 1.0, 0.1, 1.0, 0.1);
         level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0f, 0.8f);
-        AABB area = player.getBoundingBox().inflate(4.0, 2.0, 4.0);
+        double radius = HighSpeedServerConfig.SLAM_RADIUS.get();
+        double knockup = HighSpeedServerConfig.SLAM_KNOCKUP_POWER.get();
+        AABB area = player.getBoundingBox().inflate(radius, radius * 0.5, radius);
         player.level().getEntitiesOfClass(LivingEntity.class, area, e -> e != player).forEach(target -> {
             target.hurt(player.damageSources().fall(), finalDamage);
-            target.setDeltaMovement(0, 0.8, 0);
+            target.setDeltaMovement(0, knockup, 0);
             target.hurtMarked = true;
         });
     }

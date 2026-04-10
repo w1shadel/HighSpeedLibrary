@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
+@SuppressWarnings("removal")
 public class V1WingModel<T extends LivingEntity> extends HierarchicalModel<T> {
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation(HighSpeedLib.MODID, "v1wingmodel"), "main");
     private final ModelPart root;

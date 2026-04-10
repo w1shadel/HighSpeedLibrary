@@ -2,6 +2,7 @@ package com.maxwell.highspeedlib.common.logic;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
+import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.S2CSyncSlidePacket;
 import net.minecraft.core.particles.ParticleTypes;
@@ -22,7 +23,6 @@ public class SlideManager {
     private static final Set<UUID> slidingPlayers = new HashSet<>();
     private static final Map<UUID, Integer> airTicksMap = new HashMap<>();
     private static final Map<UUID, Vec3> slideDirMap = new HashMap<>();
-    private static final double SLIDE_SPEED = 0.75;
 
     public static void toggleSlide(ServerPlayer player, boolean start, float xInput, float zInput) {
         if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Sliding(player))) {
@@ -72,7 +72,7 @@ public class SlideManager {
                 if (!player.onGround()) {
                     int airTicks = airTicksMap.getOrDefault(player.getUUID(), 0) + 1;
                     airTicksMap.put(player.getUUID(), airTicks);
-                    if (airTicks > 20) {
+                    if (airTicks > HighSpeedServerConfig.SLIDE_AIR_TIMEOUT_TICKS.get()) {
                         toggleSlide((ServerPlayer) player, false, 0, 0);
                         airTicksMap.remove(player.getUUID());
                         return;
@@ -87,7 +87,8 @@ public class SlideManager {
                         );
                     }
                     Vec3 slideDir = slideDirMap.getOrDefault(player.getUUID(), new Vec3(player.getLookAngle().x, 0, player.getLookAngle().z).normalize());
-                    player.setDeltaMovement(slideDir.x * SLIDE_SPEED, player.getDeltaMovement().y, slideDir.z * SLIDE_SPEED);
+                    double slideSpeed = HighSpeedServerConfig.SLIDE_SPEED.get();
+                    player.setDeltaMovement(slideDir.x * slideSpeed, player.getDeltaMovement().y, slideDir.z * slideSpeed);
                     player.hurtMarked = true;
                 }
             }
@@ -99,8 +100,10 @@ public class SlideManager {
                 if (!player.level().isClientSide) {
                     Vec3 motion = player.getDeltaMovement();
                     double hSpeed = Math.sqrt(motion.x * motion.x + motion.z * motion.z);
-                    double jumpPower = 0.42 + (hSpeed * 0.25);
-                    player.setDeltaMovement(motion.x * 1.8, jumpPower, motion.z * 1.8);
+                    double jumpPower = HighSpeedServerConfig.SLIDE_JUMP_VERTICAL_BASE.get()
+                            + (hSpeed * HighSpeedServerConfig.SLIDE_JUMP_VERTICAL_SPEED_MULT.get());
+                    double hMult = HighSpeedServerConfig.SLIDE_JUMP_HORIZONTAL_MULT.get();
+                    player.setDeltaMovement(motion.x * hMult, jumpPower, motion.z * hMult);
                     toggleSlide((ServerPlayer) player, false, 0, 0);
                 }
             }

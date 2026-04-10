@@ -1,19 +1,30 @@
 package com.maxwell.highspeedlib.common.logic;
 
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
-import com.maxwell.highspeedlib.api.IHighSpeedInteractable;
+import com.maxwell.highspeedlib.api.main.IHighSpeedInteractable;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.S2CSyncWhiplashPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.AbstractSkullBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -34,8 +45,8 @@ public class ServerWhiplashManager {
     public static final int HOOKED = 2;
     public static final int RETRACTING = 3;
     public static final double MAX_RANGE = 70.0;
-    public static final double FLY_SPEED = 10.0;
-    public static final double PULL_SPEED = 6.0;
+    public static final double FLY_SPEED = 3.0;
+    public static final double PULL_SPEED = 2.0;
     private static final Map<UUID, HookData> serverHooks = new HashMap<>();
 
     public static HookData getServerData(ServerPlayer player) {
@@ -84,7 +95,7 @@ public class ServerWhiplashManager {
             AABB aabb = new AABB(rayStart, targetEnd).inflate(2.0);
             double minDist = Double.MAX_VALUE;
             Entity hitEntity = null;
-            for (Entity e : level.getEntities(player, aabb, ent -> ent.isAlive() && ent.isPickable())) {
+            for (Entity e : level.getEntities(player, aabb, ent -> ent.isAlive() && (ent.isPickable() || ent instanceof ItemEntity))) {
                 AABB eAABB = e.getBoundingBox().inflate(0.5);
                 Optional<Vec3> optHit = eAABB.clip(rayStart, targetEnd);
                 if (optHit.isPresent()) {
@@ -104,6 +115,40 @@ public class ServerWhiplashManager {
             } else if (blockHit.getType() == HitResult.Type.BLOCK) {
                 BlockPos pos = blockHit.getBlockPos();
                 BlockState state = level.getBlockState(pos);
+                ItemStack offhandStack = player.getOffhandItem();
+                if (!offhandStack.isEmpty() && offhandStack.getItem() instanceof BlockItem blockItem) {
+                    BlockPlaceContext context =
+                            new BlockPlaceContext(player, InteractionHand.OFF_HAND, offhandStack, blockHit);
+                    InteractionResult result = blockItem.place(context);
+                    if (result.consumesAction()) {
+                        level.playSound(null, blockHit.getLocation().x, blockHit.getLocation().y, blockHit.getLocation().z,
+                                SoundEvents.STONE_PLACE, SoundSource.BLOCKS, 1.0f, 1.5f);
+                        data.state = RETRACTING;
+                        data.hitPos = blockHit.getLocation();
+                        data.distance = eyePos.distanceTo(data.hitPos);
+                        sync(player, data);
+                        return;
+                    }
+                }
+                if (state.getBlock() instanceof AbstractSkullBlock) {
+                    ItemStack itemstack = new ItemStack(state.getBlock());
+                    BlockEntity be = level.getBlockEntity(pos);
+                    if (be != null) {
+                        CompoundTag tag = be.saveWithFullMetadata();
+                        itemstack.getOrCreateTag().put("BlockEntityTag", tag);
+                    }
+                    level.removeBlock(pos, false);
+                    ItemEntity itemEntity = new ItemEntity(level,
+                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, itemstack);
+                    itemEntity.setDeltaMovement(Vec3.ZERO);
+                    level.addFreshEntity(itemEntity);
+                    data.state = HOOKED;
+                    data.targetId = itemEntity.getId();
+                    data.distance = eyePos.distanceTo(itemEntity.position());
+                    sync(player, data);
+                    level.playSound(null, pos, net.minecraft.sounds.SoundEvents.ARROW_HIT, SoundSource.BLOCKS, 1.0f, 1.2f);
+                    return;
+                }
                 if (state.getBlock() instanceof IHighSpeedInteractable interactable) {
                     IHighSpeedInteractable.WhiplashReaction reaction = interactable.onWhiplash(player);
                     if (reaction == IHighSpeedInteractable.WhiplashReaction.PULL_PLAYER) {
@@ -134,6 +179,20 @@ public class ServerWhiplashManager {
             data.distance = eyePos.distanceTo(targetMidPos);
             double stopDistance = 2.0;
             if (data.distance <= stopDistance + 0.5) {
+                if (target instanceof ItemEntity itemEntity) {
+                    ItemStack stack = itemEntity.getItem();
+                    ItemStack offhand = player.getOffhandItem();
+                    if (offhand.isEmpty()) {
+                        player.setItemInHand(InteractionHand.OFF_HAND, stack.copy());
+                        itemEntity.discard();
+                    } else {
+                        if (player.getInventory().add(stack)) {
+                            itemEntity.discard();
+                        }
+                    }
+                    level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                            SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.5f, 1.5f);
+                }
                 player.setDeltaMovement(Vec3.ZERO);
                 player.hurtMarked = true;
                 if (target instanceof LivingEntity living) {
@@ -142,8 +201,6 @@ public class ServerWhiplashManager {
                 }
                 data.state = NONE;
                 sync(player, data);
-                level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                        net.minecraft.sounds.SoundEvents.ITEM_FRAME_BREAK, net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 2.0f);
                 return;
             }
             Vec3 dirToTarget = targetMidPos.subtract(eyePos).normalize();
@@ -168,17 +225,20 @@ public class ServerWhiplashManager {
                 player.fallDistance = 0;
                 player.hurtMarked = true;
             } else {
-                if (target instanceof LivingEntity living) {
-                    double speed = Math.min(2.8, distToTravel);
-                    living.setDeltaMovement(dirToTarget.scale(-speed).add(0, 0.1, 0));
-                    living.hurtMarked = true;
-                }
+                double speed = Math.min(2.8, distToTravel);
+                target.setDeltaMovement(dirToTarget.scale(-speed).add(0, 0.1, 0));
+                target.hurtMarked = true;
             }
         } else if (data.state == RETRACTING) {
             data.distance -= PULL_SPEED;
             if (data.distance <= 0) {
                 data.state = NONE;
+                data.distance = 0;
                 sync(player, data);
+            } else {
+                if (player.tickCount % 2 == 0) {
+                    sync(player, data);
+                }
             }
         }
     }

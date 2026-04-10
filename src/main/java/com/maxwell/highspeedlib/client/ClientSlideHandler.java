@@ -72,35 +72,34 @@ public class ClientSlideHandler {
         if (event.phase == TickEvent.Phase.END) {
             prevSlideProgress = slideProgress;
             Minecraft mc = Minecraft.getInstance();
-            ClientTrailRenderer.tick();
             if (clientIsSliding) {
                 Vec3 feetPos = mc.player.position();
                 Vec3 look = mc.player.getLookAngle().multiply(1, 0, 1).normalize();
                 Vec3 right = new Vec3(-look.z, 0, look.x);
-
-                int linesPerTick = 4;
+                Vec3 velocity = mc.player.getDeltaMovement();
+                int linesPerTick = 2;
                 var rand = mc.level.random;
                 long gameTime = mc.level.getGameTime();
-
                 for (int i = 0; i < linesPerTick; i++) {
-                    float sideOffset = 1.0f + rand.nextFloat() * 1.5f;
-                    float heightOffset = 0.2f + rand.nextFloat() * 1.8f;
-                    float forwardOffset = (rand.nextFloat() * 4.0f) - 2.0f;
-                    int trailLife = 3 + rand.nextInt(4);
-                    int idCycle = (int)((gameTime * linesPerTick + i) % 40);
-                    String trailID_L = "slide_L_" + idCycle;
-                    String trailID_R = "slide_R_" + idCycle;
-                    Vec3 leftPos = feetPos.add(right.scale(sideOffset)).add(0, heightOffset, 0).add(look.scale(forwardOffset));
-                    Vec3 rightPos = feetPos.add(right.scale(-sideOffset)).add(0, heightOffset, 0).add(look.scale(forwardOffset));
-                    float thickness = 0.08f;
-                    float alpha = 0.2f + rand.nextFloat() * 0.2f;
-                    ClientTrailRenderer.getOrCreateTrail(mc.player.getUUID(), trailID_L, 1.0f, 1.0f, 1.0f, alpha, thickness)
-                            .addPoint(leftPos, trailLife);
-                    ClientTrailRenderer.getOrCreateTrail(mc.player.getUUID(), trailID_R, 1.0f, 1.0f, 1.0f, alpha, thickness)
-                            .addPoint(rightPos, trailLife);
+                    float sideOffset = 1.2f + rand.nextFloat() * 1.3f;
+                    float heightOffset = 0.5f + rand.nextFloat() * 1.5f;
+                    float forwardOffset = (rand.nextFloat() * 2.0f);
+                    String lineID = "slide_" + gameTime + "_" + i;
+                    Vec3 currentPos = feetPos.add(right.scale(sideOffset))
+                            .add(0, heightOffset, 0)
+                            .add(look.scale(forwardOffset));
+                    Vec3 tailPos = currentPos.subtract(velocity.scale(3.0));
+                    float thickness = 0.05f + rand.nextFloat() * 0.1f;
+                    var trailL = ClientTrailRenderer.getOrCreateTrail(mc.player.getUUID(), lineID + "L", 1, 1, 1, 0.4f, thickness);
+                    var trailR = ClientTrailRenderer.getOrCreateTrail(mc.player.getUUID(), lineID + "R", 1, 1, 1, 0.4f, thickness);
+                    trailL.addPoint(currentPos, 6);
+                    trailL.addPoint(tailPos, 6);
+                    Vec3 currentPosR = feetPos.add(right.scale(-sideOffset)).add(0, heightOffset, 0).add(look.scale(forwardOffset));
+                    Vec3 tailPosR = currentPosR.subtract(velocity.scale(3.0));
+                    trailR.addPoint(currentPosR, 6);
+                    trailR.addPoint(tailPosR, 6);
                 }
             }
-
             if (mc.player != null && clientIsSliding && lockedSlideDir != null) {
                 Vec3 motion = mc.player.getDeltaMovement();
                 mc.player.setDeltaMovement(lockedSlideDir.x * SLIDE_SPEED, motion.y, lockedSlideDir.z * SLIDE_SPEED);

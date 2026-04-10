@@ -1,22 +1,85 @@
 {
-    "blend": {
-        "func": "add",
-        "srcfactor": "src_alpha",
-        "dstfactor": "one_minus_src_alpha"
+  "blend": {
+    "func": "add",
+    "srcfactor": "src_alpha",
+    "dstfactor": "one_minus_src_alpha"
+  },
+  "vertex": "highspeedlib:parry_flash",
+  "fragment": "highspeedlib:parry_flash",
+  "attributes": [
+    "Position",
+    "UV0"
+  ],
+  "samplers": [
+    {
+      "name": "Sampler0"
+    }
+  ],
+  "uniforms": [
+    {
+      "name": "Intensity",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0.0
+      ]
     },
-    "vertex": "highspeedlib:parry_flash",
-    "fragment": "highspeedlib:parry_flash",
-    "attributes": [
-        "Position",
-        "UV0"
-    ],
-    "samplers": [
-        { "name": "Sampler0" }
-    ],
-    "uniforms": [
-        { "name": "Intensity", "type": "float", "count": 1, "values": [ 0.0 ] },
-        { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
-        { "name": "ProjMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
-        { "name": "ColorModulator", "type": "float", "count": 4, "values": [ 1.0, 1.0, 1.0, 1.0 ] }
-    ]
+    {
+      "name": "ModelViewMat",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "ProjMat",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "name": "ColorModulator",
+      "type": "float",
+      "count": 4,
+      "values": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  ]
 }

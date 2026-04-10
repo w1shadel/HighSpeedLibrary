@@ -50,20 +50,32 @@ public class ClientTrailRenderer {
         for (int i = 0; i < trail.points.size() - 1; i++) {
             SpeedTrailManager.TrailPoint p1 = trail.points.get(i);
             SpeedTrailManager.TrailPoint p2 = trail.points.get(i + 1);
-            float alpha1 = ((float) p1.life / p1.maxLife) * trail.a;
-            float alpha2 = ((float) p2.life / p2.maxLife) * trail.a;
-            int r = (int) (trail.r * 255), g = (int) (trail.g * 255), b = (int) (trail.b * 255);
-            int a1 = (int) (alpha1 * 255), a2 = (int) (alpha2 * 255);
+            float alpha = ((float) p1.life / p1.maxLife) * trail.a;
+            int r = (int) (trail.r * 255), g = (int) (trail.g * 255), b = (int) (trail.b * 255), a = (int) (alpha * 255);
             float w = trail.width;
-            consumer.vertex(matrix, (float) p1.pos.x, (float) p1.pos.y - w, (float) p1.pos.z).color(r, g, b, a1).endVertex();
-            consumer.vertex(matrix, (float) p2.pos.x, (float) p2.pos.y - w, (float) p2.pos.z).color(r, g, b, a2).endVertex();
-            consumer.vertex(matrix, (float) p2.pos.x, (float) p2.pos.y + w, (float) p2.pos.z).color(r, g, b, a2).endVertex();
-            consumer.vertex(matrix, (float) p1.pos.x, (float) p1.pos.y + w, (float) p1.pos.z).color(r, g, b, a1).endVertex();
-            consumer.vertex(matrix, (float) p1.pos.x, (float) p1.pos.y + w, (float) p1.pos.z).color(r, g, b, a1).endVertex();
-            consumer.vertex(matrix, (float) p2.pos.x, (float) p2.pos.y + w, (float) p2.pos.z).color(r, g, b, a2).endVertex();
-            consumer.vertex(matrix, (float) p2.pos.x, (float) p2.pos.y - w, (float) p2.pos.z).color(r, g, b, a2).endVertex();
-            consumer.vertex(matrix, (float) p1.pos.x, (float) p1.pos.y - w, (float) p1.pos.z).color(r, g, b, a1).endVertex();
+            Vec3 dir = p2.pos.subtract(p1.pos).normalize();
+            Vec3 up = new Vec3(0, 1, 0);
+            if (Math.abs(dir.y) > 0.9) up = new Vec3(1, 0, 0);
+            Vec3 v1 = dir.cross(up).normalize().scale(w);
+            Vec3 v2 = dir.cross(v1).normalize().scale(w);
+            float x1 = (float) p1.pos.x, y1 = (float) p1.pos.y, z1 = (float) p1.pos.z;
+            float x2 = (float) p2.pos.x, y2 = (float) p2.pos.y, z2 = (float) p2.pos.z;
+            float v1x = (float) v1.x, v1y = (float) v1.y, v1z = (float) v1.z;
+            addQuad(matrix, consumer, x1, y1, z1, x2, y2, z2, v1x, v1y, v1z, r, g, b, a);
+            float v2x = (float) v2.x, v2y = (float) v2.y, v2z = (float) v2.z;
+            addQuad(matrix, consumer, x1, y1, z1, x2, y2, z2, v2x, v2y, v2z, r, g, b, a);
         }
+    }
+
+    private static void addQuad(Matrix4f matrix, VertexConsumer consumer, float x1, float y1, float z1, float x2, float y2, float z2, float offX, float offY, float offZ, int r, int g, int b, int a) {
+        consumer.vertex(matrix, x1 - offX, y1 - offY, z1 - offZ).color(r, g, b, a).uv2(15728880).endVertex();
+        consumer.vertex(matrix, x1 + offX, y1 + offY, z1 + offZ).color(r, g, b, a).uv2(15728880).endVertex();
+        consumer.vertex(matrix, x2 + offX, y2 + offY, z2 + offZ).color(r, g, b, a).uv2(15728880).endVertex();
+        consumer.vertex(matrix, x2 - offX, y2 - offY, z2 - offZ).color(r, g, b, a).uv2(15728880).endVertex();
+        consumer.vertex(matrix, x1 - offX, y1 - offY, z1 - offZ).color(r, g, b, a).uv2(15728880).endVertex();
+        consumer.vertex(matrix, x2 - offX, y2 - offY, z2 - offZ).color(r, g, b, a).uv2(15728880).endVertex();
+        consumer.vertex(matrix, x2 + offX, y2 + offY, z2 + offZ).color(r, g, b, a).uv2(15728880).endVertex();
+        consumer.vertex(matrix, x1 + offX, y1 + offY, z1 + offZ).color(r, g, b, a).uv2(15728880).endVertex();
     }
 
     public static void tick() {

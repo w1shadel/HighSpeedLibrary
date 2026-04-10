@@ -17,7 +17,7 @@ void main() {
     // 画面端(r > 0.3)から段階的に減衰させ、エッジクランプによるノイズ（青い縞）を排除
     float edgeFade = 1.0 - smoothstep(0.3, 0.48, r);
     float aberration = 0.04 * Intensity * edgeFade;
-    
+
     // 放射方向にずらす
     vec2 rCoord = clamp(center + p * (1.0 + aberration), 0.001, 0.999);
     vec2 bCoord = clamp(center + p * (1.0 - aberration), 0.001, 0.999);
@@ -28,12 +28,12 @@ void main() {
     vec3 sceneColor = vec3(red, green, blue) * ColorModulator.rgb;
 
     // 【円形ベースの四隅強調エフェクト】
-    float edgeGlow = smoothstep(0.3, 0.9, r * 1.35); 
+    float edgeGlow = smoothstep(0.3, 0.9, r * 1.35);
 
     // 【全体フラッシュ + 四隅】
     float flashAmount = (0.05 + edgeGlow * 0.5) * Intensity;
-    
+
     vec3 finalColor = sceneColor + vec3(flashAmount);
-    
+
     fragColor = vec4(finalColor, ColorModulator.a);
 }

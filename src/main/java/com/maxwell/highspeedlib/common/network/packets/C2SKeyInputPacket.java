@@ -1,6 +1,7 @@
 package com.maxwell.highspeedlib.common.network.packets;
 
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
+import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.client.state.ArmManager;
 import com.maxwell.highspeedlib.common.logic.*;
 import net.minecraft.network.FriendlyByteBuf;
@@ -58,7 +59,8 @@ public class C2SKeyInputPacket {
                     }
                     player.setDeltaMovement(dashVec.x * 1.8, 0.2, dashVec.z * 1.8);
                     player.hurtMarked = true;
-                    DashManager.startDashInvulnerability(player, 10);
+                    DashManager.startDashInvulnerability(player, HighSpeedServerConfig.DASH_INVUL_TICKS.get());
+
                 }
             } else if (msg.keyType == 1) {
                 AbilityAuthority.PlayerSettings settings = AbilityAuthority.get(player.getUUID());

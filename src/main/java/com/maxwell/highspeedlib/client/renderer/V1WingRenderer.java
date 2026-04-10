@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.client.ICurioRenderer;
 
+@SuppressWarnings("removal")
 public class V1WingRenderer implements ICurioRenderer {
     private static final ResourceLocation TEXTURE = new ResourceLocation(HighSpeedLib.MODID, "textures/item/v1wing_r.png");
     private final V1WingModel<LivingEntity> model;

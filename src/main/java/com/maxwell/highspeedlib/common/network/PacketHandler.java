@@ -31,7 +31,9 @@ public class PacketHandler {
         INSTANCE.registerMessage(nextId++, S2CSyncWhiplashPacket.class, S2CSyncWhiplashPacket::encode, S2CSyncWhiplashPacket::decode, S2CSyncWhiplashPacket::handle);
         INSTANCE.registerMessage(nextId++, S2CSyncAbilitiesPacket.class, S2CSyncAbilitiesPacket::encode, S2CSyncAbilitiesPacket::decode, S2CSyncAbilitiesPacket::handle);
         INSTANCE.registerMessage(nextId++, S2CSyncCoinStockPacket.class, S2CSyncCoinStockPacket::encode, S2CSyncCoinStockPacket::decode, S2CSyncCoinStockPacket::handle);
-
+        INSTANCE.registerMessage(nextId++, S2CSyncSlamPacket.class, S2CSyncSlamPacket::encode, S2CSyncSlamPacket::decode, S2CSyncSlamPacket::handle);
+        INSTANCE.registerMessage(nextId++, S2CSyncMobModePacket.class, S2CSyncMobModePacket::encode, S2CSyncMobModePacket::decode, S2CSyncMobModePacket::handle);
+        INSTANCE.registerMessage(nextId++, S2CBloodSplatPacket.class, S2CBloodSplatPacket::encode, S2CBloodSplatPacket::decode, S2CBloodSplatPacket::handle);
     }
 
 }
