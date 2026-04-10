@@ -14,15 +14,14 @@ public abstract class EntityGeometricGhostMixin {
     @Inject(method = "getBoundingBox", at = @At("HEAD"), cancellable = true)
     private void returnPhantomBox(CallbackInfoReturnable<AABB> cir) {
         if ((Object) this instanceof ServerPlayer player && ServerArmManager.isPlayerParrying(player)) {
-            double farAway = 1.0E30; // ほぼ無限遠
+            double farAway = 1.0E30;
             cir.setReturnValue(new AABB(farAway, farAway, farAway, farAway, farAway, farAway));
         }
     }
+
     @Inject(method = "isRemoved", at = @At("HEAD"), cancellable = true)
     private void fakeRemovalDuringParry(CallbackInfoReturnable<Boolean> cir) {
         if ((Object) this instanceof ServerPlayer player && ServerArmManager.isPlayerParrying(player)) {
-            // 実際には削除されていないが、外部の「検索・判定ロジック」に対しては true を返す
-            // これにより、他プレイヤーのクリックやModのAoE検索から完全に外れます
             cir.setReturnValue(true);
         }
     }

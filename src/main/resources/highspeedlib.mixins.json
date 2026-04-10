@@ -12,7 +12,7 @@
     "PlayerMixin",
     "parry.UltimateGhostMixin",
     "parry.EntityGeometricGhostMixin",
-    "parry.DataWatcherSafetyMixin",
+    "parry.DataInvariantsMixin",
     "accessor.LivingEntityAccessor",
     "ServerLevelMixin"
   ],
