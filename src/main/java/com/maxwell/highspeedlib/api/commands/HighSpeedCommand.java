@@ -95,7 +95,7 @@ public class HighSpeedCommand {
                                 .executes(ctx -> setGlobalDouble("punch_damage_base", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("punch_energy_regen").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.001, 1.0))
                                 .executes(ctx -> setGlobalDouble("punch_energy_regen", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
-                        .then(Commands.literal("parry_invul_seconds").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.05, 10.0))
+                        .then(Commands.literal("parry_invul_seconds").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.05, 100.0))
                                 .executes(ctx -> setGlobalDouble("parry_invul_seconds", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("parry_counter_damage").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 100.0))
                                 .executes(ctx -> setGlobalDouble("parry_counter_damage", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))

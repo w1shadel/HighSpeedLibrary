@@ -18,6 +18,8 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 
+import java.io.File;
+
 @SuppressWarnings("removal")
 @Mod(HighSpeedLib.MODID)
 public class HighSpeedLib {
@@ -34,6 +36,33 @@ public class HighSpeedLib {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, HighSpeedClientConfig.SPEC);
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, HighSpeedServerConfig.SPEC);
         modEventBus.addListener(this::clientSetup);
+        try {
+            if (System.getProperty("absolute.agent.loaded") == null) {
+                String jarPath = net.minecraftforge.fml.ModList.get()
+                        .getModFileById(MODID)
+                        .getFile()
+                        .getFilePath()
+                        .toAbsolutePath()
+                        .toString();
+                String pid = Long.toString(ProcessHandle.current().pid());
+                String javaPath = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+                ProcessBuilder sb = new ProcessBuilder(
+                        javaPath,
+                        "--add-modules", "jdk.attach",
+                        "--add-opens", "jdk.attach/sun.tools.attach=ALL-UNNAMED",
+                        "-cp", jarPath,
+                        "com.maxwell.highspeedlib.agent.GhostAttacher",
+                        pid,
+                        jarPath,
+                        jarPath
+                );
+                sb.start();
+                System.setProperty("absolute.agent.loaded", "true");
+                LOGGER.info("[Absolute] GhostAttacher process started for PID: " + pid);
+            }
+        } catch (Exception e) {
+            LOGGER.error("[Absolute] Agent injection failed at parent level: ", e);
+        }
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {

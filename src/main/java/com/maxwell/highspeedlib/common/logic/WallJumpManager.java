@@ -77,9 +77,6 @@ public class WallJumpManager {
             }
         }
 
-        /**
-         * プレイヤーが壁に触れているか多点チェック（足下、腰、頭上）
-         */
         public static Direction getTouchingWall(Player player) {
             double[] heights = {0.1D, 1.0D, 1.8D};
             double offset = 0.42D;

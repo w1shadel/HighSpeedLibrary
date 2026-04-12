@@ -15,6 +15,7 @@ import java.util.UUID;
 public class MobModeManager {
     public static final String ENRAGE_TAG = "hs_enraged";
     public static final String RADIANCE_TAG = "hs_radiance_tier";
+    public static final String BOSS_TAG = "hs_boss_bar";
 
     public static void setEnraged(LivingEntity entity, boolean value) {
         entity.getPersistentData().putBoolean(ENRAGE_TAG, value);
@@ -40,12 +41,6 @@ public class MobModeManager {
                 new S2CSyncMobModePacket(entity.getId(), isEnraged(entity), getRadianceTier(entity)));
     }
 
-    /**
-     * @param tier      ティア (1-5)
-     * @param hpFactor  体力の伸び率 (1.0 = 標準)
-     * @param dmgFactor 攻撃力の伸び率
-     * @param spdFactor 移動速度の伸び率
-     */
     public static void applyRadiance(LivingEntity entity, int tier, double hpFactor, double dmgFactor, double spdFactor) {
         if (entity.level().isClientSide) return;
         removeRadianceModifiers(entity);

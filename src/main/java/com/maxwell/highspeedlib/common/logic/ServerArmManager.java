@@ -42,7 +42,10 @@ public class ServerArmManager {
         });
     }
 
-    public static boolean isPlayerParrying(Player player) {
+    public static boolean isPlayerParrying(LivingEntity entity) {
+        if (!(entity instanceof Player player)) {
+            return false;
+        }
         return activeParryWindows.containsKey(player.getUUID());
     }
 
