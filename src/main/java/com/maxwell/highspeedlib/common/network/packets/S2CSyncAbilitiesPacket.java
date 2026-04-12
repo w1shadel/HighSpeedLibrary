@@ -47,7 +47,7 @@ public class S2CSyncAbilitiesPacket {
             UltraHudRenderer.slidingUnlocked = msg.sliding;
             UltraHudRenderer.slamUnlocked = msg.slam;
             UltraHudRenderer.walljumpUnlocked = msg.walljump;
-            UltraHudRenderer.setMaxCoins(msg.maxCoins);
+            UltraHudRenderer.setClientMaxCoins(msg.maxCoins);
         });
         ctx.get().setPacketHandled(true);
     }

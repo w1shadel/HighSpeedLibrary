@@ -16,7 +16,6 @@ public class AbsoluteEraser implements ClassFileTransformer {
 
     public static void setForgeLoader(ClassLoader cl) { forgeLoader = cl; }
 
-    // --- パリィ判定 (NoSugar等のクラス干渉を避けるためリフレクションを安定化) ---
     public static boolean checkParry(Object entity) {
         if (entity == null || IN_AGENT.get()) return false;
         IN_AGENT.set(true);

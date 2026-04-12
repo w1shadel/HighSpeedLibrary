@@ -15,7 +15,7 @@ import java.util.UUID;
 public class MobModeManager {
     public static final String ENRAGE_TAG = "hs_enraged";
     public static final String RADIANCE_TAG = "hs_radiance_tier";
-    public static final String BOSS_TAG = "hs_boss_bar";
+    public static final String BOSS_TAG = "hs_is_boss";
 
     public static void setEnraged(LivingEntity entity, boolean value) {
         entity.getPersistentData().putBoolean(ENRAGE_TAG, value);
@@ -31,6 +31,15 @@ public class MobModeManager {
         return entity.getPersistentData().getBoolean(ENRAGE_TAG);
     }
 
+    public static void setBoss(LivingEntity entity, boolean value) {
+        entity.getPersistentData().putBoolean(BOSS_TAG, value);
+        sync(entity);
+    }
+
+    public static boolean isBoss(LivingEntity entity) {
+        return entity.getPersistentData().getBoolean(BOSS_TAG);
+    }
+
     public static int getRadianceTier(LivingEntity entity) {
         return entity.getPersistentData().getInt(RADIANCE_TAG);
     }
@@ -38,7 +47,7 @@ public class MobModeManager {
     public static void sync(LivingEntity entity) {
         if (entity.level().isClientSide) return;
         PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-                new S2CSyncMobModePacket(entity.getId(), isEnraged(entity), getRadianceTier(entity)));
+                new S2CSyncMobModePacket(entity.getId(), isEnraged(entity), getRadianceTier(entity), isBoss(entity)));
     }
 
     public static void applyRadiance(LivingEntity entity, int tier, double hpFactor, double dmgFactor, double spdFactor) {
