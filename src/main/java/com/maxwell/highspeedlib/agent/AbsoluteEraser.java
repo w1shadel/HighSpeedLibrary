@@ -23,7 +23,7 @@ public class AbsoluteEraser implements ClassFileTransformer {
             ClassLoader loader = forgeLoader != null ? forgeLoader : entity.getClass().getClassLoader();
             if (parryMethodCache == null) {
                 Class<?> livingClass = Class.forName("net.minecraft.world.entity.LivingEntity", false, loader);
-                Class<?> manager = Class.forName("com.maxwell.highspeedlib.common.logic.ServerArmManager", true, loader);
+                Class<?> manager = Class.forName("com.maxwell.highspeedlib.common.logic.combat.ServerArmManager", true, loader);
                 parryMethodCache = manager.getMethod("isPlayerParrying", livingClass);
                 parryMethodCache.setAccessible(true);
             }

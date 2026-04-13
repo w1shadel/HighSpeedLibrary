@@ -1,9 +1,9 @@
 package com.maxwell.highspeedlib.mixin;
 
-import com.maxwell.highspeedlib.client.ClientSlideHandler;
-import com.maxwell.highspeedlib.client.ClientWhiplashManager;
-import com.maxwell.highspeedlib.client.ThirdPersonPunchManager;
-import com.maxwell.highspeedlib.common.logic.SlideManager;
+import com.maxwell.highspeedlib.client.logic.ClientSlideHandler;
+import com.maxwell.highspeedlib.client.logic.ClientWhiplashManager;
+import com.maxwell.highspeedlib.client.logic.ThirdPersonPunchManager;
+import com.maxwell.highspeedlib.common.logic.movement.SlideManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
@@ -21,8 +21,8 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
         if (!(entity instanceof Player player)) return;
         HumanoidModel<?> model = (HumanoidModel<?>) (Object) this;
         float punchProgress = ThirdPersonPunchManager.getProgress(player.getId());
-        float tossProgress = com.maxwell.highspeedlib.client.ThirdPersonCoinTossManager.getProgress(player.getId());
-        com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HookData hookData = ClientWhiplashManager.getHookData(player.getUUID());
+        float tossProgress = com.maxwell.highspeedlib.client.logic.ThirdPersonCoinTossManager.getProgress(player.getId());
+        com.maxwell.highspeedlib.common.logic.combat.ServerWhiplashManager.HookData hookData = ClientWhiplashManager.getHookData(player.getUUID());
         int whiplashTicks = ClientWhiplashManager.getRenderTicks(player.getUUID());
         boolean hasWhiplash = whiplashTicks > 0;
         boolean isSliding = SlideManager.isSliding(player);
@@ -71,7 +71,7 @@ public abstract class HumanoidModelMixin<T extends LivingEntity> {
             model.leftArm.zRot = (float) Math.toRadians(swing * 120.0f);
             model.leftArm.z = offsetZ + (-2.0f + (swing * -5.0f));
         } else if (tossProgress >= 0) {
-            float swing = com.maxwell.highspeedlib.client.ThirdPersonCoinTossManager.getTossCurve(tossProgress);
+            float swing = com.maxwell.highspeedlib.client.logic.ThirdPersonCoinTossManager.getTossCurve(tossProgress);
             model.leftArm.xRot = (float) Math.toRadians(-20.0f + (swing * -50.0f));
             model.leftArm.yRot = (float) Math.toRadians(-25.0f);
             model.leftArm.zRot = (float) Math.toRadians(swing * 25.0f);

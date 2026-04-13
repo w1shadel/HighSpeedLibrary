@@ -2,7 +2,7 @@ package com.maxwell.highspeedlib.common.items;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
-import com.maxwell.highspeedlib.common.network.packets.S2CBloodSplatPacket;
+import com.maxwell.highspeedlib.common.network.packets.effect.S2CBloodSplatPacket;
 import com.maxwell.highspeedlib.init.ModItems;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;

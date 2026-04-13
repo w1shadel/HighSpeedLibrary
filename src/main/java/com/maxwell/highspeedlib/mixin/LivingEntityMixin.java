@@ -1,6 +1,7 @@
 package com.maxwell.highspeedlib.mixin;
 
-import com.maxwell.highspeedlib.common.logic.SlideManager;
+
+import com.maxwell.highspeedlib.common.logic.movement.SlideManager;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;

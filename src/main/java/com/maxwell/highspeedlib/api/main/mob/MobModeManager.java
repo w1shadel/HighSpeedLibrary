@@ -1,7 +1,7 @@
 package com.maxwell.highspeedlib.api.main.mob;
 
 import com.maxwell.highspeedlib.common.network.PacketHandler;
-import com.maxwell.highspeedlib.common.network.packets.S2CSyncMobModePacket;
+import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncMobModePacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;

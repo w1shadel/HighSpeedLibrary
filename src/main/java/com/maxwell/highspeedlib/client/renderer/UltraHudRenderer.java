@@ -2,8 +2,8 @@ package com.maxwell.highspeedlib.client.renderer;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.api.config.HighSpeedClientConfig;
-import com.maxwell.highspeedlib.common.logic.ArmType;
-import com.maxwell.highspeedlib.common.logic.PunchCooldownManager;
+import com.maxwell.highspeedlib.common.logic.combat.ArmType;
+import com.maxwell.highspeedlib.common.logic.combat.PunchCooldownManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;

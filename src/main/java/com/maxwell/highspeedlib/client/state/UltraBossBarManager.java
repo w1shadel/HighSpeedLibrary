@@ -11,10 +11,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-
 public class UltraBossBarManager {
     private static final Set<UUID> trackedEntities = new HashSet<>();
-    private static LivingEntity currentBoss = null;
+    private static final List<LivingEntity> activeBosses = new ArrayList<>();
 
     
     public static void track(Entity entity) {
@@ -23,25 +22,25 @@ public class UltraBossBarManager {
         }
     }
 
-    public static LivingEntity getCurrentBoss() {
-        return currentBoss;
+    public static List<LivingEntity> getActiveBosses() {
+        return activeBosses;
     }
 
     
     public static void tick() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) {
-            currentBoss = null;
+            activeBosses.clear();
             return;
         }
 
-        List<LivingEntity> candidates = new ArrayList<>();
+        activeBosses.clear();
 
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity instanceof LivingEntity living) {
                 if (MobModeManager.isBoss(living) || trackedEntities.contains(living.getUUID())) {
                     if (living.isAlive() && living.distanceToSqr(mc.player) < 4096) { 
-                        candidates.add(living);
+                        activeBosses.add(living);
                     } else if (!living.isAlive()) {
                         trackedEntities.remove(living.getUUID());
                     }
@@ -49,31 +48,11 @@ public class UltraBossBarManager {
             }
         }
 
-        if (candidates.isEmpty()) {
-            currentBoss = null;
-            return;
-        }
-
-
-        LivingEntity best = null;
-        double bestScore = Double.MAX_VALUE;
-
-        for (LivingEntity e : candidates) {
-            double distSqr = e.distanceToSqr(mc.player);
-
-            var viewVec = mc.player.getViewVector(1.0f);
-            var toEntity = e.position().add(0, e.getEyeHeight() * 0.5, 0).subtract(mc.player.getEyePosition(1.0f)).normalize();
-            double dot = viewVec.dot(toEntity);
-
-
-            double score = distSqr - (dot * 500.0);
-
-            if (score < bestScore) {
-                bestScore = score;
-                best = e;
-            }
-        }
-
-        currentBoss = best;
+        
+        activeBosses.sort((e1, e2) -> {
+            double d1 = e1.distanceToSqr(mc.player);
+            double d2 = e2.distanceToSqr(mc.player);
+            return Double.compare(d1, d2);
+        });
     }
 }

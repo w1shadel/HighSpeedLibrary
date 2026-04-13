@@ -1,7 +1,7 @@
 package com.maxwell.highspeedlib.client.renderer;
 
-import com.maxwell.highspeedlib.client.ClientWhiplashManager;
-import com.maxwell.highspeedlib.common.logic.ServerWhiplashManager;
+import com.maxwell.highspeedlib.client.logic.ClientWhiplashManager;
+import com.maxwell.highspeedlib.common.logic.combat.ServerWhiplashManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;

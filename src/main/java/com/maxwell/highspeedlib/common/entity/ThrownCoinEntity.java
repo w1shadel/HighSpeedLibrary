@@ -1,6 +1,6 @@
 package com.maxwell.highspeedlib.common.entity;
 
-import com.maxwell.highspeedlib.common.logic.ServerArmManager;
+import com.maxwell.highspeedlib.common.logic.combat.ServerArmManager;
 import com.maxwell.highspeedlib.init.ModEntities;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;

@@ -1,6 +1,8 @@
 package com.maxwell.highspeedlib.client.renderer;
 
 import com.maxwell.highspeedlib.client.effect.SpeedTrailManager;
+import com.maxwell.highspeedlib.client.state.ClientStateManager;
+import com.maxwell.highspeedlib.client.state.ClientPlayerState;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -13,35 +15,38 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.joml.Matrix4f;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ClientTrailRenderer {
-    private static final Map<UUID, Map<String, SpeedTrailManager.TrailInstance>> playerTrails = new HashMap<>();
 
     public static SpeedTrailManager.TrailInstance getOrCreateTrail(UUID id, String name, float r, float g, float b, float a, float width) {
-        return playerTrails.computeIfAbsent(id, k -> new HashMap<>())
-                .computeIfAbsent(name, k -> new SpeedTrailManager.TrailInstance(r, g, b, a, width));
+        return ClientStateManager.getPlayerState(id).trailInstances.computeIfAbsent(name, k -> new SpeedTrailManager.TrailInstance(r, g, b, a, width));
     }
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
         Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        
         Vec3 cameraPos = mc.gameRenderer.getMainCamera().getPosition();
         PoseStack poseStack = event.getPoseStack();
         MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.lightning());
+        
         poseStack.pushPose();
         poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         Matrix4f matrix = poseStack.last().pose();
-        for (var playerEntry : playerTrails.entrySet()) {
-            for (var trail : playerEntry.getValue().values()) {
+        
+        // すべての読み込まれているプレイヤーのトレイルを描画
+        for (net.minecraft.world.entity.player.Player player : mc.level.players()) {
+            ClientPlayerState state = ClientStateManager.getPlayerState(player.getUUID());
+            for (SpeedTrailManager.TrailInstance trail : state.trailInstances.values()) {
                 drawTrail(matrix, consumer, trail);
             }
         }
+        
         poseStack.popPose();
     }
 
@@ -79,6 +84,12 @@ public class ClientTrailRenderer {
     }
 
     public static void tick() {
-        playerTrails.values().forEach(map -> map.values().forEach(SpeedTrailManager.TrailInstance::tick));
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null) {
+            for (net.minecraft.world.entity.player.Player player : mc.level.players()) {
+                ClientPlayerState state = ClientStateManager.getPlayerState(player.getUUID());
+                state.trailInstances.values().forEach(SpeedTrailManager.TrailInstance::tick);
+            }
+        }
     }
 }

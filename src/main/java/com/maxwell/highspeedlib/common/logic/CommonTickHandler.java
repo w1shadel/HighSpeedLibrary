@@ -13,12 +13,6 @@ public class CommonTickHandler {
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             TimeManager.tick();
-            if (ServerLifecycleHooks.getCurrentServer() != null) {
-                for (ServerPlayer player : ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers()) {
-                    ServerWhiplashManager.tickServer(player);
-                    ServerArmManager.tickParryWindows();
-                }
-            }
         }
     }
 }

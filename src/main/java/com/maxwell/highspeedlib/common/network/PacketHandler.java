@@ -1,7 +1,9 @@
 package com.maxwell.highspeedlib.common.network;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
-import com.maxwell.highspeedlib.common.network.packets.*;
+import com.maxwell.highspeedlib.common.network.packets.action.*;
+import com.maxwell.highspeedlib.common.network.packets.effect.*;
+import com.maxwell.highspeedlib.common.network.packets.sync.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;

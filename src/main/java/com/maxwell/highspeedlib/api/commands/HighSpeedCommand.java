@@ -1,7 +1,9 @@
 package com.maxwell.highspeedlib.api.commands;
 
 import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
-import com.maxwell.highspeedlib.common.logic.AbilityAuthority;
+import com.maxwell.highspeedlib.common.logic.ability.AbilityManager;
+import com.maxwell.highspeedlib.common.logic.state.PlayerAbilityState;
+import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -114,7 +116,7 @@ public class HighSpeedCommand {
     }
 
     private static int updateAbility(ServerPlayer player, String type, boolean val) {
-        AbilityAuthority.PlayerSettings s = AbilityAuthority.get(player.getUUID());
+        PlayerAbilityState s = PlayerStateManager.getState(player).getAbility();
         switch (type) {
             case "punch" -> s.punch = val;
             case "dash" -> s.dash = val;
@@ -123,19 +125,19 @@ public class HighSpeedCommand {
             case "slide" -> s.sliding = val;
             case "slam" -> s.slam = val;
         }
-        AbilityAuthority.sync(player);
+        AbilityManager.sync(player);
         return 1;
     }
 
     private static int updateConfig(ServerPlayer player, String type, double val) {
-        AbilityAuthority.PlayerSettings s = AbilityAuthority.get(player.getUUID());
+        PlayerAbilityState s = PlayerStateManager.getState(player).getAbility();
         switch (type) {
             case "damage" -> s.punchDamageBase = val;
             case "dash_count" -> s.maxDashCount = (int) val;
             case "walljump_count" -> s.maxWallJumpCount = (int) val;
             case "parry_invtime" -> s.parry_invtime = (int) val;
         }
-        AbilityAuthority.sync(player);
+        AbilityManager.sync(player);
         return 1;
     }
 

@@ -1,7 +1,7 @@
 package com.maxwell.highspeedlib.client;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
-import com.maxwell.highspeedlib.common.logic.SlideManager;
+import com.maxwell.highspeedlib.common.logic.movement.SlideManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.HierarchicalModel;

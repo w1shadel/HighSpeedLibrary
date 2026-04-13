@@ -85,8 +85,8 @@ public class ExtendsArmRenderer {
             }
             return;
         }
-        com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HookData hookData = com.maxwell.highspeedlib.client.ClientWhiplashManager.getHookData(player.getUUID());
-        int renderTicks = com.maxwell.highspeedlib.client.ClientWhiplashManager.getRenderTicks(player.getUUID());
+        com.maxwell.highspeedlib.common.logic.combat.ServerWhiplashManager.HookData hookData = com.maxwell.highspeedlib.client.logic.ClientWhiplashManager.getHookData(player.getUUID());
+        int renderTicks = com.maxwell.highspeedlib.client.logic.ClientWhiplashManager.getRenderTicks(player.getUUID());
         if (renderTicks > 0 && event.getHand() == InteractionHand.OFF_HAND) {
             float renderProgress = renderTicks / 10.0f;
             if (renderProgress > 1.0f) renderProgress = 1.0f;
@@ -95,7 +95,7 @@ public class ExtendsArmRenderer {
         }
     }
 
-    private static void renderWhiplashArm(PoseStack poseStack, MultiBufferSource buffer, int packedLight, float progress, com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HookData data) {
+    private static void renderWhiplashArm(PoseStack poseStack, MultiBufferSource buffer, int packedLight, float progress, com.maxwell.highspeedlib.common.logic.combat.ServerWhiplashManager.HookData data) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null) return;
@@ -104,9 +104,9 @@ public class ExtendsArmRenderer {
         poseStack.pushPose();
         float swing = 1.0f - (float) Math.pow(1.0f - progress, 3);
         float tensionIntensity = 0f;
-        if (data.state == com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HOOKED) {
+        if (data.state == com.maxwell.highspeedlib.common.logic.combat.ServerWhiplashManager.HOOKED) {
             tensionIntensity = 0.035f;
-        } else if (data.state == com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.RETRACTING) {
+        } else if (data.state == com.maxwell.highspeedlib.common.logic.combat.ServerWhiplashManager.RETRACTING) {
             tensionIntensity = 0.015f;
         }
         float tensionShakeX = (float) (Math.sin(player.tickCount * 4.2) * tensionIntensity);
@@ -120,7 +120,7 @@ public class ExtendsArmRenderer {
         poseStack.mulPose(Axis.XP.rotationDegrees(-90f));
         poseStack.mulPose(Axis.ZP.rotationDegrees(15f));
         float recoilAngle = 40f * (1.0f - swing);
-        if (data.state == com.maxwell.highspeedlib.common.logic.ServerWhiplashManager.HOOKED) {
+        if (data.state == com.maxwell.highspeedlib.common.logic.combat.ServerWhiplashManager.HOOKED) {
             recoilAngle += 10f;
         }
         poseStack.mulPose(Axis.XP.rotationDegrees(recoilAngle));
