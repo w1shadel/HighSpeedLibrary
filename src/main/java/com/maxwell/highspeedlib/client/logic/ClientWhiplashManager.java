@@ -1,7 +1,7 @@
-package com.maxwell.highspeedlib.client.logic;
+﻿package com.maxwell.highspeedlib.client.logic;
 
-import com.maxwell.highspeedlib.client.state.ClientStateManager;
 import com.maxwell.highspeedlib.client.state.ClientPlayerState;
+import com.maxwell.highspeedlib.client.state.ClientStateManager;
 import com.maxwell.highspeedlib.common.logic.combat.ServerWhiplashManager;
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncWhiplashPacket;
 import net.minecraft.client.Minecraft;
@@ -16,7 +16,6 @@ import java.util.UUID;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ClientWhiplashManager {
-
     public static ServerWhiplashManager.HookData getHookData(UUID uuid) {
         return ClientStateManager.getPlayerState(uuid).whiplashHookData;
     }
@@ -43,14 +42,12 @@ public class ClientWhiplashManager {
             UUID uuid = player.getUUID();
             ClientPlayerState state = ClientStateManager.getPlayerState(uuid);
             ServerWhiplashManager.HookData data = state.whiplashHookData;
-            
             if (data == null || data.state == ServerWhiplashManager.NONE) {
                 if (state.whiplashRenderTicks > 0) {
                     state.whiplashRenderTicks--;
                 }
                 continue;
             }
-            
             if (data.state == ServerWhiplashManager.FLYING) {
                 data.distance += ServerWhiplashManager.FLY_SPEED;
             } else if (data.state == ServerWhiplashManager.RETRACTING) {
@@ -65,7 +62,6 @@ public class ClientWhiplashManager {
                     data.distance = player.getEyePosition().distanceTo(target.position().add(0, target.getBbHeight() * 0.5, 0));
                 }
             }
-            
             if (state.whiplashRenderTicks < 10) {
                 state.whiplashRenderTicks++;
             }

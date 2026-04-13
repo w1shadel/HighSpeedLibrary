@@ -26,7 +26,7 @@ public class ClientStateManager {
     public static ClientEntityState getEntityState(Entity entity) {
         return getEntityState(entity.getId());
     }
-    
+
     public static void clear() {
         playerStates.clear();
         entityStates.clear();

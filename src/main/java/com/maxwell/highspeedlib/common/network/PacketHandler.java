@@ -1,8 +1,13 @@
 package com.maxwell.highspeedlib.common.network;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
-import com.maxwell.highspeedlib.common.network.packets.action.*;
-import com.maxwell.highspeedlib.common.network.packets.effect.*;
+import com.maxwell.highspeedlib.common.network.packets.action.C2SKeyInputPacket;
+import com.maxwell.highspeedlib.common.network.packets.action.S2CStartPunchAnimationPacket;
+import com.maxwell.highspeedlib.common.network.packets.action.S2CStartTossAnimationPacket;
+import com.maxwell.highspeedlib.common.network.packets.effect.S2CBloodSplatPacket;
+import com.maxwell.highspeedlib.common.network.packets.effect.S2CParryPacket;
+import com.maxwell.highspeedlib.common.network.packets.effect.S2CScreenShakePacket;
+import com.maxwell.highspeedlib.common.network.packets.effect.S2CSpeedEffectPacket;
 import com.maxwell.highspeedlib.common.network.packets.sync.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;

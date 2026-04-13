@@ -19,10 +19,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 
-import java.util.UUID;
-
 public class SlideManager {
-
     public static void toggleSlide(ServerPlayer player, boolean start, float xInput, float zInput) {
         if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Sliding(player))) {
             return;

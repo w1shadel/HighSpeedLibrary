@@ -21,11 +21,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 public class WallJumpManager {
-
     public static void performWallJump(ServerPlayer player) {
         PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
         PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
-
         if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new com.maxwell.highspeedlib.api.HighSpeedAbilityEvent.Walljump(player))) {
             return;
         }

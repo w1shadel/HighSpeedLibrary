@@ -1,4 +1,4 @@
-package com.maxwell.highspeedlib.client.logic;
+﻿package com.maxwell.highspeedlib.client.logic;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.client.state.ClientStateManager;
@@ -10,7 +10,6 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
 public class ThirdPersonCoinTossManager {
-
     public static void startAnimation(int entityId) {
         ClientStateManager.getEntityState(entityId).tossAnimationProgress = 0f;
     }

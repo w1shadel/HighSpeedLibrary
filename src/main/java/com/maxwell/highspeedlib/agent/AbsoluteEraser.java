@@ -14,7 +14,9 @@ public class AbsoluteEraser implements ClassFileTransformer {
     private static java.lang.reflect.Method parryMethodCache = null;
     private static Field entityDataFieldCache = null;
 
-    public static void setForgeLoader(ClassLoader cl) { forgeLoader = cl; }
+    public static void setForgeLoader(ClassLoader cl) {
+        forgeLoader = cl;
+    }
 
     public static boolean checkParry(Object entity) {
         if (entity == null || IN_AGENT.get()) return false;
@@ -28,8 +30,11 @@ public class AbsoluteEraser implements ClassFileTransformer {
                 parryMethodCache.setAccessible(true);
             }
             return (boolean) parryMethodCache.invoke(null, entity);
-        } catch (Throwable t) { return false; }
-        finally { IN_AGENT.set(false); }
+        } catch (Throwable t) {
+            return false;
+        } finally {
+            IN_AGENT.set(false);
+        }
     }
 
     public static boolean isOwnerParrying(Object dataInstance) {
@@ -48,7 +53,8 @@ public class AbsoluteEraser implements ClassFileTransformer {
                 }
             }
             if (entityDataFieldCache != null) return checkParry(entityDataFieldCache.get(dataInstance));
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         return false;
     }
 
@@ -56,13 +62,11 @@ public class AbsoluteEraser implements ClassFileTransformer {
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain pd, byte[] classfileBuffer) {
         if (className == null) return null;
         String normalized = className.replace('.', '/');
-
         boolean isEntity = normalized.equals("net/minecraft/world/entity/LivingEntity")
                 || normalized.equals("net/minecraft/world/entity/player/Player")
                 || normalized.equals("net/minecraft/server/level/ServerPlayer");
         boolean isData = normalized.equals("net/minecraft/network/syncher/SynchedEntityData");
         boolean isPlayerList = normalized.equals("net/minecraft/server/players/PlayerList");
-
         if (isEntity || isData || isPlayerList) {
             try {
                 ClassReader cr = new ClassReader(classfileBuffer);
@@ -72,7 +76,6 @@ public class AbsoluteEraser implements ClassFileTransformer {
                     public MethodVisitor visitMethod(int access, String name, String desc, String sig, String[] exceptions) {
                         MethodVisitor mv = super.visitMethod(access, name, desc, sig, exceptions);
                         return new AdviceAdapter(Opcodes.ASM9, mv, access, name, desc) {
-
                             private void loadIsParrying() {
                                 if (isData) {
                                     loadThis();
@@ -94,15 +97,12 @@ public class AbsoluteEraser implements ClassFileTransformer {
                                         name.equals("setRemoved") || name.equals("m_20260_") ||
                                         name.equals("kill") || name.equals("m_21232_") ||
                                         name.equals("die") || name.equals("m_21014_")) {
-
                                     Label labelContinue = new Label();
                                     loadIsParrying();
                                     ifZCmp(EQ, labelContinue);
-
                                     getStatic(Type.getType(System.class), "out", Type.getType(java.io.PrintStream.class));
                                     push("[Absolute-Defense] BLOCKED ACTION: " + normalized + "#" + name);
                                     invokeVirtual(Type.getType(java.io.PrintStream.class), Method.getMethod("void println(String)"));
-
                                     if (name.contains("respawn")) loadArg(0);
                                     else if (Type.getReturnType(desc).getSort() == Type.BOOLEAN) push(false);
                                     returnValue();
@@ -117,14 +117,20 @@ public class AbsoluteEraser implements ClassFileTransformer {
                                         name.equals("isAlive") || name.equals("m_6084_") ||
                                         name.equals("isDeadOrDying") || name.equals("m_21224_") ||
                                         name.equals("isRemoved") || name.equals("m_213877_")) {
-
                                     Label labelEnd = new Label();
-                                    loadThis(); invokeStatic(Type.getType(AbsoluteEraser.class), Method.getMethod("boolean checkParry(Object)"));
+                                    loadThis();
+                                    invokeStatic(Type.getType(AbsoluteEraser.class), Method.getMethod("boolean checkParry(Object)"));
                                     ifZCmp(EQ, labelEnd);
-
-                                    if (name.contains("Health")) { pop(); push(20.0f); }
-                                    else if (name.contains("Alive") || name.equals("m_6084_")) { pop(); push(true); }
-                                    else { pop(); push(false); }
+                                    if (name.contains("Health")) {
+                                        pop();
+                                        push(20.0f);
+                                    } else if (name.contains("Alive") || name.equals("m_6084_")) {
+                                        pop();
+                                        push(true);
+                                    } else {
+                                        pop();
+                                        push(false);
+                                    }
                                     mark(labelEnd);
                                 }
                             }
@@ -132,17 +138,24 @@ public class AbsoluteEraser implements ClassFileTransformer {
                     }
                 }, ClassReader.EXPAND_FRAMES);
                 return cw.toByteArray();
-            } catch (Throwable t) { return null; }
+            } catch (Throwable t) {
+                return null;
+            }
         }
         return null;
     }
 
     private static class SafeClassWriter extends ClassWriter {
         private final ClassLoader loader;
+
         public SafeClassWriter(ClassLoader loader, ClassReader cr, int flags) {
             super(cr, flags);
             this.loader = (loader != null) ? loader : ClassLoader.getSystemClassLoader();
         }
-        @Override protected String getCommonSuperClass(String t1, String t2) { return "java/lang/Object"; }
+
+        @Override
+        protected String getCommonSuperClass(String t1, String t2) {
+            return "java/lang/Object";
+        }
     }
 }

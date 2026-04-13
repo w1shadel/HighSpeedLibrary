@@ -1,19 +1,14 @@
-package com.maxwell.highspeedlib.common.network.packets.action;
+﻿package com.maxwell.highspeedlib.common.network.packets.action;
 
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
 import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.client.state.ArmManager;
-import com.maxwell.highspeedlib.common.logic.ability.AbilityManager;
-import com.maxwell.highspeedlib.common.logic.movement.DashManager;
-import com.maxwell.highspeedlib.common.logic.movement.SlamManager;
-import com.maxwell.highspeedlib.common.logic.movement.SlideManager;
-import com.maxwell.highspeedlib.common.logic.movement.StaminaManager;
-import com.maxwell.highspeedlib.common.logic.movement.WallJumpManager;
+import com.maxwell.highspeedlib.common.logic.combat.CoinManager;
+import com.maxwell.highspeedlib.common.logic.combat.ServerArmManager;
+import com.maxwell.highspeedlib.common.logic.combat.ServerWhiplashManager;
+import com.maxwell.highspeedlib.common.logic.movement.*;
 import com.maxwell.highspeedlib.common.logic.state.PlayerAbilityState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
-import com.maxwell.highspeedlib.common.logic.combat.ServerArmManager;
-import com.maxwell.highspeedlib.common.logic.combat.CoinManager;
-import com.maxwell.highspeedlib.common.logic.combat.ServerWhiplashManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;

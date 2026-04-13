@@ -7,10 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.PacketDistributor;
 
-import java.util.UUID;
-
 public class ArmManager {
-
     public static ArmType getArm(Player player) {
         ArmType current = ClientStateManager.getPlayerState(player).currentArm;
         if (current == null) current = ArmType.FEEDBACKER;

@@ -18,7 +18,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -29,7 +28,6 @@ import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = HighSpeedLib.MODID)
 public class SlamManager {
-
     public static void startSlam(ServerPlayer player) {
         if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Slam(player))) {
             return;
@@ -38,7 +36,6 @@ public class SlamManager {
         state.isSlamming = true;
         state.fallImmunity = true;
         state.slamBuffer = 10;
-        
         double downSpeed = HighSpeedServerConfig.SLAM_DOWNWARD_SPEED.get();
         player.setDeltaMovement(0, -downSpeed, 0);
         player.hurtMarked = true;
@@ -60,11 +57,9 @@ public class SlamManager {
     public static void onLivingTick(LivingEvent.LivingTickEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
-        
         if (state.slamBuffer > 0) {
             state.slamBuffer--;
         }
-
         if (state.isSlamming) {
             if (player.onGround() || player.verticalCollision) {
                 performSlamImpact(player);
