@@ -5,12 +5,7 @@ import com.maxwell.highspeedlib.common.logic.TimeManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -35,7 +30,6 @@ public class EntityMixin {
             if (enraged || radiant) {
                 cir.setReturnValue(true);
             } else if (MobModeManager.isBoss(living)) {
-                // ボスだが激昂も虹色も付いていない場合は、他で付与された発光を上書きして消す
                 cir.setReturnValue(false);
             }
         }

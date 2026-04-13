@@ -8,7 +8,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-
 public class BossBarApplierItem extends Item {
     public BossBarApplierItem(Properties props) {
         super(props);
@@ -17,13 +16,10 @@ public class BossBarApplierItem extends Item {
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity target, InteractionHand hand) {
         if (!player.level().isClientSide) {
-            // Shift + 右クリックでEnrage(激昂)モードを切り替え
             if (player.isShiftKeyDown()) {
                 MobModeManager.applyEnrage(target, !MobModeManager.isEnraged(target));
                 return InteractionResult.SUCCESS;
             }
-            
-            // 通常の右クリックでボスバーを有効化
             if (!MobModeManager.isBoss(target)) {
                 MobModeManager.setBoss(target, true);
                 return InteractionResult.SUCCESS;

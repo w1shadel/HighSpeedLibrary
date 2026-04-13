@@ -19,9 +19,8 @@ public class PlayerLogicState {
         return ability;
     }
 
-    // 既存のAbilityAuthorityのセーブ・ロード処理を移行
     public CompoundTag save() {
-        return ability.save(); // とりあえず現状互換性のため能力設定のみを保存
+        return ability.save();
     }
 
     public void load(CompoundTag nbt) {

@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 public class DashManager {
-
     public static void startDashInvulnerability(ServerPlayer player, int ticks) {
         PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
         state.dashInvulTicks = ticks;
@@ -17,7 +16,6 @@ public class DashManager {
         return state.dashInvulTicks > 0;
     }
 
-    // Tick処理はPlayerLogicEventHandler等から呼び出される
     public static void tick(Player player, PlayerMovementState state) {
         if (state.dashInvulTicks > 0) {
             state.dashInvulTicks--;

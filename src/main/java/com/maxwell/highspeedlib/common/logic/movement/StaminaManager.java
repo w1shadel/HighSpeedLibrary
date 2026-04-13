@@ -2,9 +2,9 @@ package com.maxwell.highspeedlib.common.logic.movement;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
-import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
-import com.maxwell.highspeedlib.common.logic.state.PlayerMovementState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerAbilityState;
+import com.maxwell.highspeedlib.common.logic.state.PlayerMovementState;
+import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncStaminaPacket;
 import com.maxwell.highspeedlib.init.ModEnchantments;
@@ -19,11 +19,10 @@ import net.minecraftforge.network.PacketDistributor;
 
 @Mod.EventBusSubscriber(modid = HighSpeedLib.MODID)
 public class StaminaManager {
-
     public static double getStamina(Player player) {
         PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
-        if (state.stamina == 0) { // lazy init max
-             state.stamina = getMaxStamina(player);
+        if (state.stamina == 0) {
+            state.stamina = getMaxStamina(player);
         }
         return state.stamina;
     }

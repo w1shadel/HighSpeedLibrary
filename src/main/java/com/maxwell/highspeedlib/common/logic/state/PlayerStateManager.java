@@ -17,7 +17,6 @@ public class PlayerStateManager {
         return getState(player.getUUID());
     }
 
-    // プレイヤーが退出した際などにメモリリークを防ぐためのメソッド
     public static void removeState(UUID uuid) {
         STATES.remove(uuid);
     }

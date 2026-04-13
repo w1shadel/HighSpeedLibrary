@@ -9,9 +9,7 @@ import net.minecraftforge.network.PacketDistributor;
 
 import java.util.UUID;
 
-// 以前の AbilityAuthority の役割を引き継ぐクラス。状態は持たない。
 public class AbilityManager {
-
     public static boolean canDash(UUID uuid) {
         return PlayerStateManager.getState(uuid).getAbility().dash;
     }

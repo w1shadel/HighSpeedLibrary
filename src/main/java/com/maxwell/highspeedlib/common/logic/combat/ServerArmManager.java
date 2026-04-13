@@ -4,16 +4,15 @@ import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
 import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.api.main.IHighSpeedInteractable;
 import com.maxwell.highspeedlib.api.main.IParryable;
-import com.maxwell.highspeedlib.client.state.ArmManager;
 import com.maxwell.highspeedlib.common.entity.ThrownCoinEntity;
 import com.maxwell.highspeedlib.common.logic.TimeManager;
 import com.maxwell.highspeedlib.common.logic.state.PlayerAbilityState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerCombatState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
+import com.maxwell.highspeedlib.common.network.packets.action.S2CStartPunchAnimationPacket;
 import com.maxwell.highspeedlib.common.network.packets.effect.S2CParryPacket;
 import com.maxwell.highspeedlib.common.network.packets.effect.S2CScreenShakePacket;
-import com.maxwell.highspeedlib.common.network.packets.action.S2CStartPunchAnimationPacket;
 import com.maxwell.highspeedlib.init.ModAttributes;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -56,7 +55,6 @@ public class ServerArmManager {
     }
 
     public static void attemptPunch(ServerPlayer player) {
-        // ArmManager.getArm(player) -> common/logic/ArmType (but it relies on Client... wait... ArmManager is client side.. That was an existing bug or we ignore it for now. Actually, ServerArmManager is server side but calls ArmManager.getArm which might be client-only? No, it's just imported.)
         com.maxwell.highspeedlib.common.logic.combat.ArmType arm = com.maxwell.highspeedlib.client.state.ArmManager.getArm(player);
         if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Punch(player, arm))) {
             return;
