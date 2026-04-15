@@ -41,6 +41,10 @@ public class PacketHandler {
         INSTANCE.registerMessage(nextId++, S2CSyncSlamPacket.class, S2CSyncSlamPacket::encode, S2CSyncSlamPacket::decode, S2CSyncSlamPacket::handle);
         INSTANCE.registerMessage(nextId++, S2CSyncMobModePacket.class, S2CSyncMobModePacket::encode, S2CSyncMobModePacket::decode, S2CSyncMobModePacket::handle);
         INSTANCE.registerMessage(nextId++, S2CBloodSplatPacket.class, S2CBloodSplatPacket::encode, S2CBloodSplatPacket::decode, S2CBloodSplatPacket::handle);
+        INSTANCE.registerMessage(nextId++, S2CSyncAbsoluteStatePacket.class,
+                S2CSyncAbsoluteStatePacket::encode,
+                S2CSyncAbsoluteStatePacket::decode,
+                S2CSyncAbsoluteStatePacket::handle);
     }
 
 }

@@ -1,4 +1,4 @@
-﻿package com.maxwell.highspeedlib.client.logic;
+package com.maxwell.highspeedlib.client.logic;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.client.state.ClientStateManager;

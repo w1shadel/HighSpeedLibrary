@@ -17,6 +17,10 @@ public class ClientPacketHandler {
 
     public static void handlePunchEnergySync(double energy) {
         com.maxwell.highspeedlib.common.logic.combat.PunchCooldownManager.setClientEnergy(energy);
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            com.maxwell.highspeedlib.common.logic.state.PlayerStateManager.getState(mc.player).getCombat().punchEnergy = energy;
+        }
     }
 
     public static void handlePunchAnimation(int entityId) {

@@ -63,8 +63,8 @@ public class HighSpeedServerConfig {
         BUILDER.pop();
         BUILDER.push("walljump");
         WALLJUMP_MAX_COUNT = BUILDER.comment("最大壁キック回数").defineInRange("maxCount", 3, 1, 20);
-        WALLJUMP_VERTICAL_MULT = BUILDER.comment("壁キック時のジャンプ力倍率").defineInRange("verticalMult", 1.4, 0.5, 5.0);
-        WALLJUMP_HORIZONTAL_POWER = BUILDER.comment("壁キック時の壁からの水平反発力").defineInRange("horizontalPower", 0.75, 0.1, 3.0);
+        WALLJUMP_VERTICAL_MULT = BUILDER.comment("壁キック時のジャンプ力倍率").defineInRange("verticalMult", 1.1, 0.5, 5.0);
+        WALLJUMP_HORIZONTAL_POWER = BUILDER.comment("壁キック時の壁からの水平反発力").defineInRange("horizontalPower", 0.5, 0.1, 3.0);
         BUILDER.pop();
         BUILDER.push("slam");
         SLAM_DOWNWARD_SPEED = BUILDER.comment("スラム時の下向き速度").defineInRange("downwardSpeed", 3.0, 0.5, 20.0);

@@ -11,10 +11,11 @@ public class GhostAttacher {
             String targetPid = args[0];
             String agentJarPath = args[1];
             String agentArgs = args[2];
-            VirtualMachine vm = com.sun.tools.attach.VirtualMachine.attach(targetPid);
+            VirtualMachine vm = VirtualMachine.attach(targetPid);
             vm.loadAgent(agentJarPath, agentArgs);
             vm.detach();
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
     }
 }

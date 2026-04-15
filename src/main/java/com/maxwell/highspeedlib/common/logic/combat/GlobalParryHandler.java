@@ -53,7 +53,6 @@ public class GlobalParryHandler {
                 if (attacker instanceof IParryable parryable && !parryable.canBeParried(player)) {
                     return;
                 }
-                event.setCanceled(true);
                 float counterDamage = HighSpeedServerConfig.PARRY_COUNTER_DAMAGE.get().floatValue();
                 livingAttacker.hurt(player.damageSources().mobAttack(player), counterDamage);
                 livingAttacker.hurtMarked = true;

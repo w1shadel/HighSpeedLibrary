@@ -1,4 +1,4 @@
-﻿package com.maxwell.highspeedlib.client.logic;
+package com.maxwell.highspeedlib.client.logic;
 
 import com.maxwell.highspeedlib.client.V1WingModel;
 import com.mojang.blaze3d.platform.InputConstants;

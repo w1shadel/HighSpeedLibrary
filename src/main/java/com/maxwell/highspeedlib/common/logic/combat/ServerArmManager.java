@@ -4,6 +4,7 @@ import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
 import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.api.main.IHighSpeedInteractable;
 import com.maxwell.highspeedlib.api.main.IParryable;
+import com.maxwell.highspeedlib.client.state.ArmManager;
 import com.maxwell.highspeedlib.common.entity.ThrownCoinEntity;
 import com.maxwell.highspeedlib.common.logic.TimeManager;
 import com.maxwell.highspeedlib.common.logic.state.PlayerAbilityState;
@@ -19,6 +20,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -80,10 +82,11 @@ public class ServerArmManager {
         Level level = player.level();
         Vec3 eyePos = player.getEyePosition();
         Vec3 lookVec = player.getLookAngle();
-        com.maxwell.highspeedlib.common.logic.combat.ArmType arm = com.maxwell.highspeedlib.client.state.ArmManager.getArm(player);
-        boolean isRed = (arm == com.maxwell.highspeedlib.common.logic.combat.ArmType.KNUCKLEBLASTER);
+        ArmType arm = ArmManager.getArm(player);
+        boolean isRed = (arm == ArmType.KNUCKLEBLASTER);
         double range = FEEDBACKER_RANGE;
         AABB searchBox = getForwardParryBox(player, range);
+        List<Entity> allEntities = level.getEntities((Entity) null, searchBox, e -> e != player);
         boolean isSpecialHit = false;
         List<Projectile> projectiles = level.getEntitiesOfClass(Projectile.class, searchBox,
                 p -> !(p instanceof ThrownCoinEntity));
@@ -108,7 +111,9 @@ public class ServerArmManager {
         }
         if (!isSpecialHit) {
             List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, searchBox, e -> e != player && isTargetable(e, eyePos, lookVec, range, 0.6));
-            for (LivingEntity target : targets) {
+            for (Entity entity : allEntities) {
+                if (!(entity instanceof LivingEntity target)) continue;
+                if (!isTargetable(target, eyePos, lookVec, range, 0.6)) continue;
                 if (target instanceof IHighSpeedInteractable interactable) {
                     if (interactable.onHandPunch(player, !isRed)) {
                         triggerParryEffects(player);
@@ -123,7 +128,7 @@ public class ServerArmManager {
                 double configBaseDamage = settings.punchDamageBase;
                 double velocityModifier = Math.min(1.4, 1.0 + (velocity * 0.5));
                 float finalDamage = (float) ((punchBase + configBaseDamage) * adFactor * 0.4 * velocityModifier);
-                target.hurt(player.damageSources().mobAttack(player), finalDamage);
+//                AbsoluteHook.applyTrueDamage(target, finalDamage);
                 target.setDeltaMovement(lookVec.scale(0.5).add(0, 0.1, 0));
                 target.hurtMarked = true;
                 if (level instanceof ServerLevel serverLevel) {
@@ -151,7 +156,6 @@ public class ServerArmManager {
 
     private static void performKnuckleBlast(ServerPlayer player) {
         com.maxwell.highspeedlib.common.logic.combat.ArmType arm = com.maxwell.highspeedlib.client.state.ArmManager.getArm(player);
-        boolean isRed = (arm == com.maxwell.highspeedlib.common.logic.combat.ArmType.KNUCKLEBLASTER);
         ServerLevel level = (ServerLevel) player.level();
         Vec3 look = player.getLookAngle();
         Vec3 punchPos = player.getEyePosition().add(look.scale(1.5));
@@ -173,7 +177,7 @@ public class ServerArmManager {
                     continue;
                 }
             }
-            target.hurt(player.damageSources().mobAttack(player), blastDamage);
+//            AbsoluteHook.applyTrueDamage(target, blastDamage);
             target.setDeltaMovement(look.scale(1.2).add(0, 0.4, 0));
             target.hurtMarked = true;
         }

@@ -17,6 +17,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ClientInputEvents {
     private static boolean wasSliding = false;
+    private static boolean jumpKeyWasPressed = false;
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
@@ -62,15 +63,13 @@ public class ClientInputEvents {
             }
             wasSliding = isSlidingInput;
         }
-        while (mc.options.keyJump.consumeClick()) {
-            if (!mc.player.onGround()) {
-                if (UltraHudRenderer.walljumpUnlocked) {
-                    PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(6));
-                }
-            } else {
-                mc.player.jumpFromGround();
+        boolean jumpKeyDown = mc.options.keyJump.isDown();
+        if (jumpKeyDown && !jumpKeyWasPressed) {
+            if (UltraHudRenderer.walljumpUnlocked) {
+                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(6));
             }
         }
+        jumpKeyWasPressed = jumpKeyDown;
         while (KeyInputHandler.CHANGEARM_KEY.consumeClick()) {
             if (UltraHudRenderer.punchUnlocked) {
                 PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(7));

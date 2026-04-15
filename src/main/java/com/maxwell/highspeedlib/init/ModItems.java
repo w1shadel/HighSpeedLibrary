@@ -15,4 +15,6 @@ public class ModItems {
             () -> new V1WingsItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC)));
     public static final RegistryObject<Item> BOSS_BAR_APPLIER = ITEMS.register("boss_bar_applier",
             () -> new BossBarApplierItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> TRUTHSTRIPPER = ITEMS.register("truthstripper",
+            () -> new TruthStripperItem(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
 }

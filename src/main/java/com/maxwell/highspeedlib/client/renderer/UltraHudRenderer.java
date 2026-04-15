@@ -75,7 +75,7 @@ public class UltraHudRenderer {
 
     @SubscribeEvent
     public static void onRenderHud(RenderGuiOverlayEvent.Pre event) {
-        if (!HighSpeedClientConfig.HUD_VISIBLE.get()) return;
+        if (!HighSpeedClientConfig.ULTRAHUD_VISIBLE.get()) return;
         var id = event.getOverlay().id();
         if (id.equals(VanillaGuiOverlay.PLAYER_HEALTH.id()) ||
                 id.equals(VanillaGuiOverlay.HOTBAR.id()) ||
@@ -91,7 +91,7 @@ public class UltraHudRenderer {
 
     private static void renderUltraHud(GuiGraphics graphics) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.options.hideGui || !HighSpeedClientConfig.HUD_VISIBLE.get()) return;
+        if (mc.player == null || mc.options.hideGui || !HighSpeedClientConfig.ULTRAHUD_VISIBLE.get()) return;
         Player player = mc.player;
         int screenHeight = mc.getWindow().getGuiScaledHeight();
         float partialTick = mc.getPartialTick();

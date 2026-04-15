@@ -31,9 +31,6 @@ public class PunchCooldownManager {
         if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) return;
         Player player = event.player;
         PlayerCombatState state = PlayerStateManager.getState(player).getCombat();
-        if (state.punchEnergy == 0.0) {
-            state.punchEnergy = 2.0;
-        }
         double current = state.punchEnergy;
         if (current < 2.0) {
             double regen = HighSpeedServerConfig.PUNCH_ENERGY_REGEN_PER_TICK.get();
@@ -47,9 +44,6 @@ public class PunchCooldownManager {
 
     public static boolean tryConsume(Player player, boolean isRed) {
         PlayerCombatState state = PlayerStateManager.getState(player).getCombat();
-        if (state.punchEnergy == 0.0) {
-            state.punchEnergy = 2.0;
-        }
         double current = state.punchEnergy;
         double cost = isRed ? 2.0 : 1.0;
         if (current >= cost) {

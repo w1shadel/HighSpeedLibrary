@@ -18,15 +18,24 @@ public class ClientCommands {
     @SubscribeEvent
     public static void onRegisterClientCommands(RegisterClientCommandsEvent event) {
         CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
-        dispatcher.register(Commands.literal("ultrahud")
+        dispatcher.register(Commands.literal("highspeedclient")
                 .then(Commands.literal("visible")
-                        .then(Commands.argument("show", BoolArgumentType.bool())
-                                .executes(ctx -> {
-                                    boolean show = BoolArgumentType.getBool(ctx, "show");
-                                    HighSpeedClientConfig.HUD_VISIBLE.set(show);
-                                    ctx.getSource().sendSuccess(() -> Component.literal("HUD visibility set to: " + show), false);
-                                    return 1;
-                                })))
+                        .then(Commands.literal("ultrahud")
+                                .then(Commands.argument("show", BoolArgumentType.bool())
+                                        .executes(ctx -> {
+                                            boolean show = BoolArgumentType.getBool(ctx, "show");
+                                            HighSpeedClientConfig.ULTRAHUD_VISIBLE.set(show);
+                                            ctx.getSource().sendSuccess(() -> Component.literal("UltraHUD visibility set to: " + show), false);
+                                            return 1;
+                                        })))
+                        .then(Commands.literal("cheatenabled")
+                                .then(Commands.argument("show", BoolArgumentType.bool())
+                                        .executes(ctx -> {
+                                            boolean show = BoolArgumentType.getBool(ctx, "show");
+                                            HighSpeedClientConfig.CHEAT_INDICATOR_VISIBLE.set(show);
+                                            ctx.getSource().sendSuccess(() -> Component.literal("Cheat Enabled indicator visibility set to: " + show), false);
+                                            return 1;
+                                        }))))
                 .then(Commands.literal("pos")
                         .then(Commands.argument("x", IntegerArgumentType.integer())
                                 .then(Commands.argument("y", IntegerArgumentType.integer())
@@ -40,4 +49,4 @@ public class ClientCommands {
                                         }))))
         );
     }
-}
+}

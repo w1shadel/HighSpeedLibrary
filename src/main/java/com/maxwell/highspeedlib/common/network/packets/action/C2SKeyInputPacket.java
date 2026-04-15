@@ -1,4 +1,4 @@
-﻿package com.maxwell.highspeedlib.common.network.packets.action;
+package com.maxwell.highspeedlib.common.network.packets.action;
 
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
 import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
