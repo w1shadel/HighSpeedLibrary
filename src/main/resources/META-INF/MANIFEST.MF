@@ -1,5 +1,4 @@
 Manifest-Version: 1.0
-Premain-Class: com.maxwell.highspeedlib.agent.AbsoluteAgent
 Agent-Class: com.maxwell.highspeedlib.agent.AbsoluteAgent
 Can-Retransform-Classes: true
 Can-Redefine-Classes: true
