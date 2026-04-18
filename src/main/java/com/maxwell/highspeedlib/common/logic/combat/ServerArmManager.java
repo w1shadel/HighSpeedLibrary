@@ -10,6 +10,7 @@ import com.maxwell.highspeedlib.common.logic.TimeManager;
 import com.maxwell.highspeedlib.common.logic.state.PlayerAbilityState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerCombatState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
+import com.maxwell.highspeedlib.common.logic.util.AbsoluteDamageManager;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.action.S2CStartPunchAnimationPacket;
 import com.maxwell.highspeedlib.common.network.packets.effect.S2CParryPacket;
@@ -110,7 +111,6 @@ public class ServerArmManager {
             }
         }
         if (!isSpecialHit) {
-            List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, searchBox, e -> e != player && isTargetable(e, eyePos, lookVec, range, 0.6));
             for (Entity entity : allEntities) {
                 if (!(entity instanceof LivingEntity target)) continue;
                 if (!isTargetable(target, eyePos, lookVec, range, 0.6)) continue;
@@ -128,7 +128,7 @@ public class ServerArmManager {
                 double configBaseDamage = settings.punchDamageBase;
                 double velocityModifier = Math.min(1.4, 1.0 + (velocity * 0.5));
                 float finalDamage = (float) ((punchBase + configBaseDamage) * adFactor * 0.4 * velocityModifier);
-//                AbsoluteHook.applyTrueDamage(target, finalDamage);
+                AbsoluteDamageManager.dealAbsoluteDamage(target, finalDamage);
                 target.setDeltaMovement(lookVec.scale(0.5).add(0, 0.1, 0));
                 target.hurtMarked = true;
                 if (level instanceof ServerLevel serverLevel) {
@@ -155,38 +155,37 @@ public class ServerArmManager {
     }
 
     private static void performKnuckleBlast(ServerPlayer player) {
-        com.maxwell.highspeedlib.common.logic.combat.ArmType arm = com.maxwell.highspeedlib.client.state.ArmManager.getArm(player);
         ServerLevel level = (ServerLevel) player.level();
-        Vec3 look = player.getLookAngle();
-        Vec3 punchPos = player.getEyePosition().add(look.scale(1.5));
-        double punchBase = player.getAttributeValue(ModAttributes.PUNCH_DAMAGE.get());
-        double rawAD = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
-        double adFactor = 1.0 + (rawAD - 1.0) * 0.2;
-        double velocity = player.getDeltaMovement().horizontalDistance();
-        double velocityModifier = Math.min(1.4, 1.0 + (velocity * 0.5));
-        PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
-        double configBaseDamage = settings.punchDamageBase;
-        float blastDamage = (float) ((punchBase + configBaseDamage) * adFactor * 1.5 * velocityModifier);
-        AABB area = new AABB(punchPos.subtract(2.5, 2.5, 2.5), punchPos.add(2.5, 2.5, 2.5));
-        List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, area, e -> e != player);
-        boolean anySpecialHandled = false;
-        for (LivingEntity target : targets) {
+        double range = FEEDBACKER_RANGE;
+        AABB searchBox = getForwardParryBox(player, range);
+        List<Entity> allEntities = level.getEntities((Entity) null, searchBox, e -> e != player);
+        for (Entity entity : allEntities) {
+            if (!(entity instanceof LivingEntity target)) continue;
+            Vec3 look = player.getLookAngle();
+            Vec3 punchPos = player.getEyePosition().add(look.scale(1.5));
+            double punchBase = player.getAttributeValue(ModAttributes.PUNCH_DAMAGE.get());
+            double rawAD = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
+            double adFactor = 1.0 + (rawAD - 1.0) * 0.2;
+            double velocity = player.getDeltaMovement().horizontalDistance();
+            double velocityModifier = Math.min(1.4, 1.0 + (velocity * 0.5));
+            PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
+            double configBaseDamage = settings.punchDamageBase;
+            AABB area = new AABB(punchPos.subtract(2.5, 2.5, 2.5), punchPos.add(2.5, 2.5, 2.5));
+            float blastDamage = (float) ((punchBase + configBaseDamage) * adFactor * 1.5 * velocityModifier);
+            AbsoluteDamageManager.dealAbsoluteDamage(target, blastDamage);
             if (target instanceof IHighSpeedInteractable interactable) {
                 if (interactable.onHandPunch(player, true)) {
-                    anySpecialHandled = true;
                     continue;
                 }
             }
-//            AbsoluteHook.applyTrueDamage(target, blastDamage);
             target.setDeltaMovement(look.scale(1.2).add(0, 0.4, 0));
             target.hurtMarked = true;
+            level.getEntitiesOfClass(Projectile.class, area).forEach(p -> {
+                if (p.getOwner() != player) p.discard();
+            });
+            level.sendParticles(ParticleTypes.CRIT, punchPos.x, punchPos.y, punchPos.z, 10, 0.1, 0.1, 0.1, 0.1);
+            level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0f, 1.2f);
         }
-        if (anySpecialHandled) triggerParryEffects(player);
-        level.getEntitiesOfClass(Projectile.class, area).forEach(p -> {
-            if (p.getOwner() != player) p.discard();
-        });
-        level.sendParticles(ParticleTypes.CRIT, punchPos.x, punchPos.y, punchPos.z, 10, 0.1, 0.1, 0.1, 0.1);
-        level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0f, 1.2f);
     }
 
     private static boolean isTargetable(net.minecraft.world.entity.Entity entity, Vec3 eyePos, Vec3 lookVec, double range, double angleCos) {
@@ -247,4 +246,5 @@ public class ServerArmManager {
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, pos.x, pos.y, pos.z, 1, 0, 0, 0, 0);
         }
     }
+
 }

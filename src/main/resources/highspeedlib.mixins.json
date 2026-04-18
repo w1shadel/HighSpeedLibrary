@@ -10,7 +10,13 @@
     "LevelMixin",
     "LivingEntityMixin",
     "PlayerMixin",
-    "EntityMixin"
+    "EntityMixin",
+    "ServerLevelMixin",
+    "parry.SynchedEntityDataMixin",
+    "parry.LivingEntityAccessor",
+    "parry.SynchedEntityDataAccessor",
+    "parry.SynchedEntityDataItemAccessor",
+    "parry.LivingEntityMixin"
   ],
   "client": [
   ],
