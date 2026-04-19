@@ -12,9 +12,4 @@ public interface SynchedEntityDataAccessor {
     @Accessor("entity")
     Entity getEntity();
 
-    @Invoker("getItem")
-    <T> SynchedEntityData.DataItem<T> invokeGetItem(EntityDataAccessor<T> key);
-
-    @Accessor("isDirty")
-    void setDirtyFlag(boolean dirty);
 }

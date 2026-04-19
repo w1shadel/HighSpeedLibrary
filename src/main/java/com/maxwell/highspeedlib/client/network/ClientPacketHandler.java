@@ -4,10 +4,13 @@ import com.maxwell.highspeedlib.client.logic.ClientEffectManager;
 import com.maxwell.highspeedlib.client.logic.ClientSlideHandler;
 import com.maxwell.highspeedlib.client.logic.ThirdPersonCoinTossManager;
 import com.maxwell.highspeedlib.client.logic.ThirdPersonPunchManager;
+import com.maxwell.highspeedlib.client.renderer.ClientTextRenderHandler;
 import com.maxwell.highspeedlib.client.renderer.ExtendsArmRenderer;
 import com.maxwell.highspeedlib.client.renderer.UltraHudRenderer;
+import com.maxwell.highspeedlib.client.state.TextData;
 import com.maxwell.highspeedlib.common.logic.combat.ArmType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 
 public class ClientPacketHandler {
@@ -48,6 +51,14 @@ public class ClientPacketHandler {
                 entity.refreshDimensions();
             }
         }
+    }
+
+    public static void handleRenderText(TextData.Type type, Component text, double x, double y, int color, int duration, float scale) {
+        ClientTextRenderHandler.addText(new TextData(type, text, x, y, color, duration, scale));
+    }
+
+    public static void handleSubComp(Component text, double x, double y, int color, int duration, float scale) {
+        handleRenderText(TextData.Type.SUBTITLE, text, x, y, color, duration, scale);
     }
 
     public static void handleParry() {

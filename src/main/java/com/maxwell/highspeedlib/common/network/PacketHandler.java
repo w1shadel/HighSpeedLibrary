@@ -4,10 +4,7 @@ import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.common.network.packets.action.C2SKeyInputPacket;
 import com.maxwell.highspeedlib.common.network.packets.action.S2CStartPunchAnimationPacket;
 import com.maxwell.highspeedlib.common.network.packets.action.S2CStartTossAnimationPacket;
-import com.maxwell.highspeedlib.common.network.packets.effect.S2CBloodSplatPacket;
-import com.maxwell.highspeedlib.common.network.packets.effect.S2CParryPacket;
-import com.maxwell.highspeedlib.common.network.packets.effect.S2CScreenShakePacket;
-import com.maxwell.highspeedlib.common.network.packets.effect.S2CSpeedEffectPacket;
+import com.maxwell.highspeedlib.common.network.packets.effect.*;
 import com.maxwell.highspeedlib.common.network.packets.sync.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
@@ -41,6 +38,8 @@ public class PacketHandler {
         INSTANCE.registerMessage(nextId++, S2CSyncSlamPacket.class, S2CSyncSlamPacket::encode, S2CSyncSlamPacket::decode, S2CSyncSlamPacket::handle);
         INSTANCE.registerMessage(nextId++, S2CSyncMobModePacket.class, S2CSyncMobModePacket::encode, S2CSyncMobModePacket::decode, S2CSyncMobModePacket::handle);
         INSTANCE.registerMessage(nextId++, S2CBloodSplatPacket.class, S2CBloodSplatPacket::encode, S2CBloodSplatPacket::decode, S2CBloodSplatPacket::handle);
+        INSTANCE.registerMessage(nextId++, S2CRenderTextPacket.class, S2CRenderTextPacket::encode, S2CRenderTextPacket::decode, S2CRenderTextPacket::handle);
+
     }
 
 }

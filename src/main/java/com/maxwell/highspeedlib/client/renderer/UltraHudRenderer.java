@@ -166,10 +166,10 @@ public class UltraHudRenderer {
             actualStaminaH = staminaHeight;
             currentY += staminaHeight + gap;
         }
+        float armSectionX = totalWidth + 4f;
+        float armSectionW = 24f;
+        float armSectionH = hpHeight + (dashUnlocked ? gap + actualStaminaH : 0);
         if (punchUnlocked) {
-            float armSectionX = totalWidth + 4f;
-            float armSectionW = 24f;
-            float armSectionH = hpHeight + (dashUnlocked ? gap + actualStaminaH : 0);
             drawTrapezoid(graphics, armSectionX, hpY, armSectionW, armSectionH, 0xAA222222, zBg);
             float iconSize = 20f;
             float iconX = armSectionX + (armSectionW - iconSize) / 2f;
@@ -195,6 +195,19 @@ public class UltraHudRenderer {
                     float progressH = dotSize * chargeRatio;
                     drawTrapezoid(graphics, dx, dotY + (dotSize - progressH), dotSize, progressH, 0x88AAAA00, zTop + 0.2f);
                 }
+            }
+        }
+        int slotsToShow = 3;
+        float slotSize = 20f;
+        float slotGap = 2f;
+        for (int i = 1; i <= slotsToShow; i++) {
+            int nextIndex = (player.getInventory().selected + i) % 9;
+            ItemStack nextStack = player.getInventory().getItem(nextIndex);
+            float slotY = hpY - (i * (slotSize + slotGap));
+            drawTrapezoid(graphics, armSectionX, slotY, armSectionW, slotSize, 0x88111111, zBg);
+
+            if (!nextStack.isEmpty()) {
+                drawSmallItemWithPerspective(graphics, mc, nextStack, armSectionX + (armSectionW / 2f), slotY + (slotSize / 2f), zTop + 0.5f);
             }
         }
         float foodHeight = 6f;
@@ -248,7 +261,20 @@ public class UltraHudRenderer {
         graphics.drawString(mc.font, text, 0, 0, color, false);
         graphics.pose().popPose();
     }
+    private static void drawSmallItemWithPerspective(GuiGraphics graphics, Minecraft mc, ItemStack item, float x, float y, float z) {
+        float progress = x / HUD_FULL_W;
+        float scale = net.minecraft.util.Mth.lerp(progress, SCALE_LEFT, SCALE_RIGHT);
+        float yPos = getPerspectiveY(x, y);
+        float yNext = getPerspectiveY(x + 10f, y);
+        float angle = (float) Math.toDegrees(Math.atan2(yNext - yPos, 10f));
 
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, yPos, z);
+        graphics.pose().scale(1.2f * scale, 1.2f * scale, 1.0f);
+        graphics.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(angle));
+        graphics.renderItem(item, -8, -8);
+        graphics.pose().popPose();
+    }
     private static void drawItemWithPerspective(GuiGraphics graphics, ItemStack heldItem, float x, float y, float z) {
         float progress = x / HUD_FULL_W;
         float scale = net.minecraft.util.Mth.lerp(progress, SCALE_LEFT, SCALE_RIGHT);

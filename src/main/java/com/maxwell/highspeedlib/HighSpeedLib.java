@@ -1,6 +1,5 @@
 package com.maxwell.highspeedlib;
 
-import com.maxwell.highspeedlib.agent.onrun.Bootstrap;
 import com.maxwell.highspeedlib.api.config.HighSpeedClientConfig;
 import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.client.renderer.V1WingRenderer;
@@ -35,7 +34,6 @@ public class HighSpeedLib {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, HighSpeedClientConfig.SPEC);
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, HighSpeedServerConfig.SPEC);
         modEventBus.addListener(this::clientSetup);
-        Bootstrap.initialize();
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {

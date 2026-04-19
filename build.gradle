@@ -89,6 +89,7 @@ dependencies {
     implementation fg.deobf("curse.maven:time-stop-clock-mod-690991:7821984")
     implementation fg.deobf("curse.maven:fading-time-1502969:7874868")
     implementation fg.deobf("curse.maven:curios-309927:6418456")
+    implementation fg.deobf("curse.maven:legendary-survival-overhaul-840254:7603852")
 //    implementation fg.deobf("curse.maven:fantasy-ending-1420337:7642083")
     implementation fg.deobf("curse.maven:appleskin-248787:4770828")
     compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
