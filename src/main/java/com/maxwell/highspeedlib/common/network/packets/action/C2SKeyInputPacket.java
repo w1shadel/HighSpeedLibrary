@@ -21,25 +21,28 @@ public class C2SKeyInputPacket {
     private final int keyType;
     private final float xInput;
     private final float zInput;
+    private final boolean isAltPressed;
 
     public C2SKeyInputPacket(int keyType) {
-        this(keyType, 0f, 0f);
+        this(keyType, 0f, 0f, false);
     }
 
-    public C2SKeyInputPacket(int keyType, float xInput, float zInput) {
+    public C2SKeyInputPacket(int keyType, float xInput, float zInput, boolean isAltPressed) {
         this.keyType = keyType;
         this.xInput = xInput;
         this.zInput = zInput;
+        this.isAltPressed = isAltPressed;
     }
 
     public static void encode(C2SKeyInputPacket msg, FriendlyByteBuf buffer) {
         buffer.writeInt(msg.keyType);
         buffer.writeFloat(msg.xInput);
         buffer.writeFloat(msg.zInput);
+        buffer.writeBoolean(msg.isAltPressed);
     }
 
     public static C2SKeyInputPacket decode(FriendlyByteBuf buffer) {
-        return new C2SKeyInputPacket(buffer.readInt(), buffer.readFloat(), buffer.readFloat());
+        return new C2SKeyInputPacket(buffer.readInt(), buffer.readFloat(), buffer.readFloat(),buffer.readBoolean());
     }
 
     public static void handle(C2SKeyInputPacket msg, Supplier<NetworkEvent.Context> ctx) {
@@ -87,7 +90,7 @@ public class C2SKeyInputPacket {
                 if (whiplashData.state != ServerWhiplashManager.NONE && whiplashData.state != ServerWhiplashManager.RETRACTING) {
                     ServerWhiplashManager.stop(player);
                 }
-                WallJumpManager.performWallJump(player);
+                WallJumpManager.performWallJump(player, msg.isAltPressed);
 
             } else if (msg.keyType == 7) {
                 ArmManager.switchArm(player);

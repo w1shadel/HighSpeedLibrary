@@ -44,9 +44,11 @@ public class SlamManager {
     }
 
     public static void stopSlam(ServerPlayer player) {
-        PlayerStateManager.getState(player).getMovement().isSlamming = false;
+        PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
+        state.isSlamming = false;
+        boolean storageActive = state.slamStorageActive || state.slamStorageTimer > 0;
         PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                new S2CSyncSlamPacket(player.getId(), false));
+                new S2CSyncSlamPacket(player.getId(), false, storageActive));
     }
 
     public static boolean isSlamming(UUID uuid) {
@@ -62,6 +64,8 @@ public class SlamManager {
         }
         if (state.isSlamming) {
             if (player.onGround() || player.verticalCollision) {
+                PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+                        new S2CSyncSlamPacket(player.getId(), player.position()));
                 performSlamImpact(player);
                 stopSlam(player);
                 PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),

@@ -84,25 +84,11 @@ mixin {
 }
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    implementation fg.deobf("curse.maven:spark-361579:4738952")
-    implementation fg.deobf("curse.maven:timeless-and-classics-zero-1028108:7745481")
-    implementation fg.deobf("curse.maven:time-stop-clock-mod-690991:7821984")
-    implementation fg.deobf("curse.maven:fading-time-1502969:7874868")
     implementation fg.deobf("curse.maven:curios-309927:6418456")
-    implementation fg.deobf("curse.maven:legendary-survival-overhaul-840254:7603852")
-//    implementation fg.deobf("curse.maven:fantasy-ending-1420337:7642083")
-    implementation fg.deobf("curse.maven:appleskin-248787:4770828")
     compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
     runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
     runtimeOnly fg.deobf("curse.maven:jade-324717:5672013")
-    implementation fg.deobf("curse.maven:embeddium-908741:5681725")
-    implementation fg.deobf("curse.maven:get-it-together-drops-411045:4578649")
-    implementation files(System.getProperty("java.home") + "/../lib/tools.jar")
-    implementation fg.deobf("curse.maven:cloth-config-348521:5729105")
-    implementation fg.deobf("curse.maven:jei-integration-265917:4999754")
-    implementation fg.deobf("curse.maven:catalogue-459701:4766090")
-//    implementation fg.deobf("maven.modrinth:manaitamtk:1.7.1")
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 

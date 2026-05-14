@@ -41,7 +41,7 @@ public class EntityMixin {
         if (self.level().isClientSide && self instanceof LivingEntity living) {
             int tier = MobModeManager.getRadianceTier(living);
             if (tier > 0) {
-                float hue = (living.tickCount + Minecraft.getInstance().getPartialTick()) * 0.05f;
+                float hue = (living.tickCount) * 0.05f;
                 cir.setReturnValue(Mth.hsvToRgb(hue % 1.0f, 0.7f, 1.0f));
             } else if (MobModeManager.isEnraged(living)) {
                 cir.setReturnValue(0xFF0000);

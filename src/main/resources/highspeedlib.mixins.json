@@ -6,7 +6,6 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "EntityTimeStopMixin",
-    "HumanoidModelMixin",
     "LevelMixin",
     "LivingEntityMixin",
     "PlayerMixin",
@@ -19,8 +18,7 @@
     "parry.LivingEntityMixin"
   ],
   "client": [
-  ],
-  "server": [
+    "HumanoidModelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

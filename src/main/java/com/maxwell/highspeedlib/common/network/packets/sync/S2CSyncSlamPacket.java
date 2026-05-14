@@ -10,30 +10,36 @@ import java.util.function.Supplier;
 public class S2CSyncSlamPacket {
     private final int entityId;
     private final boolean isSlamming;
+    private final boolean isStorage;
     private final boolean hasImpact;
     private final double x, y, z;
 
     public S2CSyncSlamPacket(int entityId, boolean isSlamming) {
-        this(entityId, isSlamming, false, 0, 0, 0);
+        this(entityId, isSlamming, false, 0, 0, 0, false);
+    }
+    public S2CSyncSlamPacket(int entityId, boolean isSlamming, boolean isStorage) {
+        this(entityId, isSlamming, false, 0, 0, 0, isStorage);
     }
 
     public S2CSyncSlamPacket(int entityId, Vec3 impactPos) {
-        this(entityId, false, true, impactPos.x, impactPos.y, impactPos.z);
+        this(entityId, false, true, impactPos.x, impactPos.y, impactPos.z, false);
     }
 
-    private S2CSyncSlamPacket(int entityId, boolean isSlamming, boolean hasImpact, double x, double y, double z) {
+    private S2CSyncSlamPacket(int entityId, boolean isSlamming, boolean hasImpact, double x, double y, double z, boolean isStorage) {
         this.entityId = entityId;
         this.isSlamming = isSlamming;
         this.hasImpact = hasImpact;
         this.x = x;
         this.y = y;
         this.z = z;
+        this.isStorage = isStorage;
     }
 
     public static void encode(S2CSyncSlamPacket msg, FriendlyByteBuf buffer) {
         buffer.writeInt(msg.entityId);
         buffer.writeBoolean(msg.isSlamming);
-        buffer.writeBoolean(msg.hasImpact);
+        buffer.writeBoolean(msg.isStorage); 
+        buffer.writeBoolean(msg.hasImpact); 
         if (msg.hasImpact) {
             buffer.writeDouble(msg.x);
             buffer.writeDouble(msg.y);
@@ -41,19 +47,25 @@ public class S2CSyncSlamPacket {
         }
     }
 
+
     public static S2CSyncSlamPacket decode(FriendlyByteBuf buffer) {
         int id = buffer.readInt();
         boolean slamming = buffer.readBoolean();
-        boolean impact = buffer.readBoolean();
-        if (impact) {
-            return new S2CSyncSlamPacket(id, slamming, true, buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
-        }
-        return new S2CSyncSlamPacket(id, slamming);
-    }
+        boolean storage = buffer.readBoolean(); 
+        boolean impact = buffer.readBoolean();  
 
+        double x = 0, y = 0, z = 0;
+        if (impact) {
+            x = buffer.readDouble();
+            y = buffer.readDouble();
+            z = buffer.readDouble();
+        }
+
+        return new S2CSyncSlamPacket(id, slamming, impact, x, y, z, storage);
+    }
     public static void handle(S2CSyncSlamPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ClientSlamHandler.updateSlamming(msg.entityId, msg.isSlamming);
+            ClientSlamHandler.updateSlamming(msg.entityId, msg.isSlamming, msg.isStorage);
             if (msg.hasImpact) {
                 ClientSlamHandler.spawnImpactWave(new Vec3(msg.x, msg.y, msg.z));
             }

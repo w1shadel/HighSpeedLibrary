@@ -48,7 +48,7 @@ public class ShockwaveEntity extends Entity {
         this.entityData.define(MAX_RADIUS, 10.0f);
         this.entityData.define(SPEED, 0.5f);
         this.entityData.define(HEIGHT, 1.0f);
-        this.entityData.define(COLOR, 0xFFFFFFFF); // デフォルトは白
+        this.entityData.define(COLOR, 0xFFFFFFFF); 
     }
 
     @Override
@@ -67,8 +67,8 @@ public class ShockwaveEntity extends Entity {
     }
 
     private void checkCollisions(float innerRadius, float outerRadius) {
-        float h = getHeight(); // 同期された高さを使用
-        // Y軸の判定を高さに基づいて拡張
+        float h = getHeight(); 
+
         AABB searchBox = this.getBoundingBox().inflate(outerRadius, h, outerRadius);
         List<Entity> targets = this.level().getEntities(this, searchBox, EntitySelector.NO_SPECTATORS);
 
@@ -77,7 +77,7 @@ public class ShockwaveEntity extends Entity {
 
             double dist = Math.sqrt(this.distanceToSqr(entity));
             if (dist >= innerRadius && dist <= outerRadius) {
-                // Y座標が衝撃波の底面(this.getY())から高さ(h)の範囲内にあるか判定
+
                 if (entity.getY() < this.getY() + h && entity.getY() + entity.getBbHeight() > this.getY()) {
                     applyEffect(entity);
                     hitEntities.add(entity);

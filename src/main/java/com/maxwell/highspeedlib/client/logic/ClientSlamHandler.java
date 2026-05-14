@@ -24,13 +24,16 @@ import java.util.Set;
 @Mod.EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ClientSlamHandler {
     private static final Set<Integer> slammingEntities = new HashSet<>();
+    private static final Set<Integer> storageEntities = new HashSet<>();
     private static final List<SlamWave> activeWaves = new ArrayList<>();
 
-    public static void updateSlamming(int entityId, boolean isSlamming) {
+    public static void updateSlamming(int entityId, boolean isSlamming, boolean isStorage) {
         if (isSlamming) slammingEntities.add(entityId);
         else slammingEntities.remove(entityId);
-    }
 
+        if (isStorage) storageEntities.add(entityId);
+        else storageEntities.remove(entityId);
+    }
     public static void spawnImpactWave(Vec3 pos) {
         activeWaves.add(new SlamWave(pos));
     }
@@ -40,16 +43,24 @@ public class ClientSlamHandler {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
+
         activeWaves.removeIf(w -> ++w.age >= w.maxAge);
-        for (int id : slammingEntities) {
+        renderTrailForSet(mc, slammingEntities, "slam");
+        renderTrailForSet(mc, storageEntities, "storage");
+    }
+
+    private static void renderTrailForSet(Minecraft mc, Set<Integer> entities, String prefix) {
+        for (int id : entities) {
             Entity entity = mc.level.getEntity(id);
             if (!(entity instanceof Player player)) continue;
             var rand = mc.level.random;
             long time = mc.level.getGameTime();
+
             for (int i = 0; i < 2; i++) {
                 Vec3 currentPos = player.position().add((rand.nextFloat() - 0.5) * 1.2, 0.5 + rand.nextFloat(), (rand.nextFloat() - 0.5) * 1.2);
                 Vec3 tailPos = currentPos.add(0, 1.5, 0);
-                String lineID = "slam_trail_" + id + "_" + (time % 10) + "_" + i;
+
+                String lineID = prefix + "_trail_" + id + "_" + (time % 10) + "_" + i;
                 ClientTrailRenderer.getOrCreateTrail(player.getUUID(), lineID, 1.0f, 0.5f, 0.1f, 0.6f, 0.1f)
                         .addPoint(currentPos, 6);
                 ClientTrailRenderer.getOrCreateTrail(player.getUUID(), lineID, 1.0f, 0.5f, 0.1f, 0.6f, 0.1f)
@@ -57,7 +68,6 @@ public class ClientSlamHandler {
             }
         }
     }
-
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;

@@ -18,7 +18,7 @@ import net.minecraftforge.fml.common.Mod;
 public class ClientInputEvents {
     private static boolean wasSliding = false;
     private static boolean jumpKeyWasPressed = false;
-
+    private static boolean wasOnGroundLastTick = false;
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
@@ -41,7 +41,7 @@ public class ClientInputEvents {
         }
         while (KeyInputHandler.DASH_KEY.consumeClick()) {
             if (UltraHudRenderer.dashUnlocked) {
-                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(0, mc.player.xxa, mc.player.zza));
+                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(0, mc.player.xxa, mc.player.zza,false));
                 ClientEffectManager.setSpeeding(true);
                 ClientDashHandler.spawnDashEffects();
             }
@@ -56,7 +56,7 @@ public class ClientInputEvents {
             if (isSlidingInput) {
                 boolean canPerform = mc.player.onGround() ? UltraHudRenderer.slidingUnlocked : UltraHudRenderer.slamUnlocked;
                 if (canPerform) {
-                    PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(3, mc.player.xxa, mc.player.zza));
+                    PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(3, mc.player.xxa, mc.player.zza,false));
                 }
             } else {
                 PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(4));
@@ -65,11 +65,13 @@ public class ClientInputEvents {
         }
         boolean jumpKeyDown = mc.options.keyJump.isDown();
         if (jumpKeyDown && !jumpKeyWasPressed) {
-            if (UltraHudRenderer.walljumpUnlocked) {
-                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(6));
+            if (!mc.player.onGround() && !wasOnGroundLastTick && UltraHudRenderer.walljumpUnlocked) {
+                boolean isSliding = KeyInputHandler.SLIDING_KEY.isDown();
+                PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(6, 0, 0, isSliding));
             }
         }
         jumpKeyWasPressed = jumpKeyDown;
+        wasOnGroundLastTick = mc.player.onGround();
         while (KeyInputHandler.CHANGEARM_KEY.consumeClick()) {
             if (UltraHudRenderer.punchUnlocked) {
                 PacketHandler.INSTANCE.sendToServer(new C2SKeyInputPacket(7));

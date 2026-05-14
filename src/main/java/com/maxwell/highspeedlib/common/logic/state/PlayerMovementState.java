@@ -15,5 +15,7 @@ public class PlayerMovementState {
     public boolean isSliding = false;
     public boolean isSlamming = false;
     public boolean fallImmunity = false;
+    public boolean slamStorageActive = false; 
+    public int slamStorageTimer = 0;
 
 }

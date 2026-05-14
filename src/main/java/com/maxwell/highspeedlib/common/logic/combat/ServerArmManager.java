@@ -88,38 +88,44 @@ public class ServerArmManager {
         double range = FEEDBACKER_RANGE;
         AABB searchBox = getForwardParryBox(player, range);
         List<Entity> allEntities = level.getEntities((Entity) null, searchBox, e -> e != player);
-        boolean isSpecialHit = false;
+
+        boolean isProjectileParry = false; 
+        boolean isCoinPunch = false;       
+
         List<Projectile> projectiles = level.getEntitiesOfClass(Projectile.class, searchBox,
                 p -> !(p instanceof ThrownCoinEntity));
         for (Projectile p : projectiles) {
-            if (p instanceof IParryable parryable && !parryable.canBeParried(player)) {
-                continue;
-            }
+            if (p instanceof IParryable parryable && !parryable.canBeParried(player)) continue;
             performProjectileParry(p, player);
-            isSpecialHit = true;
+            isProjectileParry = true;
             break;
         }
-        if (!isSpecialHit) {
-            List<ThrownCoinEntity> coins = level.getEntitiesOfClass(ThrownCoinEntity.class, searchBox, c -> isTargetable(c, eyePos, lookVec, range, 0.7));
+
+        if (!isProjectileParry) {
+            List<ThrownCoinEntity> coins = level.getEntitiesOfClass(ThrownCoinEntity.class, searchBox,
+                    c -> isTargetable(c, eyePos, lookVec, range, 0.7));
             for (ThrownCoinEntity coin : coins) {
                 if (coin.canBeParried()) {
                     performCoinPunch(coin, player);
                     coin.setParryCooldown(5);
-                    isSpecialHit = true;
+                    isCoinPunch = true;
                     break;
                 }
             }
         }
-        if (!isSpecialHit) {
+
+        if (!isProjectileParry && !isCoinPunch) {
             for (Entity entity : allEntities) {
                 if (!(entity instanceof LivingEntity target)) continue;
                 if (!isTargetable(target, eyePos, lookVec, range, 0.6)) continue;
+
                 if (target instanceof IHighSpeedInteractable interactable) {
                     if (interactable.onHandPunch(player, !isRed)) {
                         triggerParryEffects(player);
                         return;
                     }
                 }
+
                 double punchBase = player.getAttributeValue(ModAttributes.PUNCH_DAMAGE.get());
                 double rawAD = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
                 double adFactor = 1.0 + (rawAD - 1.0) * 0.2;
@@ -128,9 +134,11 @@ public class ServerArmManager {
                 double configBaseDamage = settings.punchDamageBase;
                 double velocityModifier = Math.min(1.4, 1.0 + (velocity * 0.5));
                 float finalDamage = (float) ((punchBase + configBaseDamage) * adFactor * 0.4 * velocityModifier);
+
                 AbsoluteDamageManager.dealAbsoluteDamage(target, finalDamage);
                 target.setDeltaMovement(lookVec.scale(0.5).add(0, 0.1, 0));
                 target.hurtMarked = true;
+
                 if (level instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(ParticleTypes.CRIT, target.getX(), target.getEyeY(), target.getZ(), 5, 0.1, 0.1, 0.1, 0.1);
                 }
@@ -138,9 +146,56 @@ public class ServerArmManager {
                 break;
             }
         }
-        if (isSpecialHit) {
+
+        if (isProjectileParry) {
             triggerParryEffects(player);
+        } else if (isCoinPunch) {
+
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.IRON_GOLEM_HURT, SoundSource.PLAYERS, 0.7f, 2.0f);
         }
+    }
+
+    public static void performCoinPunch(ThrownCoinEntity coin, LivingEntity attacker) {
+        Level level = coin.level();
+
+        List<LivingEntity> enemies = level.getEntitiesOfClass(LivingEntity.class,
+                coin.getBoundingBox().inflate(20.0), e -> e != attacker && e.isAlive());
+
+        LivingEntity target = enemies.stream()
+                .min((e1, e2) -> Float.compare(e1.distanceTo(coin), e2.distanceTo(coin)))
+                .orElse(null);
+
+        if (target != null) {
+
+            float coinBase = HighSpeedServerConfig.COIN_BASE_DAMAGE.get().floatValue();
+            float coinParryBonus = HighSpeedServerConfig.COIN_PARRY_DAMAGE_PER_COUNT.get().floatValue();
+            float damage = coinBase + (coin.getParryCount() * coinParryBonus);
+
+            target.hurt(attacker.damageSources().magic(), damage);
+
+            Vec3 headPos = target.getEyePosition();
+            coin.setPos(headPos.x, headPos.y, headPos.z);
+
+            if (level instanceof ServerLevel serverLevel) {
+                spawnBeam(serverLevel, attacker.getEyePosition(), headPos);
+                serverLevel.sendParticles(ParticleTypes.FLASH, headPos.x, headPos.y, headPos.z, 1, 0, 0, 0, 0);
+            }
+
+            coin.setDeltaMovement(0, 0.5, 0);
+        } else {
+
+            Vec3 look = attacker.getLookAngle();
+            Vec3 teleportPos = attacker.getEyePosition().add(look.scale(1.5));
+            coin.setPos(teleportPos.x, teleportPos.y, teleportPos.z);
+            coin.shoot(look.x, look.y + 0.5, look.z, 0.8f, 0f);
+        }
+
+        coin.increaseParryCount();
+        coin.hurtMarked = true; 
+
+        level.playSound(null, coin.getX(), coin.getY(), coin.getZ(),
+                SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 2.0f);
     }
 
     private static AABB getForwardParryBox(ServerPlayer player, double range) {
@@ -211,31 +266,6 @@ public class ServerArmManager {
         PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CScreenShakePacket(2.0f, 5));
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, SoundSource.PLAYERS, 1.0f, 1.8f);
-    }
-
-    public static void performCoinPunch(ThrownCoinEntity coin, LivingEntity attacker) {
-        Level level = coin.level();
-        List<LivingEntity> enemies = level.getEntitiesOfClass(LivingEntity.class,
-                coin.getBoundingBox().inflate(20.0), e -> e != attacker && e.isAlive());
-        LivingEntity target = enemies.stream()
-                .min((e1, e2) -> Float.compare(e1.distanceTo(coin), e2.distanceTo(coin)))
-                .orElse(null);
-        if (target != null) {
-            float coinBase = HighSpeedServerConfig.COIN_BASE_DAMAGE.get().floatValue();
-            float coinParryBonus = HighSpeedServerConfig.COIN_PARRY_DAMAGE_PER_COUNT.get().floatValue();
-            float damage = coinBase + (coin.getParryCount() * coinParryBonus);
-            target.hurt(attacker.damageSources().magic(), damage);
-            if (level instanceof ServerLevel serverLevel) {
-                spawnBeam(serverLevel, coin.position(), target.getEyePosition());
-            }
-        }
-        coin.increaseParryCount();
-        Vec3 look = attacker.getLookAngle();
-        Vec3 teleportPos = attacker.getEyePosition().add(look.scale(1.5));
-        coin.setPos(teleportPos.x, teleportPos.y, teleportPos.z);
-        coin.shoot(look.x, look.y + 0.5, look.z, 0.8f, 0f);
-        level.playSound(null, coin.getX(), coin.getY(), coin.getZ(),
-                SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 1.0f, 2.0f);
     }
 
     public static void spawnBeam(ServerLevel level, Vec3 start, Vec3 end) {
