@@ -39,7 +39,8 @@ public class GlobalParryHandler {
         }
         if (p.getPersistentData().getBoolean("hs_explosive")) {
             Vec3 pos = event.getRayTraceResult().getLocation();
-            p.level().explode(p.getOwner(), pos.x, pos.y, pos.z, 3.0f, Level.ExplosionInteraction.NONE);
+            float explosionSize = HighSpeedServerConfig.PARRY_EXPLOSION_SIZE.get().floatValue();
+            p.level().explode(p.getOwner(), pos.x, pos.y, pos.z, explosionSize, Level.ExplosionInteraction.NONE);
             p.getPersistentData().remove("hs_explosive");
         }
     }

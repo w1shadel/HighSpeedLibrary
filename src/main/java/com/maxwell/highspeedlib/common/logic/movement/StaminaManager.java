@@ -39,7 +39,8 @@ public class StaminaManager {
     public static double getMaxStamina(Player player) {
         PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
         int enchantmentLevel = EnchantmentHelper.getItemEnchantmentLevel(ModEnchantments.STAMINA_BOOST.get(), player.getItemBySlot(EquipmentSlot.LEGS));
-        return settings.maxDashCount + enchantmentLevel;
+        double enchantValue = HighSpeedServerConfig.STAMINA_BOOST_ENCHANT_VALUE.get();
+        return settings.maxDashCount + (enchantmentLevel * enchantValue);
     }
 
     public static boolean consumeStamina(Player player, double amount) {

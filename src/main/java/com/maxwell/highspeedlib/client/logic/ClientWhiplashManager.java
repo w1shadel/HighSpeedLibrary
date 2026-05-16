@@ -49,9 +49,9 @@ public class ClientWhiplashManager {
                 continue;
             }
             if (data.state == ServerWhiplashManager.FLYING) {
-                data.distance += ServerWhiplashManager.FLY_SPEED;
+                data.distance += com.maxwell.highspeedlib.api.config.HighSpeedServerConfig.WHIPLASH_FLY_SPEED.get();
             } else if (data.state == ServerWhiplashManager.RETRACTING) {
-                data.distance -= ServerWhiplashManager.PULL_SPEED;
+                data.distance -= com.maxwell.highspeedlib.api.config.HighSpeedServerConfig.WHIPLASH_PULL_SPEED.get();
                 if (data.distance <= 0) {
                     data.distance = 0;
                     data.state = ServerWhiplashManager.NONE;

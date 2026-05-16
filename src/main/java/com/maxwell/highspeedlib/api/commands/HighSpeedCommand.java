@@ -69,8 +69,12 @@ public class HighSpeedCommand {
                                 .executes(ctx -> setGlobalInt("dash_invul_ticks", IntegerArgumentType.getInteger(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("dash_max_count").then(Commands.argument("value", IntegerArgumentType.integer(1, 20))
                                 .executes(ctx -> setGlobalInt("dash_max_count", IntegerArgumentType.getInteger(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("dash_stamina_cost").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 10.0))
+                                .executes(ctx -> setGlobalDouble("dash_stamina_cost", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("stamina_regen").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 1.0))
                                 .executes(ctx -> setGlobalDouble("stamina_regen", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("stamina_boost_enchant").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 10.0))
+                                .executes(ctx -> setGlobalDouble("stamina_boost_enchant", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("slide_speed").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.1, 5.0))
                                 .executes(ctx -> setGlobalDouble("slide_speed", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("slide_air_timeout").then(Commands.argument("value", IntegerArgumentType.integer(1, 200))
@@ -93,22 +97,44 @@ public class HighSpeedCommand {
                                 .executes(ctx -> setGlobalDouble("slam_radius", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("slam_knockup_power").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.1, 5.0))
                                 .executes(ctx -> setGlobalDouble("slam_knockup_power", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("slam_attack_factor").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 10.0))
+                                .executes(ctx -> setGlobalDouble("slam_attack_factor", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("slam_enchant_factor").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 1.0))
+                                .executes(ctx -> setGlobalDouble("slam_enchant_factor", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("punch_damage_base").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 100.0))
                                 .executes(ctx -> setGlobalDouble("punch_damage_base", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("punch_energy_regen").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.001, 1.0))
                                 .executes(ctx -> setGlobalDouble("punch_energy_regen", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("punch_ad_factor").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 1.0))
+                                .executes(ctx -> setGlobalDouble("punch_ad_factor", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("punch_velocity_factor").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 2.0))
+                                .executes(ctx -> setGlobalDouble("punch_velocity_factor", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("punch_knuckle_radius").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.5, 10.0))
+                                .executes(ctx -> setGlobalDouble("punch_knuckle_radius", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("parry_invul_seconds").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.05, 100.0))
                                 .executes(ctx -> setGlobalDouble("parry_invul_seconds", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("parry_counter_damage").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 100.0))
                                 .executes(ctx -> setGlobalDouble("parry_counter_damage", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("parry_hitstop").then(Commands.argument("value", IntegerArgumentType.integer(0, 100))
+                                .executes(ctx -> setGlobalInt("parry_hitstop", IntegerArgumentType.getInteger(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("parry_shake_power").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 10.0))
+                                .executes(ctx -> setGlobalDouble("parry_shake_power", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("parry_explosion").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 20.0))
+                                .executes(ctx -> setGlobalDouble("parry_explosion", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("whiplash_range").then(Commands.argument("value", DoubleArgumentType.doubleArg(5.0, 200.0))
+                                .executes(ctx -> setGlobalDouble("whiplash_range", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("whiplash_fly_speed").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.5, 10.0))
+                                .executes(ctx -> setGlobalDouble("whiplash_fly_speed", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("whiplash_pull_speed").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.5, 10.0))
+                                .executes(ctx -> setGlobalDouble("whiplash_pull_speed", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("coin_max_count").then(Commands.argument("value", IntegerArgumentType.integer(1, 20))
                                 .executes(ctx -> setGlobalInt("coin_max_count", IntegerArgumentType.getInteger(ctx, "value"), ctx.getSource()))))
-                        .then(Commands.literal("coin_regen_per_tick").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.001, 1.0))
-                                .executes(ctx -> setGlobalDouble("coin_regen_per_tick", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("coin_regen").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.001, 1.0))
+                                .executes(ctx -> setGlobalDouble("coin_regen", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("coin_base_damage").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 100.0))
                                 .executes(ctx -> setGlobalDouble("coin_base_damage", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
-                        .then(Commands.literal("coin_parry_damage_per_count").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.0, 50.0))
-                                .executes(ctx -> setGlobalDouble("coin_parry_damage_per_count", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
+                        .then(Commands.literal("projectile_parry_speed").then(Commands.argument("value", DoubleArgumentType.doubleArg(0.1, 20.0))
+                                .executes(ctx -> setGlobalDouble("projectile_parry_speed", DoubleArgumentType.getDouble(ctx, "value"), ctx.getSource()))))
                         .then(Commands.literal("list")
                                 .executes(ctx -> printGlobalConfig(ctx.getSource())))
                 )
@@ -158,6 +184,8 @@ public class HighSpeedCommand {
     private static int setGlobalDouble(String key, double value, CommandSourceStack source) {
         switch (key) {
             case "stamina_regen" -> HighSpeedServerConfig.STAMINA_REGEN_PER_TICK.set(value);
+            case "stamina_boost_enchant" -> HighSpeedServerConfig.STAMINA_BOOST_ENCHANT_VALUE.set(value);
+            case "dash_stamina_cost" -> HighSpeedServerConfig.DASH_STAMINA_COST.set(value);
             case "slide_speed" -> HighSpeedServerConfig.SLIDE_SPEED.set(value);
             case "slide_jump_h_mult" -> HighSpeedServerConfig.SLIDE_JUMP_HORIZONTAL_MULT.set(value);
             case "slide_jump_v_base" -> HighSpeedServerConfig.SLIDE_JUMP_VERTICAL_BASE.set(value);
@@ -167,13 +195,23 @@ public class HighSpeedCommand {
             case "slam_downward_speed" -> HighSpeedServerConfig.SLAM_DOWNWARD_SPEED.set(value);
             case "slam_radius" -> HighSpeedServerConfig.SLAM_RADIUS.set(value);
             case "slam_knockup_power" -> HighSpeedServerConfig.SLAM_KNOCKUP_POWER.set(value);
+            case "slam_attack_factor" -> HighSpeedServerConfig.SLAM_DAMAGE_ATTACK_FACTOR.set(value);
+            case "slam_enchant_factor" -> HighSpeedServerConfig.SLAM_ENCHANT_FACTOR.set(value);
             case "punch_damage_base" -> HighSpeedServerConfig.PUNCH_DAMAGE_BASE.set(value);
             case "punch_energy_regen" -> HighSpeedServerConfig.PUNCH_ENERGY_REGEN_PER_TICK.set(value);
+            case "punch_ad_factor" -> HighSpeedServerConfig.PUNCH_AD_FACTOR.set(value);
+            case "punch_velocity_factor" -> HighSpeedServerConfig.PUNCH_VELOCITY_FACTOR.set(value);
+            case "punch_knuckle_radius" -> HighSpeedServerConfig.PUNCH_KNUCKLE_RADIUS.set(value);
             case "parry_invul_seconds" -> HighSpeedServerConfig.PARRY_INVUL_SECONDS.set(value);
             case "parry_counter_damage" -> HighSpeedServerConfig.PARRY_COUNTER_DAMAGE.set(value);
-            case "coin_regen_per_tick" -> HighSpeedServerConfig.COIN_REGEN_PER_TICK.set(value);
+            case "parry_shake_power" -> HighSpeedServerConfig.PARRY_SCREEN_SHAKE_POWER.set(value);
+            case "parry_explosion" -> HighSpeedServerConfig.PARRY_EXPLOSION_SIZE.set(value);
+            case "whiplash_range" -> HighSpeedServerConfig.WHIPLASH_MAX_RANGE.set(value);
+            case "whiplash_fly_speed" -> HighSpeedServerConfig.WHIPLASH_FLY_SPEED.set(value);
+            case "whiplash_pull_speed" -> HighSpeedServerConfig.WHIPLASH_PULL_SPEED.set(value);
+            case "coin_regen" -> HighSpeedServerConfig.COIN_REGEN_PER_TICK.set(value);
             case "coin_base_damage" -> HighSpeedServerConfig.COIN_BASE_DAMAGE.set(value);
-            case "coin_parry_damage_per_count" -> HighSpeedServerConfig.COIN_PARRY_DAMAGE_PER_COUNT.set(value);
+            case "projectile_parry_speed" -> HighSpeedServerConfig.PROJECTILE_PARRY_SPEED.set(value);
         }
         HighSpeedServerConfig.SPEC.save();
         source.sendSuccess(() -> Component.literal("[HighSpeed] §a" + key + " §f= §b" + value + " §7(保存済み)"), true);
@@ -186,6 +224,7 @@ public class HighSpeedCommand {
             case "dash_max_count" -> HighSpeedServerConfig.DASH_MAX_COUNT.set(value);
             case "slide_air_timeout" -> HighSpeedServerConfig.SLIDE_AIR_TIMEOUT_TICKS.set(value);
             case "walljump_max_count" -> HighSpeedServerConfig.WALLJUMP_MAX_COUNT.set(value);
+            case "parry_hitstop" -> HighSpeedServerConfig.PARRY_HITSTOP_TICKS.set(value);
             case "coin_max_count" -> HighSpeedServerConfig.COIN_MAX_COUNT.set(value);
         }
         HighSpeedServerConfig.SPEC.save();

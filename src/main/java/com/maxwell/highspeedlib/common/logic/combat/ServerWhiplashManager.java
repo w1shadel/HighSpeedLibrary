@@ -38,6 +38,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 
+import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
+
 import java.util.Optional;
 
 @SuppressWarnings("removal")
@@ -47,9 +49,6 @@ public class ServerWhiplashManager {
     public static final int FLYING = 1;
     public static final int HOOKED = 2;
     public static final int RETRACTING = 3;
-    public static final double MAX_RANGE = 70.0;
-    public static final double FLY_SPEED = 3.0;
-    public static final double PULL_SPEED = 2.0;
 
     public static HookData getServerData(ServerPlayer player) {
         PlayerCombatState state = PlayerStateManager.getState(player).getCombat();
@@ -96,14 +95,15 @@ public class ServerWhiplashManager {
         Level level = player.level();
         Vec3 eyePos = player.getEyePosition();
         if (data.state == FLYING) {
-            data.distance += FLY_SPEED;
-            if (data.distance > MAX_RANGE) {
+            double flySpeed = HighSpeedServerConfig.WHIPLASH_FLY_SPEED.get();
+            data.distance += flySpeed;
+            if (data.distance > HighSpeedServerConfig.WHIPLASH_MAX_RANGE.get()) {
                 data.state = RETRACTING;
                 sync(player, data);
                 return;
             }
             Vec3 rayEnd = eyePos.add(data.shootDir.scale(data.distance));
-            Vec3 rayStart = eyePos.add(data.shootDir.scale(Math.max(0, data.distance - FLY_SPEED)));
+            Vec3 rayStart = eyePos.add(data.shootDir.scale(Math.max(0, data.distance - flySpeed)));
             BlockHitResult blockHit = level.clip(new ClipContext(rayStart, rayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
             Vec3 targetEnd = blockHit.getType() != HitResult.Type.MISS ? blockHit.getLocation() : rayEnd;
             AABB aabb = new AABB(rayStart, targetEnd).inflate(2.0);
@@ -127,6 +127,7 @@ public class ServerWhiplashManager {
                 data.distance = eyePos.distanceTo(hitEntity.position());
                 sync(player, data);
             } else if (blockHit.getType() == HitResult.Type.BLOCK) {
+                double maxRange = HighSpeedServerConfig.WHIPLASH_MAX_RANGE.get();
                 BlockPos pos = blockHit.getBlockPos();
                 BlockState state = level.getBlockState(pos);
                 ItemStack offhandStack = player.getOffhandItem();
@@ -219,9 +220,10 @@ public class ServerWhiplashManager {
             }
             Vec3 dirToTarget = targetMidPos.subtract(eyePos).normalize();
             HitResult los = level.clip(new ClipContext(eyePos, targetMidPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
-            if (los.getType() == HitResult.Type.BLOCK && los.getLocation().distanceTo(eyePos) < data.distance - 0.5) {
+            Vec3 losPos = los.getLocation();
+            if (los.getType() == HitResult.Type.BLOCK && losPos.distanceTo(eyePos) < data.distance - 0.5) {
                 data.obstructionTicks++;
-                if (data.obstructionTicks > 10) {
+                if (data.obstructionTicks > HighSpeedServerConfig.WHIPLASH_OBSTRUCTION_MAX_TICKS.get()) {
                     data.state = RETRACTING;
                     sync(player, data);
                 }
@@ -234,17 +236,17 @@ public class ServerWhiplashManager {
             boolean pullPlayer = target.getBbHeight() >= player.getBbHeight() || isBoss;
             double distToTravel = data.distance - stopDistance;
             if (pullPlayer) {
-                double speed = Math.min(2.5, distToTravel);
+                double speed = Math.min(HighSpeedServerConfig.WHIPLASH_PULL_PLAYER_MAX_SPEED.get(), distToTravel);
                 player.setDeltaMovement(dirToTarget.scale(speed));
                 player.fallDistance = 0;
                 player.hurtMarked = true;
             } else {
-                double speed = Math.min(2.8, distToTravel);
+                double speed = Math.min(HighSpeedServerConfig.WHIPLASH_PULL_TARGET_MAX_SPEED.get(), distToTravel);
                 target.setDeltaMovement(dirToTarget.scale(-speed).add(0, 0.1, 0));
                 target.hurtMarked = true;
             }
         } else if (data.state == RETRACTING) {
-            data.distance -= PULL_SPEED;
+            data.distance -= HighSpeedServerConfig.WHIPLASH_PULL_SPEED.get();
             if (data.distance <= 0) {
                 data.state = NONE;
                 data.distance = 0;

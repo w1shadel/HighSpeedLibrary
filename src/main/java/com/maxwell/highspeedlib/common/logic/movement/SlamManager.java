@@ -72,7 +72,7 @@ public class SlamManager {
                         new S2CSyncSlamPacket(player.getId(), player.position()));
                 SlideManager.toggleSlide(player, true, 0, 1.0f);
             } else {
-                player.setDeltaMovement(0, -3.0, 0);
+                player.setDeltaMovement(0, -HighSpeedServerConfig.SLAM_DOWNWARD_SPEED.get(), 0);
                 player.hurtMarked = true;
             }
         }
@@ -85,9 +85,9 @@ public class SlamManager {
         ServerLevel level = (ServerLevel) player.level();
         double slamBase = player.getAttributeValue(ModAttributes.SLAM_DAMAGE.get());
         double playerAttack = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
-        double scalingDamage = slamBase + (playerAttack * 0.5);
+        double scalingDamage = slamBase + (playerAttack * HighSpeedServerConfig.SLAM_DAMAGE_ATTACK_FACTOR.get());
         int featherFallingLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.FALL_PROTECTION, player);
-        float enchantMultiplier = 1.0f + (featherFallingLevel * 0.1f);
+        float enchantMultiplier = 1.0f + (featherFallingLevel * HighSpeedServerConfig.SLAM_ENCHANT_FACTOR.get().floatValue());
         float finalDamage = (float) (scalingDamage * enchantMultiplier);
         level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0f, 0.8f);
         double radius = HighSpeedServerConfig.SLAM_RADIUS.get();

@@ -53,7 +53,8 @@ public class C2SKeyInputPacket {
                 if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Dash(player))) {
                     return;
                 }
-                if (StaminaManager.consumeStamina(player, 1.0)) {
+                double dashCost = com.maxwell.highspeedlib.api.config.HighSpeedServerConfig.DASH_STAMINA_COST.get();
+                if (StaminaManager.consumeStamina(player, dashCost)) {
                     float x = msg.xInput;
                     float z = msg.zInput;
                     Vec3 dashVec;

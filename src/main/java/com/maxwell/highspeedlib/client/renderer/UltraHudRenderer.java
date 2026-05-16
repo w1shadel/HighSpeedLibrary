@@ -33,9 +33,6 @@ public class UltraHudRenderer {
 
     private static final float HUD_FULL_W = 152f;
     private static final float HUD_BASE_H = 150f;
-    private static final float SCALE_LEFT = 1.0f;
-    private static final float SCALE_RIGHT = 0.85f;
-    private static final float TILT_UP_RIGHT = -22.0f;
 
     public static boolean dashUnlocked = true;
     public static boolean punchUnlocked = true;
@@ -70,9 +67,9 @@ public class UltraHudRenderer {
     private static float getPerspectiveY(float x, float y) {
         float hudCenterY = HUD_BASE_H / 2f;
         float progress = x / HUD_FULL_W;
-        float s = net.minecraft.util.Mth.lerp(progress, SCALE_LEFT, SCALE_RIGHT);
-        float t = net.minecraft.util.Mth.lerp(progress, 0f, TILT_UP_RIGHT);
-        return hudCenterY + (y - hudCenterY) * s + t;
+        float scale = net.minecraft.util.Mth.lerp(progress, HighSpeedClientConfig.HUD_SCALE_LEFT.get().floatValue(), HighSpeedClientConfig.HUD_SCALE_RIGHT.get().floatValue());
+        float tilt = net.minecraft.util.Mth.lerp(progress, 0f, HighSpeedClientConfig.HUD_TILT.get().floatValue());
+        return hudCenterY + (y - hudCenterY) * scale + tilt;
     }
 
     @SubscribeEvent
@@ -106,8 +103,14 @@ public class UltraHudRenderer {
         float yawDiff = player.getYRot() - lastYaw;
         float pitchDiff = player.getXRot() - lastPitch;
         if (Math.abs(yawDiff) > 180) yawDiff = 0;
-        yawOffset = net.minecraft.util.Mth.lerp(0.15f * partialTick, yawOffset, net.minecraft.util.Mth.clamp(-yawDiff * 1.5f, -15f, 15f));
-        pitchOffset = net.minecraft.util.Mth.lerp(0.15f * partialTick, pitchOffset, net.minecraft.util.Mth.clamp(pitchDiff * 1.5f, -10f, 10f));
+        
+        float yawSens = HighSpeedClientConfig.HUD_YAW_SENSITIVITY.get().floatValue();
+        float pitchSens = HighSpeedClientConfig.HUD_PITCH_SENSITIVITY.get().floatValue();
+        float maxYawOff = HighSpeedClientConfig.HUD_MAX_OFFSET_YAW.get().floatValue();
+        float maxPitchOff = HighSpeedClientConfig.HUD_MAX_OFFSET_PITCH.get().floatValue();
+
+        yawOffset = net.minecraft.util.Mth.lerp(0.15f * partialTick, yawOffset, net.minecraft.util.Mth.clamp(-yawDiff * yawSens, -maxYawOff, maxYawOff));
+        pitchOffset = net.minecraft.util.Mth.lerp(0.15f * partialTick, pitchOffset, net.minecraft.util.Mth.clamp(pitchDiff * pitchSens, -maxPitchOff, maxPitchOff));
         lastYaw = player.getYRot();
         lastPitch = player.getXRot();
 
@@ -134,17 +137,21 @@ public class UltraHudRenderer {
 
         float hpHeight = 14f;
         float hpY = currentY;
-        float POINTS_PER_HP = 5.0f;
+        float pointsPerHP = HighSpeedClientConfig.HUD_POINTS_PER_HP.get().floatValue();
         float currentHP = player.getHealth();
         float absorption = player.getAbsorptionAmount();
-        int displayHP = (int) ((currentHP + absorption) * POINTS_PER_HP);
+        int displayHP = (int) ((currentHP + absorption) * pointsPerHP);
         drawTrapezoid(graphics, 0, currentY, totalWidth, hpHeight, 0xAA222222, Z_BG);
         float barPadding = 2f;
         float barW = totalWidth - (barPadding * 2);
+        
+        int colorHP = HighSpeedClientConfig.getColor(HighSpeedClientConfig.HUD_COLOR_HP);
+        int colorAbs = HighSpeedClientConfig.getColor(HighSpeedClientConfig.HUD_COLOR_ABSORPTION);
+        
         if (currentHP > 0)
-            drawTrapezoid(graphics, barPadding, currentY + barPadding, Math.min(1.0f, currentHP / 20.0f) * barW, hpHeight - (barPadding * 2), 0xFFFF2222, Z_BAR);
+            drawTrapezoid(graphics, barPadding, currentY + barPadding, Math.min(1.0f, currentHP / 20.0f) * barW, hpHeight - (barPadding * 2), colorHP, Z_BAR);
         if (absorption > 0)
-            drawTrapezoid(graphics, barPadding, currentY + barPadding, Math.min(1.0f, absorption / 20.0f) * barW, hpHeight - (barPadding * 2), 0xFF44FF44, Z_TOP);
+            drawTrapezoid(graphics, barPadding, currentY + barPadding, Math.min(1.0f, absorption / 20.0f) * barW, hpHeight - (barPadding * 2), colorAbs, Z_TOP);
         drawTextWithPerspective(graphics, mc, String.valueOf(displayHP), 5, currentY + 3, 0xFFFFFFFF, Z_TOP);
         currentY += hpHeight + gap;
 
@@ -153,9 +160,20 @@ public class UltraHudRenderer {
             float staminaHeight = 10f;
             float targetColorLerp = clientStamina <= 1.0 ? 1.0f : 0.0f;
             staminaColorLerp = net.minecraft.util.Mth.lerp(0.25f * partialTick, staminaColorLerp, targetColorLerp);
-            int r_s = (int) net.minecraft.util.Mth.lerp(staminaColorLerp, 0x66, 0xFF);
-            int g_s = (int) net.minecraft.util.Mth.lerp(staminaColorLerp, 0xEE, 0x44);
-            int b_s = (int) net.minecraft.util.Mth.lerp(staminaColorLerp, 0xFF, 0x44);
+            
+            int colorNormal = HighSpeedClientConfig.getColor(HighSpeedClientConfig.HUD_COLOR_STAMINA_NORMAL);
+            int colorLow = HighSpeedClientConfig.getColor(HighSpeedClientConfig.HUD_COLOR_STAMINA_LOW);
+            
+            int r_n = (colorNormal >> 16) & 0xFF;
+            int g_n = (colorNormal >> 8) & 0xFF;
+            int b_n = colorNormal & 0xFF;
+            int r_l = (colorLow >> 16) & 0xFF;
+            int g_l = (colorLow >> 8) & 0xFF;
+            int b_l = colorLow & 0xFF;
+
+            int r_s = (int) net.minecraft.util.Mth.lerp(staminaColorLerp, r_n, r_l);
+            int g_s = (int) net.minecraft.util.Mth.lerp(staminaColorLerp, g_n, g_l);
+            int b_s = (int) net.minecraft.util.Mth.lerp(staminaColorLerp, b_n, b_l);
             int currentStaminaColor = 0xFF000000 | (r_s << 16) | (g_s << 8) | b_s;
 
             int segments = (int) Math.max(1, clientMaxStamina);
@@ -197,19 +215,21 @@ public class UltraHudRenderer {
             float dotGap = 2f;
             float startX = armSectionX + (armSectionW / 2f) - ((clientMaxCoins * (dotSize + dotGap) - dotGap) / 2f);
             float dotY = hpY + armSectionH - 6f;
+            int colorCoin = HighSpeedClientConfig.getColor(HighSpeedClientConfig.HUD_COLOR_COIN);
             for (int i = 0; i < clientMaxCoins; i++) {
                 float dx = startX + (i * (dotSize + dotGap));
                 drawTrapezoid(graphics, dx, dotY, dotSize, dotSize, 0xAA222222, Z_TOP);
                 if (clientCoinStock >= i + 1) {
-                    drawTrapezoid(graphics, dx, dotY, dotSize, dotSize, 0xFFFFFF00, Z_TOP + 1);
+                    drawTrapezoid(graphics, dx, dotY, dotSize, dotSize, colorCoin, Z_TOP + 1);
                 } else if (clientCoinStock > i) {
                     float chargeRatio = (float) (clientCoinStock - i);
-                    drawTrapezoid(graphics, dx, dotY + (dotSize - (dotSize * chargeRatio)), dotSize, dotSize * chargeRatio, 0x88AAAA00, Z_TOP + 1);
+                    int dimmedCoin = (colorCoin & 0xFFFFFF) | 0x88000000;
+                    drawTrapezoid(graphics, dx, dotY + (dotSize - (dotSize * chargeRatio)), dotSize, dotSize * chargeRatio, dimmedCoin, Z_TOP + 1);
                 }
             }
         }
 
-        int slotsToShow = 3;
+        int slotsToShow = HighSpeedClientConfig.HUD_SLOTS_TO_SHOW.get();
         float slotSize = 20f;
         float slotGap = 2f;
         for (int i = 1; i <= slotsToShow; i++) {
@@ -226,16 +246,18 @@ public class UltraHudRenderer {
         drawTrapezoid(graphics, 0, currentY, totalWidth, foodHeight, 0xAA222222, Z_BG);
         float foodHPadding = 2f;
         float foodFillW = (player.getFoodData().getFoodLevel() / 20.0f) * (totalWidth - (foodHPadding * 2));
+        int colorFood = HighSpeedClientConfig.getColor(HighSpeedClientConfig.HUD_COLOR_FOOD);
         if (foodFillW > 0)
-            drawTrapezoid(graphics, foodHPadding, currentY + 1f, foodFillW, foodHeight - 2f, 0xFFFF8800, Z_BAR);
+            drawTrapezoid(graphics, foodHPadding, currentY + 1f, foodFillW, foodHeight - 2f, colorFood, Z_BAR);
         currentY += foodHeight + gap;
 
         float expHeight = 10f;
         drawTrapezoid(graphics, 0, currentY, totalWidth, expHeight, 0xAA222222, Z_BG);
         float expHPadding = 2f;
         float expFillW = player.experienceProgress * (totalWidth - (expHPadding * 2));
+        int colorExp = HighSpeedClientConfig.getColor(HighSpeedClientConfig.HUD_COLOR_EXP);
         if (expFillW > 0)
-            drawTrapezoid(graphics, expHPadding, currentY + 1f, expFillW, expHeight - 2f, 0xFF00FF00, Z_BAR);
+            drawTrapezoid(graphics, expHPadding, currentY + 1f, expFillW, expHeight - 2f, colorExp, Z_BAR);
         if (player.experienceLevel > 0) {
             String levelStr = String.valueOf(player.experienceLevel);
             drawTextWithPerspective(graphics, mc, levelStr, (totalWidth / 2f) - (mc.font.width(levelStr) / 2f), currentY + 1, 0xFFFFFFFF, Z_TOP);
@@ -268,7 +290,7 @@ public class UltraHudRenderer {
     }
     private static void drawTextWithPerspective(GuiGraphics graphics, Minecraft mc, String text, float x, float y, int color, float z) {
         float progress = x / HUD_FULL_W;
-        float scale = net.minecraft.util.Mth.lerp(progress, SCALE_LEFT, SCALE_RIGHT);
+        float scale = net.minecraft.util.Mth.lerp(progress, HighSpeedClientConfig.HUD_SCALE_LEFT.get().floatValue(), HighSpeedClientConfig.HUD_SCALE_RIGHT.get().floatValue());
         float yPos = getPerspectiveY(x, y);
         float yNext = getPerspectiveY(x + 10f, y);
         float angle = (float) Math.toDegrees(Math.atan2(yNext - yPos, 10f));
@@ -282,7 +304,7 @@ public class UltraHudRenderer {
 
     private static void drawSmallItemWithPerspective(GuiGraphics graphics, Minecraft mc, ItemStack item, float x, float y, float z) {
         float progress = x / HUD_FULL_W;
-        float scale = net.minecraft.util.Mth.lerp(progress, SCALE_LEFT, SCALE_RIGHT);
+        float scale = net.minecraft.util.Mth.lerp(progress, HighSpeedClientConfig.HUD_SCALE_LEFT.get().floatValue(), HighSpeedClientConfig.HUD_SCALE_RIGHT.get().floatValue());
         float yPos = getPerspectiveY(x, y);
         float yNext = getPerspectiveY(x + 10f, y);
         float angle = (float) Math.toDegrees(Math.atan2(yNext - yPos, 10f));
@@ -296,7 +318,7 @@ public class UltraHudRenderer {
 
     private static void drawItemWithPerspective(GuiGraphics graphics, ItemStack heldItem, float x, float y, float z) {
         float progress = x / HUD_FULL_W;
-        float scale = net.minecraft.util.Mth.lerp(progress, SCALE_LEFT, SCALE_RIGHT);
+        float scale = net.minecraft.util.Mth.lerp(progress, HighSpeedClientConfig.HUD_SCALE_LEFT.get().floatValue(), HighSpeedClientConfig.HUD_SCALE_RIGHT.get().floatValue());
         float yPos = getPerspectiveY(x, y);
         float yNext = getPerspectiveY(x + 10f, y);
         float angle = (float) Math.toDegrees(Math.atan2(yNext - yPos, 10f));
@@ -322,5 +344,6 @@ public class UltraHudRenderer {
         builder.vertex(matrix, x + w, yBotR, z).color(255, 255, 255, 255).uv(1, 1).uv2(15728880).endVertex();
         builder.vertex(matrix, x + w, yTopR, z).color(255, 255, 255, 255).uv(1, 0).uv2(15728880).endVertex();
     }
+
 
 }

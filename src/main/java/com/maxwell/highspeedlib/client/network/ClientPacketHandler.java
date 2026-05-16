@@ -62,7 +62,8 @@ public class ClientPacketHandler {
     }
 
     public static void handleParry() {
-        com.maxwell.highspeedlib.common.logic.TimeManager.setHitstop(10);
+        int hitstop = com.maxwell.highspeedlib.api.config.HighSpeedServerConfig.PARRY_HITSTOP_TICKS.get() * 2;
+        com.maxwell.highspeedlib.common.logic.TimeManager.setHitstop(hitstop);
         ClientEffectManager.triggerParryFlash();
     }
 }

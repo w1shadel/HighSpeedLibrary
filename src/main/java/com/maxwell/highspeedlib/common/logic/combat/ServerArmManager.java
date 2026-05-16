@@ -39,7 +39,9 @@ import java.util.List;
 
 @Mod.EventBusSubscriber(modid = com.maxwell.highspeedlib.HighSpeedLib.MODID)
 public class ServerArmManager {
-    private static final double FEEDBACKER_RANGE = 2.5;
+    private static double getFeedbackerRange() {
+        return 2.5; // ここは固定でも良いが、念のためメソッド化しておくか、後でConfig化する
+    }
 
     public static boolean isPlayerParrying(LivingEntity entity) {
         if (!(entity instanceof Player player)) {
@@ -85,7 +87,7 @@ public class ServerArmManager {
         Vec3 lookVec = player.getLookAngle();
         ArmType arm = ArmManager.getArm(player);
         boolean isRed = (arm == ArmType.KNUCKLEBLASTER);
-        double range = FEEDBACKER_RANGE;
+        double range = 2.5; 
         AABB searchBox = getForwardParryBox(player, range);
         List<Entity> allEntities = level.getEntities((Entity) null, searchBox, e -> e != player);
 
@@ -128,12 +130,12 @@ public class ServerArmManager {
 
                 double punchBase = player.getAttributeValue(ModAttributes.PUNCH_DAMAGE.get());
                 double rawAD = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
-                double adFactor = 1.0 + (rawAD - 1.0) * 0.2;
+                double adFactor = 1.0 + (rawAD - 1.0) * HighSpeedServerConfig.PUNCH_AD_FACTOR.get();
                 double velocity = player.getDeltaMovement().horizontalDistance();
+                double velocityModifier = Math.min(HighSpeedServerConfig.PUNCH_VELOCITY_MAX_MODIFIER.get(), 1.0 + (velocity * HighSpeedServerConfig.PUNCH_VELOCITY_FACTOR.get()));
                 PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
                 double configBaseDamage = settings.punchDamageBase;
-                double velocityModifier = Math.min(1.4, 1.0 + (velocity * 0.5));
-                float finalDamage = (float) ((punchBase + configBaseDamage) * adFactor * 0.4 * velocityModifier);
+                float finalDamage = (float) ((punchBase + configBaseDamage) * adFactor * HighSpeedServerConfig.PUNCH_FEEDBACKER_DAMAGE_MULT.get() * velocityModifier);
 
                 AbsoluteDamageManager.dealAbsoluteDamage(target, finalDamage);
                 target.setDeltaMovement(lookVec.scale(0.5).add(0, 0.1, 0));
@@ -211,7 +213,7 @@ public class ServerArmManager {
 
     private static void performKnuckleBlast(ServerPlayer player) {
         ServerLevel level = (ServerLevel) player.level();
-        double range = FEEDBACKER_RANGE;
+        double range = 2.5;
         AABB searchBox = getForwardParryBox(player, range);
         List<Entity> allEntities = level.getEntities((Entity) null, searchBox, e -> e != player);
         for (Entity entity : allEntities) {
@@ -220,13 +222,14 @@ public class ServerArmManager {
             Vec3 punchPos = player.getEyePosition().add(look.scale(1.5));
             double punchBase = player.getAttributeValue(ModAttributes.PUNCH_DAMAGE.get());
             double rawAD = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
-            double adFactor = 1.0 + (rawAD - 1.0) * 0.2;
+            double adFactor = 1.0 + (rawAD - 1.0) * HighSpeedServerConfig.PUNCH_AD_FACTOR.get();
             double velocity = player.getDeltaMovement().horizontalDistance();
-            double velocityModifier = Math.min(1.4, 1.0 + (velocity * 0.5));
+            double velocityModifier = Math.min(HighSpeedServerConfig.PUNCH_VELOCITY_MAX_MODIFIER.get(), 1.0 + (velocity * HighSpeedServerConfig.PUNCH_VELOCITY_FACTOR.get()));
             PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
             double configBaseDamage = settings.punchDamageBase;
-            AABB area = new AABB(punchPos.subtract(2.5, 2.5, 2.5), punchPos.add(2.5, 2.5, 2.5));
-            float blastDamage = (float) ((punchBase + configBaseDamage) * adFactor * 1.5 * velocityModifier);
+            double blastRadius = HighSpeedServerConfig.PUNCH_KNUCKLE_RADIUS.get();
+            AABB area = new AABB(punchPos.subtract(blastRadius, blastRadius, blastRadius), punchPos.add(blastRadius, blastRadius, blastRadius));
+            float blastDamage = (float) ((punchBase + configBaseDamage) * adFactor * HighSpeedServerConfig.PUNCH_KNUCKLE_DAMAGE_MULT.get() * velocityModifier);
             AbsoluteDamageManager.dealAbsoluteDamage(target, blastDamage);
             if (target instanceof IHighSpeedInteractable interactable) {
                 if (interactable.onHandPunch(player, true)) {
@@ -253,7 +256,8 @@ public class ServerArmManager {
     public static void performProjectileParry(Projectile p, Player player) {
         Vec3 look = player.getLookAngle();
         p.setPos(player.getX() + look.x, player.getEyeY() + look.y, player.getZ() + look.z);
-        p.shoot(look.x, look.y, look.z, 3.5f, 0.0f);
+        float parrySpeed = HighSpeedServerConfig.PROJECTILE_PARRY_SPEED.get().floatValue();
+        p.shoot(look.x, look.y, look.z, parrySpeed, 0.0f);
         p.setOwner(player);
         if (!(p instanceof ThrownCoinEntity)) {
             p.getPersistentData().putBoolean("hs_explosive", true);
@@ -261,9 +265,11 @@ public class ServerArmManager {
     }
 
     public static void triggerParryEffects(ServerPlayer player) {
-        TimeManager.setHitstop(5);
+        TimeManager.setHitstop(HighSpeedServerConfig.PARRY_HITSTOP_TICKS.get());
         PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CParryPacket());
-        PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CScreenShakePacket(2.0f, 5));
+        float shakePower = HighSpeedServerConfig.PARRY_SCREEN_SHAKE_POWER.get().floatValue();
+        int shakeTicks = HighSpeedServerConfig.PARRY_SCREEN_SHAKE_TICKS.get();
+        PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CScreenShakePacket(shakePower, shakeTicks));
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, SoundSource.PLAYERS, 1.0f, 1.8f);
     }
