@@ -8,5 +8,11 @@
   "key.highspeedlib.whiplash": "Whiplash",
   "item.highspeedlib.v1_wings": "Machine wings",
   "item.highspeedlib.boss_bar_applier": "Boss Bar Tag Applier",
-  "enchantment.highspeedlib.stamina_boost": "Stamina Boost"
+  "enchantment.highspeedlib.stamina_boost": "Stamina Boost",
+  "death.attack.highspeedlib.blast": "%s was caught in the explosion.",
+  "death.attack.highspeedlib.feedbucker": "%s was powerless against this powerful arms.",
+  "death.attack.highspeedlib.rico_shot": "%s was caught in a ricochet.",
+  "death.attack.highspeedlib.blast.player": "%1$s was blown to bits by %2$s 's arm.",
+  "death.attack.highspeedlib.feedbucker.player": "%1$s was torn to shreds by %2$s 's powerful arms.",
+  "death.attack.highspeedlib.rico_shot.player": "%1$s was caught in the crossfire of %2$s 's ricochet."
 }

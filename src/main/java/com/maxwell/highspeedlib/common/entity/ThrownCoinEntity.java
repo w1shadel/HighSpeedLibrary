@@ -1,7 +1,7 @@
 package com.maxwell.highspeedlib.common.entity;
 
 import com.maxwell.highspeedlib.common.logic.combat.ServerArmManager;
-import com.maxwell.highspeedlib.common.logic.util.AbsoluteDamageManager;
+import com.maxwell.highspeedlib.init.ModDamageTypes;
 import com.maxwell.highspeedlib.init.ModEntities;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -66,7 +66,7 @@ public class ThrownCoinEntity extends ThrowableItemProjectile {
                     LivingEntity target = enemies.get(i);
                     ServerArmManager.spawnBeam(serverLevel, coin.position(), target.getEyePosition());
                     float finalDamage = baseFinalDamage * damageMultiplier;
-                    AbsoluteDamageManager.dealAbsoluteDamage(target, finalDamage);
+                    target.hurt(ModDamageTypes.ricoAttack(level, target), finalDamage);
                     float pitch = isCrit ? 2.0f : 1.5f;
                     level.playSound(null, target.blockPosition(), SoundEvents.ZOMBIE_VILLAGER_CONVERTED, SoundSource.PLAYERS, 1.0f, pitch);
                 }

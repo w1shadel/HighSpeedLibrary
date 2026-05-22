@@ -7,15 +7,16 @@ import com.maxwell.highspeedlib.api.main.IParryable;
 import com.maxwell.highspeedlib.client.state.ArmManager;
 import com.maxwell.highspeedlib.common.entity.ThrownCoinEntity;
 import com.maxwell.highspeedlib.common.logic.TimeManager;
+import com.maxwell.highspeedlib.common.logic.ability.AbilityManager;
 import com.maxwell.highspeedlib.common.logic.state.PlayerAbilityState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerCombatState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
-import com.maxwell.highspeedlib.common.logic.util.AbsoluteDamageManager;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.action.S2CStartPunchAnimationPacket;
 import com.maxwell.highspeedlib.common.network.packets.effect.S2CParryPacket;
 import com.maxwell.highspeedlib.common.network.packets.effect.S2CScreenShakePacket;
 import com.maxwell.highspeedlib.init.ModAttributes;
+import com.maxwell.highspeedlib.init.ModDamageTypes;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -31,6 +32,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
@@ -39,8 +41,13 @@ import java.util.List;
 
 @Mod.EventBusSubscriber(modid = com.maxwell.highspeedlib.HighSpeedLib.MODID)
 public class ServerArmManager {
-    private static double getFeedbackerRange() {
-        return 2.5; // ここは固定でも良いが、念のためメソッド化しておくか、後でConfig化する
+    @SubscribeEvent
+    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            PlayerAbilityState state = PlayerStateManager.getState(player).getAbility();
+            state.refreshFromConfig();
+            AbilityManager.sync(player);
+        }
     }
 
     public static boolean isPlayerParrying(LivingEntity entity) {
@@ -128,16 +135,16 @@ public class ServerArmManager {
                     }
                 }
 
-                double punchBase = player.getAttributeValue(ModAttributes.PUNCH_DAMAGE.get());
+                PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
+                double baseDamage = settings.punchDamageBase;
                 double rawAD = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
-                double adFactor = 1.0 + (rawAD - 1.0) * HighSpeedServerConfig.PUNCH_AD_FACTOR.get();
+                double adBonus = (rawAD - 1.0) * HighSpeedServerConfig.PUNCH_AD_FACTOR.get();
                 double velocity = player.getDeltaMovement().horizontalDistance();
                 double velocityModifier = Math.min(HighSpeedServerConfig.PUNCH_VELOCITY_MAX_MODIFIER.get(), 1.0 + (velocity * HighSpeedServerConfig.PUNCH_VELOCITY_FACTOR.get()));
-                PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
-                double configBaseDamage = settings.punchDamageBase;
-                float finalDamage = (float) ((punchBase + configBaseDamage) * adFactor * HighSpeedServerConfig.PUNCH_FEEDBACKER_DAMAGE_MULT.get() * velocityModifier);
+                double armMult = isRed ? HighSpeedServerConfig.PUNCH_KNUCKLE_DAMAGE_MULT.get() : HighSpeedServerConfig.PUNCH_FEEDBACKER_DAMAGE_MULT.get();
 
-                AbsoluteDamageManager.dealAbsoluteDamage(target, finalDamage);
+                float finalDamage = (float) ((baseDamage + adBonus) * armMult * velocityModifier);
+                target.hurt(ModDamageTypes.feedbuckerAttack(level, target), finalDamage);
                 target.setDeltaMovement(lookVec.scale(0.5).add(0, 0.1, 0));
                 target.hurtMarked = true;
 
@@ -216,36 +223,47 @@ public class ServerArmManager {
         double range = 2.5;
         AABB searchBox = getForwardParryBox(player, range);
         List<Entity> allEntities = level.getEntities((Entity) null, searchBox, e -> e != player);
+
+        PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
+        double baseDamage = settings.punchDamageBase; 
+        double punchAttr = player.getAttributeValue(ModAttributes.PUNCH_DAMAGE.get()); 
+        double rawAD = player.getAttributeValue(Attributes.ATTACK_DAMAGE); 
+
+        double adBonus = (rawAD - 1.0) * HighSpeedServerConfig.PUNCH_AD_FACTOR.get();
+
+        double velocity = player.getDeltaMovement().horizontalDistance();
+        double velocityModifier = Math.min(HighSpeedServerConfig.PUNCH_VELOCITY_MAX_MODIFIER.get(), 1.0 + (velocity * HighSpeedServerConfig.PUNCH_VELOCITY_FACTOR.get()));
+
+        double knuckleMult = HighSpeedServerConfig.PUNCH_KNUCKLE_DAMAGE_MULT.get();
+
+        float finalBlastDamage = (float) ((baseDamage + punchAttr + adBonus) * knuckleMult * velocityModifier);
+
+        Vec3 look = player.getLookAngle();
+        Vec3 punchPos = player.getEyePosition().add(look.scale(1.5));
+        double blastRadius = HighSpeedServerConfig.PUNCH_KNUCKLE_RADIUS.get();
+        AABB area = new AABB(punchPos.subtract(blastRadius, blastRadius, blastRadius), punchPos.add(blastRadius, blastRadius, blastRadius));
+
         for (Entity entity : allEntities) {
             if (!(entity instanceof LivingEntity target)) continue;
-            Vec3 look = player.getLookAngle();
-            Vec3 punchPos = player.getEyePosition().add(look.scale(1.5));
-            double punchBase = player.getAttributeValue(ModAttributes.PUNCH_DAMAGE.get());
-            double rawAD = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
-            double adFactor = 1.0 + (rawAD - 1.0) * HighSpeedServerConfig.PUNCH_AD_FACTOR.get();
-            double velocity = player.getDeltaMovement().horizontalDistance();
-            double velocityModifier = Math.min(HighSpeedServerConfig.PUNCH_VELOCITY_MAX_MODIFIER.get(), 1.0 + (velocity * HighSpeedServerConfig.PUNCH_VELOCITY_FACTOR.get()));
-            PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
-            double configBaseDamage = settings.punchDamageBase;
-            double blastRadius = HighSpeedServerConfig.PUNCH_KNUCKLE_RADIUS.get();
-            AABB area = new AABB(punchPos.subtract(blastRadius, blastRadius, blastRadius), punchPos.add(blastRadius, blastRadius, blastRadius));
-            float blastDamage = (float) ((punchBase + configBaseDamage) * adFactor * HighSpeedServerConfig.PUNCH_KNUCKLE_DAMAGE_MULT.get() * velocityModifier);
-            AbsoluteDamageManager.dealAbsoluteDamage(target, blastDamage);
+
             if (target instanceof IHighSpeedInteractable interactable) {
                 if (interactable.onHandPunch(player, true)) {
                     continue;
                 }
             }
+            target.hurt(ModDamageTypes.blastAttack(level, target), finalBlastDamage);
+
             target.setDeltaMovement(look.scale(1.2).add(0, 0.4, 0));
             target.hurtMarked = true;
-            level.getEntitiesOfClass(Projectile.class, area).forEach(p -> {
-                if (p.getOwner() != player) p.discard();
-            });
-            level.sendParticles(ParticleTypes.CRIT, punchPos.x, punchPos.y, punchPos.z, 10, 0.1, 0.1, 0.1, 0.1);
-            level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0f, 1.2f);
         }
-    }
 
+        level.getEntitiesOfClass(Projectile.class, area).forEach(p -> {
+            if (p.getOwner() != player) p.discard();
+        });
+
+        level.sendParticles(ParticleTypes.CRIT, punchPos.x, punchPos.y, punchPos.z, 10, 0.1, 0.1, 0.1, 0.1);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0f, 1.2f);
+    }
     private static boolean isTargetable(net.minecraft.world.entity.Entity entity, Vec3 eyePos, Vec3 lookVec, double range, double angleCos) {
         Vec3 toEntity = entity.position().add(0, entity.getBbHeight() * 0.5, 0).subtract(eyePos);
         double dist = toEntity.length();

@@ -11,7 +11,6 @@ public class HighSpeedClientConfig {
     public static final ForgeConfigSpec.IntValue HUD_OFFSET_X;
     public static final ForgeConfigSpec.IntValue HUD_OFFSET_Y;
 
-    // HUD Colors
     public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_HP;
     public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_ABSORPTION;
     public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_STAMINA_NORMAL;
@@ -21,7 +20,6 @@ public class HighSpeedClientConfig {
     public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_FOOD;
     public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_EXP;
 
-    // HUD Perspective & Movement
     public static final ForgeConfigSpec.DoubleValue HUD_SCALE_LEFT;
     public static final ForgeConfigSpec.DoubleValue HUD_SCALE_RIGHT;
     public static final ForgeConfigSpec.DoubleValue HUD_TILT;
@@ -30,7 +28,6 @@ public class HighSpeedClientConfig {
     public static final ForgeConfigSpec.DoubleValue HUD_MAX_OFFSET_YAW;
     public static final ForgeConfigSpec.DoubleValue HUD_MAX_OFFSET_PITCH;
 
-    // HUD Display Options
     public static final ForgeConfigSpec.DoubleValue HUD_POINTS_PER_HP;
     public static final ForgeConfigSpec.IntValue HUD_SLOTS_TO_SHOW;
 
@@ -78,4 +75,4 @@ public class HighSpeedClientConfig {
             return 0xFFFFFFFF;
         }
     }
-}
+}

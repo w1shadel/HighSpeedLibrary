@@ -177,6 +177,11 @@ public class HighSpeedCommand {
             case "ability_slam" -> HighSpeedServerConfig.ABILITY_SLAM.set(value);
         }
         HighSpeedServerConfig.SPEC.save();
+        source.getServer().getPlayerList().getPlayers().forEach(p -> {
+            PlayerAbilityState s = PlayerStateManager.getState(p).getAbility();
+            s.refreshFromConfig(); 
+            AbilityManager.sync(p); 
+        });
         source.sendSuccess(() -> Component.literal("[HighSpeed] §a" + key + " §f= §b" + value + " §7(保存済み)"), true);
         return 1;
     }
@@ -214,6 +219,11 @@ public class HighSpeedCommand {
             case "projectile_parry_speed" -> HighSpeedServerConfig.PROJECTILE_PARRY_SPEED.set(value);
         }
         HighSpeedServerConfig.SPEC.save();
+        source.getServer().getPlayerList().getPlayers().forEach(p -> {
+            PlayerAbilityState s = PlayerStateManager.getState(p).getAbility();
+            s.refreshFromConfig(); 
+            AbilityManager.sync(p); 
+        });
         source.sendSuccess(() -> Component.literal("[HighSpeed] §a" + key + " §f= §b" + value + " §7(保存済み)"), true);
         return 1;
     }
@@ -228,6 +238,11 @@ public class HighSpeedCommand {
             case "coin_max_count" -> HighSpeedServerConfig.COIN_MAX_COUNT.set(value);
         }
         HighSpeedServerConfig.SPEC.save();
+        source.getServer().getPlayerList().getPlayers().forEach(p -> {
+            PlayerAbilityState s = PlayerStateManager.getState(p).getAbility();
+            s.refreshFromConfig(); 
+            AbilityManager.sync(p); 
+        });
         source.sendSuccess(() -> Component.literal("[HighSpeed] §a" + key + " §f= §b" + value + " §7(保存済み)"), true);
         return 1;
     }

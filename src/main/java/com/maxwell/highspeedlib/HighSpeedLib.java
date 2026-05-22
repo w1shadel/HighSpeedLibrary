@@ -10,6 +10,7 @@ import com.maxwell.highspeedlib.init.ModEntities;
 import com.maxwell.highspeedlib.init.ModItems;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -35,7 +36,13 @@ public class HighSpeedLib {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, HighSpeedServerConfig.SPEC);
         modEventBus.addListener(this::clientSetup);
     }
+    public static ResourceLocation getResourceLocation(String location) {
+        return getResourceLocation(MODID, location);
+    }
 
+    public static ResourceLocation getResourceLocation(String nameSpace, String location) {
+        return new ResourceLocation(nameSpace, location);
+    }
     private void clientSetup(final FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             EntityRenderers.register(ModEntities.TCOIN.get(), ThrownItemRenderer::new);

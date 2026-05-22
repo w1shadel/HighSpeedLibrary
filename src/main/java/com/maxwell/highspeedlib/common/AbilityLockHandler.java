@@ -44,7 +44,7 @@ public class AbilityLockHandler {
 
     @SubscribeEvent
     public static void onCoinToss(HighSpeedAbilityEvent.CoinToss event) {
-        if (!PlayerStateManager.getState(event.getPlayer()).getAbility().punch) {
+        if (!AbilityManager.canPunch(event.getPlayer().getUUID())) {
             event.setCanceled(true);
         }
     }

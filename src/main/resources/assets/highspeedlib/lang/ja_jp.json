@@ -8,5 +8,11 @@
   "key.highspeedlib.whiplash": "ウィップラッシュ",
   "item.highspeedlib.v1_wings": "機械の羽",
   "item.highspeedlib.boss_bar_applier": "ボスバー・タグ・アプライヤー",
-  "enchantment.highspeedlib.stamina_boost": "スタミナ増強"
+  "enchantment.highspeedlib.stamina_boost": "スタミナ増強",
+  "death.attack.highspeedlib.blast": "%sは爆発に巻き込まれた。",
+  "death.attack.highspeedlib.feedbucker": "%sは強靭な腕の前では無力だった。",
+  "death.attack.highspeedlib.rico_shot": "%sは跳弾に巻き込まれた。",
+  "death.attack.highspeedlib.blast.player": "%1$sは%2$sの腕で爆散させられた。",
+  "death.attack.highspeedlib.feedbucker.player": "%1$sは%2$sの強靭な腕でスクラップにされた。",
+  "death.attack.highspeedlib.rico_shot.player": "%1$sは%2$sの跳弾の巻き添えをもらった。"
 }
