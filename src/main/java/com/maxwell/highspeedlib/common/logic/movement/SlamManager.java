@@ -68,9 +68,17 @@ public class SlamManager {
                         new S2CSyncSlamPacket(player.getId(), player.position()));
                 performSlamImpact(player);
                 stopSlam(player);
+                if (state.slamXInput != 0f || state.slamZInput != 0f) {
+                    SlideManager.toggleSlide(player, true, state.slamXInput, state.slamZInput);
+                } else {
+                    SlideManager.toggleSlide(player, false, 0, 0);
+                    player.setDeltaMovement(0, player.getDeltaMovement().y, 0);
+                    player.hurtMarked = true;
+                }
                 PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
                         new S2CSyncSlamPacket(player.getId(), player.position()));
                 SlideManager.toggleSlide(player, true, 0, 1.0f);
+                state.slamImpactTimer = 10;
             } else {
                 player.setDeltaMovement(0, -HighSpeedServerConfig.SLAM_DOWNWARD_SPEED.get(), 0);
                 player.hurtMarked = true;

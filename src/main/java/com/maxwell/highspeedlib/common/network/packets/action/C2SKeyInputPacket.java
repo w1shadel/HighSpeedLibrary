@@ -8,6 +8,7 @@ import com.maxwell.highspeedlib.common.logic.combat.ServerArmManager;
 import com.maxwell.highspeedlib.common.logic.combat.ServerWhiplashManager;
 import com.maxwell.highspeedlib.common.logic.movement.*;
 import com.maxwell.highspeedlib.common.logic.state.PlayerAbilityState;
+import com.maxwell.highspeedlib.common.logic.state.PlayerMovementState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -79,9 +80,15 @@ public class C2SKeyInputPacket {
                 if (player.onGround()) {
                     SlideManager.toggleSlide(player, true, msg.xInput, msg.zInput);
                 } else {
+                    // スラム開始時の入力を保存
+                    PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
+                    state.slamXInput = msg.xInput;
+                    state.slamZInput = msg.zInput;
+
                     SlamManager.startSlam(player);
                 }
-            } else if (msg.keyType == 4) {
+            }
+            else if (msg.keyType == 4) {
                 SlideManager.toggleSlide(player, false, 0, 0);
                 SlamManager.stopSlam(player);
             } else if (msg.keyType == 5) {

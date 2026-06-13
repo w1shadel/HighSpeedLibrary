@@ -95,11 +95,17 @@ public class SlideManager {
         public static void onLivingJump(LivingEvent.LivingJumpEvent event) {
             if (event.getEntity() instanceof Player player && isSliding(player)) {
                 if (!player.level().isClientSide) {
+                    PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
                     Vec3 motion = player.getDeltaMovement();
                     double hSpeed = Math.sqrt(motion.x * motion.x + motion.z * motion.z);
                     double jumpPower = HighSpeedServerConfig.SLIDE_JUMP_VERTICAL_BASE.get()
                             + (hSpeed * HighSpeedServerConfig.SLIDE_JUMP_VERTICAL_SPEED_MULT.get());
-                    double hMult = HighSpeedServerConfig.SLIDE_JUMP_HORIZONTAL_MULT.get();
+
+                    // スラム直後（タイマー有効期間内）であればスラム用の水平倍率を使用
+                    double hMult = (state.slamImpactTimer > 0)
+                            ? HighSpeedServerConfig.SLAM_JUMP_HORIZONTAL_MULT.get()
+                            : HighSpeedServerConfig.SLIDE_JUMP_HORIZONTAL_MULT.get();
+
                     player.setDeltaMovement(motion.x * hMult, jumpPower, motion.z * hMult);
                     toggleSlide((ServerPlayer) player, false, 0, 0);
                 }

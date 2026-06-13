@@ -36,6 +36,8 @@ public class HighSpeedServerConfig {
     public static final ForgeConfigSpec.DoubleValue SLAM_KNOCKUP_POWER;
     public static final ForgeConfigSpec.DoubleValue SLAM_DAMAGE_ATTACK_FACTOR;
     public static final ForgeConfigSpec.DoubleValue SLAM_ENCHANT_FACTOR;
+    public static final ForgeConfigSpec.DoubleValue SLAM_JUMP_VERTICAL_POWER;
+    public static final ForgeConfigSpec.DoubleValue SLAM_JUMP_HORIZONTAL_MULT;
 
     public static final ForgeConfigSpec.DoubleValue PUNCH_DAMAGE_BASE;
     public static final ForgeConfigSpec.DoubleValue PUNCH_ENERGY_REGEN_PER_TICK;
@@ -103,6 +105,10 @@ public class HighSpeedServerConfig {
         WALLJUMP_MAX_COUNT = BUILDER.comment("Maximum number of wall jumps").defineInRange("maxCount", 3, 1, 20);
         WALLJUMP_VERTICAL_MULT = BUILDER.comment("Vertical power multiplier for wall jump").defineInRange("verticalMult", 1.1, 0.5, 5.0);
         WALLJUMP_HORIZONTAL_POWER = BUILDER.comment("Horizontal repulsion power from wall during jump").defineInRange("horizontalPower", 0.5, 0.1, 3.0);
+        SLAM_JUMP_VERTICAL_POWER = BUILDER.comment("Vertical power of a slam storage jump (default is 6.2)")
+                .defineInRange("jumpVerticalPower", 6.2, 0.5, 20.0);
+        SLAM_JUMP_HORIZONTAL_MULT = BUILDER.comment("Horizontal speed multiplier for jumping out of a slam (1.0 preserves normal speed, 0.0 makes it go only straight up)")
+                .defineInRange("jumpHorizontalMult", 1.0, 0.0, 5.0);
         BUILDER.pop();
 
         BUILDER.push("slam");

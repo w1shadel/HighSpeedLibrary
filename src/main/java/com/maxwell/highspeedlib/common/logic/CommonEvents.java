@@ -33,7 +33,9 @@ public class CommonEvents {
         if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) return;
         ServerPlayer player = (ServerPlayer) event.player;
         PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
-
+        if (state.slamImpactTimer > 0) {
+            state.slamImpactTimer--;
+        }
         if (player.onGround()) {
             if (state.slamStorageActive) {
                 state.slamStorageTimer = 15;
@@ -55,17 +57,23 @@ public class CommonEvents {
     public static void onLivingJump(LivingEvent.LivingJumpEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
+
+        // スラムストレージジャンプ
         if (state.slamStorageTimer > 0) {
             Vec3 motion = player.getDeltaMovement();
-            player.setDeltaMovement(motion.x, 6.2D, motion.z);
+
+            // コンフィグから垂直パワーと水平倍率を取得
+            double verticalPower = HighSpeedServerConfig.SLAM_JUMP_VERTICAL_POWER.get();
+            double hMult = HighSpeedServerConfig.SLAM_JUMP_HORIZONTAL_MULT.get();
+
+            player.setDeltaMovement(motion.x * hMult, verticalPower, motion.z * hMult);
             player.connection.send(new ClientboundSetEntityMotionPacket(player));
 
             state.slamStorageTimer = 0;
             player.level().playSound(null, player.blockPosition(),
                     SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0f, 1.2f);
-            state.slamStorageTimer = 0;
             PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                    new S2CSyncSlamPacket(player.getId(), false, false)); 
+                    new S2CSyncSlamPacket(player.getId(), false, false));
         }
     }
 }

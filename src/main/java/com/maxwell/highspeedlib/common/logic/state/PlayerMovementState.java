@@ -17,5 +17,7 @@ public class PlayerMovementState {
     public boolean fallImmunity = false;
     public boolean slamStorageActive = false; 
     public int slamStorageTimer = 0;
-
+    public int slamImpactTimer = 0;
+    public float slamXInput = 0f;
+    public float slamZInput = 0f;
 }
