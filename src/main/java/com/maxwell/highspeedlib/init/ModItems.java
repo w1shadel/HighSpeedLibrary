@@ -6,8 +6,8 @@ import com.maxwell.highspeedlib.common.items.TruthSeeker;
 import com.maxwell.highspeedlib.common.items.V1WingsItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(HighSpeedLib.MODID);

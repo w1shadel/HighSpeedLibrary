@@ -2,11 +2,7 @@ package com.maxwell.highspeedlib.client.logic;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader; 
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +10,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent; 
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.joml.Math;
@@ -69,17 +65,13 @@ public class ClientEffectManager {
                 parryShader.safeGetUniform("Intensity").set(parryAlpha);
             }
             RenderSystem.setShaderTexture(0, Minecraft.getInstance().getMainRenderTarget().getColorTextureId());
-
             Tesselator tesselator = Tesselator.getInstance();
             BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-
             bufferbuilder.addVertex(0.0F, (float) height, 0.0F).setUv(0.0F, 0.0F);
             bufferbuilder.addVertex((float) width, (float) height, 0.0F).setUv(1.0F, 0.0F);
             bufferbuilder.addVertex((float) width, 0.0F, 0.0F).setUv(1.0F, 1.0F);
             bufferbuilder.addVertex(0.0F, 0.0F, 0.0F).setUv(0.0F, 1.0F);
-
             BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
-
             RenderSystem.depthMask(true);
             RenderSystem.enableDepthTest();
             RenderSystem.disableBlend();

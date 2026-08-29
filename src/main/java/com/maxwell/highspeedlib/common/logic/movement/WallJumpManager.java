@@ -4,9 +4,7 @@ import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.common.logic.state.PlayerAbilityState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerMovementState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
-import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncSlamPacket;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,7 +13,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -28,6 +25,7 @@ public class WallJumpManager {
             }
         }
     }
+
     public static void performWallJump(ServerPlayer player, boolean isStorageAttempt) {
         PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
         PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
@@ -48,7 +46,6 @@ public class WallJumpManager {
                     SlamManager.stopSlam(player);
                     PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new S2CSyncSlamPacket(player.getId(), false, true));
                 }
-
                 double baseJumpPower = player.getAttributeValue(Attributes.JUMP_STRENGTH);
                 double jumpBoostBonus = 0.0D;
                 if (player.hasEffect(MobEffects.JUMP)) {
@@ -71,13 +68,16 @@ public class WallJumpManager {
 
     public static Direction getTouchingWall(Player player, double margin) {
         net.minecraft.world.phys.AABB playerBox = player.getBoundingBox();
-
         for (Direction dir : Direction.Plane.HORIZONTAL) {
             net.minecraft.world.phys.AABB detectionBox = switch (dir) {
-                case NORTH -> new net.minecraft.world.phys.AABB(playerBox.minX, playerBox.minY, playerBox.minZ - margin, playerBox.maxX, playerBox.maxY, playerBox.minZ);
-                case SOUTH -> new net.minecraft.world.phys.AABB(playerBox.minX, playerBox.minY, playerBox.maxZ, playerBox.maxX, playerBox.maxY, playerBox.maxZ + margin);
-                case WEST -> new net.minecraft.world.phys.AABB(playerBox.minX - margin, playerBox.minY, playerBox.minZ, playerBox.minX, playerBox.maxY, playerBox.maxZ);
-                case EAST -> new net.minecraft.world.phys.AABB(playerBox.maxX, playerBox.minY, playerBox.minZ, playerBox.maxX + margin, playerBox.maxY, playerBox.maxZ);
+                case NORTH ->
+                        new net.minecraft.world.phys.AABB(playerBox.minX, playerBox.minY, playerBox.minZ - margin, playerBox.maxX, playerBox.maxY, playerBox.minZ);
+                case SOUTH ->
+                        new net.minecraft.world.phys.AABB(playerBox.minX, playerBox.minY, playerBox.maxZ, playerBox.maxX, playerBox.maxY, playerBox.maxZ + margin);
+                case WEST ->
+                        new net.minecraft.world.phys.AABB(playerBox.minX - margin, playerBox.minY, playerBox.minZ, playerBox.minX, playerBox.maxY, playerBox.maxZ);
+                case EAST ->
+                        new net.minecraft.world.phys.AABB(playerBox.maxX, playerBox.minY, playerBox.minZ, playerBox.maxX + margin, playerBox.maxY, playerBox.maxZ);
                 default -> playerBox;
             };
             if (!player.level().noCollision(player, detectionBox)) {

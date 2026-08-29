@@ -21,10 +21,10 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import top.theillusivec4.curios.api.CuriosApi;
+
 @SuppressWarnings("removal")
 @EventBusSubscriber(modid = HighSpeedLib.MODID)
 public class WingsLogicHandler {
-
     private static final ResourceLocation ARMOR_PENALTY_ID = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "v1_wings_armor_penalty");
     private static final ResourceLocation TOUGHNESS_PENALTY_ID = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "v1_wings_toughness_penalty");
 
@@ -40,7 +40,6 @@ public class WingsLogicHandler {
         AttributeInstance toughnessAttr = player.getAttribute(Attributes.ARMOR_TOUGHNESS);
         if (hasWings(player)) {
             if (armorAttr != null && armorAttr.getModifier(ARMOR_PENALTY_ID) == null) {
-
                 armorAttr.addTransientModifier(new AttributeModifier(ARMOR_PENALTY_ID, -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
             }
             if (toughnessAttr != null && toughnessAttr.getModifier(TOUGHNESS_PENALTY_ID) == null) {

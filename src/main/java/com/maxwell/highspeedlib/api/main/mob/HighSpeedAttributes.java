@@ -3,8 +3,6 @@ package com.maxwell.highspeedlib.api.main.mob;
 import com.maxwell.highspeedlib.HighSpeedLib;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.UUID;
-
 public class HighSpeedAttributes {
     public static final ResourceLocation RADIANCE_HEALTH_ID = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "radiance_health");
     public static final ResourceLocation RADIANCE_DAMAGE_ID = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "radiance_damage");

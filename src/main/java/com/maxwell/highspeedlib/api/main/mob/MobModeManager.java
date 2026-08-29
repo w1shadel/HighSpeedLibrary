@@ -2,7 +2,7 @@ package com.maxwell.highspeedlib.api.main.mob;
 
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncMobModePacket;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation; 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -58,7 +58,6 @@ public class MobModeManager {
         double healthMult = (tier * 0.5) * hpFactor;
         double damageMult = (tier * 0.5) * dmgFactor;
         double speedMult = (tier * 0.2) * spdFactor;
-
         applyModifier(entity, Attributes.MAX_HEALTH, HighSpeedAttributes.RADIANCE_HEALTH_ID, healthMult);
         applyModifier(entity, Attributes.ATTACK_DAMAGE, HighSpeedAttributes.RADIANCE_DAMAGE_ID, damageMult);
         applyModifier(entity, Attributes.MOVEMENT_SPEED, HighSpeedAttributes.RADIANCE_SPEED_ID, speedMult);

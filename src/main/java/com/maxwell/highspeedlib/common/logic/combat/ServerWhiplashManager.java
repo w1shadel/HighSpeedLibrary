@@ -1,14 +1,13 @@
 package com.maxwell.highspeedlib.common.logic.combat;
 
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
+import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.api.main.IHighSpeedInteractable;
 import com.maxwell.highspeedlib.common.logic.state.PlayerCombatState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
-import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncWhiplashPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -32,14 +31,11 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.network.PacketDistributor;
-
-import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 
 import java.util.Optional;
 

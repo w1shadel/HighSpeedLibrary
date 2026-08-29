@@ -9,7 +9,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 public final class PacketHandler {
-    private PacketHandler() {}
+    private PacketHandler() {
+    }
 
     public static void register(IEventBus modEventBus) {
         modEventBus.addListener(PacketHandler::registerPayloads);

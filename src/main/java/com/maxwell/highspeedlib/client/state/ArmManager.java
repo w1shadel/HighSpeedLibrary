@@ -1,7 +1,6 @@
 package com.maxwell.highspeedlib.client.state;
 
 import com.maxwell.highspeedlib.common.logic.combat.ArmType;
-import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncArmPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;

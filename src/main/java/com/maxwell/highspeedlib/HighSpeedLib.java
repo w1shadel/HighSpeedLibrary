@@ -28,12 +28,9 @@ public class HighSpeedLib {
         PacketHandler.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModEntities.ENTITIES.register(modEventBus);
-
         ModAttributes.ATTRIBUTES.register(modEventBus);
-
         modContainer.registerConfig(ModConfig.Type.CLIENT, HighSpeedClientConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.SERVER, HighSpeedServerConfig.SPEC);
-
         modEventBus.addListener(this::clientSetup);
         modEventBus.addListener(this::registerRenderers);
     }

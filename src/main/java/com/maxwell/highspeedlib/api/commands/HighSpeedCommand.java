@@ -179,8 +179,8 @@ public class HighSpeedCommand {
         HighSpeedServerConfig.SPEC.save();
         source.getServer().getPlayerList().getPlayers().forEach(p -> {
             PlayerAbilityState s = PlayerStateManager.getState(p).getAbility();
-            s.refreshFromConfig(); 
-            AbilityManager.sync(p); 
+            s.refreshFromConfig();
+            AbilityManager.sync(p);
         });
         source.sendSuccess(() -> Component.literal("[HighSpeed] §a" + key + " §f= §b" + value + " §7(保存済み)"), true);
         return 1;
@@ -221,8 +221,8 @@ public class HighSpeedCommand {
         HighSpeedServerConfig.SPEC.save();
         source.getServer().getPlayerList().getPlayers().forEach(p -> {
             PlayerAbilityState s = PlayerStateManager.getState(p).getAbility();
-            s.refreshFromConfig(); 
-            AbilityManager.sync(p); 
+            s.refreshFromConfig();
+            AbilityManager.sync(p);
         });
         source.sendSuccess(() -> Component.literal("[HighSpeed] §a" + key + " §f= §b" + value + " §7(保存済み)"), true);
         return 1;
@@ -240,8 +240,8 @@ public class HighSpeedCommand {
         HighSpeedServerConfig.SPEC.save();
         source.getServer().getPlayerList().getPlayers().forEach(p -> {
             PlayerAbilityState s = PlayerStateManager.getState(p).getAbility();
-            s.refreshFromConfig(); 
-            AbilityManager.sync(p); 
+            s.refreshFromConfig();
+            AbilityManager.sync(p);
         });
         source.sendSuccess(() -> Component.literal("[HighSpeed] §a" + key + " §f= §b" + value + " §7(保存済み)"), true);
         return 1;

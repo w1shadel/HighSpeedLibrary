@@ -5,7 +5,6 @@ import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
 import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.common.logic.state.PlayerMovementState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
-import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncSlamPacket;
 import com.maxwell.highspeedlib.init.ModAttributes;
 import net.minecraft.core.registries.Registries;
@@ -18,12 +17,11 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.UUID;
@@ -86,23 +84,20 @@ public class SlamManager {
             state.fallImmunity = false;
         }
     }
+
     private static void performSlamImpact(ServerPlayer player) {
         ServerLevel level = (ServerLevel) player.level();
         double slamBase = player.getAttributeValue(ModAttributes.SLAM_DAMAGE);
         double playerAttack = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
         double scalingDamage = slamBase + (playerAttack * HighSpeedServerConfig.SLAM_DAMAGE_ATTACK_FACTOR.get());
-
         int featherFallingLevel = level.registryAccess()
                 .lookupOrThrow(Registries.ENCHANTMENT)
                 .get(Enchantments.FEATHER_FALLING)
                 .map(holder -> EnchantmentHelper.getEnchantmentLevel(holder, player))
                 .orElse(0);
-
         float enchantMultiplier = 1.0f + (featherFallingLevel * HighSpeedServerConfig.SLAM_ENCHANT_FACTOR.get().floatValue());
         float finalDamage = (float) (scalingDamage * enchantMultiplier);
-
         level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.0f, 0.8f);
-
         double radius = HighSpeedServerConfig.SLAM_RADIUS.get();
         double knockup = HighSpeedServerConfig.SLAM_KNOCKUP_POWER.get();
         AABB area = player.getBoundingBox().inflate(radius, radius * 0.5, radius);

@@ -10,17 +10,17 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 @SuppressWarnings("removal")
 @EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
 public class ClientSlamHandler {
@@ -31,10 +31,10 @@ public class ClientSlamHandler {
     public static void updateSlamming(int entityId, boolean isSlamming, boolean isStorage) {
         if (isSlamming) slammingEntities.add(entityId);
         else slammingEntities.remove(entityId);
-
         if (isStorage) storageEntities.add(entityId);
         else storageEntities.remove(entityId);
     }
+
     public static void spawnImpactWave(Vec3 pos) {
         activeWaves.add(new SlamWave(pos));
     }
@@ -43,7 +43,6 @@ public class ClientSlamHandler {
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
-
         activeWaves.removeIf(w -> ++w.age >= w.maxAge);
         renderTrailForSet(mc, slammingEntities, "slam");
         renderTrailForSet(mc, storageEntities, "storage");
@@ -55,11 +54,9 @@ public class ClientSlamHandler {
             if (!(entity instanceof Player player)) continue;
             var rand = mc.level.random;
             long time = mc.level.getGameTime();
-
             for (int i = 0; i < 2; i++) {
                 Vec3 currentPos = player.position().add((rand.nextFloat() - 0.5) * 1.2, 0.5 + rand.nextFloat(), (rand.nextFloat() - 0.5) * 1.2);
                 Vec3 tailPos = currentPos.add(0, 1.5, 0);
-
                 String lineID = prefix + "_trail_" + id + "_" + (time % 10) + "_" + i;
                 ClientTrailRenderer.getOrCreateTrail(player.getUUID(), lineID, 1.0f, 0.5f, 0.1f, 0.6f, 0.1f)
                         .addPoint(currentPos, 6);
@@ -68,6 +65,7 @@ public class ClientSlamHandler {
             }
         }
     }
+
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;

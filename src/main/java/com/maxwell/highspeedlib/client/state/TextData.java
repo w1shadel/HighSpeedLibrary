@@ -10,6 +10,7 @@ public class TextData {
     public int duration;
     public int maxDuration;
     public float scale;
+
     public TextData(Type type, Component text, double x, double y, int color, int duration, float scale) {
         this.type = type;
         this.text = text;

@@ -15,13 +15,7 @@ public class PlayerAbilityState {
     public int maxWallJumpCount;
     public int maxCoinCount;
     public int parry_invtime;
-    public void refreshFromConfig() {
-        this.punchDamageBase = HighSpeedServerConfig.PUNCH_DAMAGE_BASE.get();
-        this.maxDashCount = HighSpeedServerConfig.DASH_MAX_COUNT.get();
-        this.maxWallJumpCount = HighSpeedServerConfig.WALLJUMP_MAX_COUNT.get();
-        this.maxCoinCount = HighSpeedServerConfig.COIN_MAX_COUNT.get();
-        this.parry_invtime = (int) Math.round(HighSpeedServerConfig.PARRY_INVUL_SECONDS.get() * 20.0);
-    }
+
     public PlayerAbilityState() {
         punch = HighSpeedServerConfig.ABILITY_PUNCH.get();
         whiplash = HighSpeedServerConfig.ABILITY_WHIPLASH.get();
@@ -34,6 +28,14 @@ public class PlayerAbilityState {
         maxWallJumpCount = HighSpeedServerConfig.WALLJUMP_MAX_COUNT.get();
         maxCoinCount = HighSpeedServerConfig.COIN_MAX_COUNT.get();
         parry_invtime = (int) Math.round(HighSpeedServerConfig.PARRY_INVUL_SECONDS.get() * 20.0);
+    }
+
+    public void refreshFromConfig() {
+        this.punchDamageBase = HighSpeedServerConfig.PUNCH_DAMAGE_BASE.get();
+        this.maxDashCount = HighSpeedServerConfig.DASH_MAX_COUNT.get();
+        this.maxWallJumpCount = HighSpeedServerConfig.WALLJUMP_MAX_COUNT.get();
+        this.maxCoinCount = HighSpeedServerConfig.COIN_MAX_COUNT.get();
+        this.parry_invtime = (int) Math.round(HighSpeedServerConfig.PARRY_INVUL_SECONDS.get() * 20.0);
     }
 
     public CompoundTag save() {

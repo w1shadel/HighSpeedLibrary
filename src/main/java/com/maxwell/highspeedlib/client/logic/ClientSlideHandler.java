@@ -75,23 +75,16 @@ public class ClientSlideHandler {
         return otherSlidingPlayers.contains(entityId);
     }
 
-
-
     @SubscribeEvent
     public static void onRenderPlayerPre(RenderPlayerEvent.Pre event) {
         Player player = event.getEntity();
         if (!SlideManager.isSliding(player)) return;
-
         player.walkAnimation.setSpeed(0.0F);
-
         float progress = getSlideProgress(event.getPartialTick());
         var poseStack = event.getPoseStack();
         float partialTicks = event.getPartialTick();
-
         float bodyYaw = Mth.rotLerp(partialTicks, player.yBodyRotO, player.yBodyRot);
-
         poseStack.translate(0.0D, -0.7D * progress, 0.0D);
-
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - bodyYaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(35.0F * progress));
         poseStack.mulPose(Axis.YP.rotationDegrees(-(180.0F - bodyYaw)));

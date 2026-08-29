@@ -1,7 +1,6 @@
 package com.maxwell.highspeedlib.common.logic.util;
 
 import com.maxwell.highspeedlib.client.state.TextData;
-import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.effect.S2CRenderTextPacket;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

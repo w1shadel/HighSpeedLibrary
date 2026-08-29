@@ -5,22 +5,22 @@ import com.maxwell.highspeedlib.client.renderer.ExtendsArmRenderer;
 import com.maxwell.highspeedlib.client.renderer.UltraHudRenderer;
 import com.maxwell.highspeedlib.client.state.ArmManager;
 import com.maxwell.highspeedlib.common.logic.combat.ArmType;
-import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.action.C2SKeyInputPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.sounds.SoundEvents;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.network.PacketDistributor;
+
 @SuppressWarnings("removal")
 @EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
 public class ClientInputEvents {
     private static boolean wasSliding = false;
     private static boolean jumpKeyWasPressed = false;
     private static boolean wasOnGroundLastTick = false;
+
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         com.maxwell.highspeedlib.client.state.UltraBossBarManager.tick();
@@ -42,7 +42,7 @@ public class ClientInputEvents {
         }
         while (KeyInputHandler.DASH_KEY.consumeClick()) {
             if (UltraHudRenderer.dashUnlocked) {
-                PacketDistributor.sendToServer(new C2SKeyInputPacket(0, mc.player.xxa, mc.player.zza,false));
+                PacketDistributor.sendToServer(new C2SKeyInputPacket(0, mc.player.xxa, mc.player.zza, false));
                 ClientEffectManager.setSpeeding(true);
                 ClientDashHandler.spawnDashEffects();
             }
@@ -52,7 +52,6 @@ public class ClientInputEvents {
                 PacketDistributor.sendToServer(new C2SKeyInputPacket(5));
             }
         }
-
         boolean isSlidingInput = KeyInputHandler.SLIDING_KEY.isDown();
         if (isSlidingInput != wasSliding) {
             if (isSlidingInput) {

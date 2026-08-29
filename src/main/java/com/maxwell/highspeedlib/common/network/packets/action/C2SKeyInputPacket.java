@@ -1,7 +1,6 @@
 package com.maxwell.highspeedlib.common.network.packets.action;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
-
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
 import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.client.state.ArmManager;
@@ -14,28 +13,21 @@ import com.maxwell.highspeedlib.common.logic.state.PlayerMovementState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
-
-
-
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public class C2SKeyInputPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<C2SKeyInputPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "c2s_key_input_packet"));
     public static final StreamCodec<RegistryFriendlyByteBuf, C2SKeyInputPacket> STREAM_CODEC = StreamCodec.of((RegistryFriendlyByteBuf buf, C2SKeyInputPacket msg) -> C2SKeyInputPacket.encode(msg, buf), C2SKeyInputPacket::decode);
-
-    @Override
-    public CustomPacketPayload.Type<C2SKeyInputPacket> type() { return TYPE; }
     private final int keyType;
     private final float xInput;
     private final float zInput;
     private final boolean isAltPressed;
-
     public C2SKeyInputPacket(int keyType) {
         this(keyType, 0f, 0f, false);
     }
@@ -55,7 +47,7 @@ public class C2SKeyInputPacket implements CustomPacketPayload {
     }
 
     public static C2SKeyInputPacket decode(FriendlyByteBuf buffer) {
-        return new C2SKeyInputPacket(buffer.readInt(), buffer.readFloat(), buffer.readFloat(),buffer.readBoolean());
+        return new C2SKeyInputPacket(buffer.readInt(), buffer.readFloat(), buffer.readFloat(), buffer.readBoolean());
     }
 
     public static void handle(C2SKeyInputPacket msg, IPayloadContext ctx) {
@@ -92,15 +84,12 @@ public class C2SKeyInputPacket implements CustomPacketPayload {
                 if (player.onGround()) {
                     SlideManager.toggleSlide(player, true, msg.xInput, msg.zInput);
                 } else {
-
                     PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
                     state.slamXInput = msg.xInput;
                     state.slamZInput = msg.zInput;
-
                     SlamManager.startSlam(player);
                 }
-            }
-            else if (msg.keyType == 4) {
+            } else if (msg.keyType == 4) {
                 SlideManager.toggleSlide(player, false, 0, 0);
                 SlamManager.stopSlam(player);
             } else if (msg.keyType == 5) {
@@ -123,6 +112,11 @@ public class C2SKeyInputPacket implements CustomPacketPayload {
                 }
             }
         });
+    }
+
+    @Override
+    public CustomPacketPayload.Type<C2SKeyInputPacket> type() {
+        return TYPE;
     }
 
 }

@@ -5,19 +5,17 @@ import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
 import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.common.logic.state.PlayerMovementState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
-import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncSlidePacket;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public class SlideManager {
@@ -99,11 +97,9 @@ public class SlideManager {
                     double hSpeed = Math.sqrt(motion.x * motion.x + motion.z * motion.z);
                     double jumpPower = HighSpeedServerConfig.SLIDE_JUMP_VERTICAL_BASE.get()
                             + (hSpeed * HighSpeedServerConfig.SLIDE_JUMP_VERTICAL_SPEED_MULT.get());
-
                     double hMult = (state.slamImpactTimer > 0)
                             ? HighSpeedServerConfig.SLAM_JUMP_HORIZONTAL_MULT.get()
                             : HighSpeedServerConfig.SLIDE_JUMP_HORIZONTAL_MULT.get();
-
                     player.setDeltaMovement(motion.x * hMult, jumpPower, motion.z * hMult);
                     toggleSlide((ServerPlayer) player, false, 0, 0);
                 }

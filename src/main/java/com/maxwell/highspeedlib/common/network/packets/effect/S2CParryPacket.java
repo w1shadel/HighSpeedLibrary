@@ -1,26 +1,18 @@
 package com.maxwell.highspeedlib.common.network.packets.effect;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
-
 import com.maxwell.highspeedlib.client.network.ClientPacketHandler;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-
-
-
-
-
 
 public class S2CParryPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<S2CParryPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "s2c_parry_packet"));
     public static final StreamCodec<RegistryFriendlyByteBuf, S2CParryPacket> STREAM_CODEC = StreamCodec.of((RegistryFriendlyByteBuf buf, S2CParryPacket msg) -> S2CParryPacket.encode(msg, buf), S2CParryPacket::decode);
 
-    @Override
-    public CustomPacketPayload.Type<S2CParryPacket> type() { return TYPE; }
     public S2CParryPacket() {
     }
 
@@ -35,5 +27,10 @@ public class S2CParryPacket implements CustomPacketPayload {
         ctx.enqueueWork(() -> {
             ClientPacketHandler.handleParry();
         });
+    }
+
+    @Override
+    public CustomPacketPayload.Type<S2CParryPacket> type() {
+        return TYPE;
     }
 }

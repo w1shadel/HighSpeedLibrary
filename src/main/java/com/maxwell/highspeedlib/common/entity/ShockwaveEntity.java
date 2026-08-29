@@ -31,15 +31,6 @@ public class ShockwaveEntity extends Entity {
         this.noPhysics = true;
     }
 
-    @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(RADIUS, 0.0f);
-        builder.define(MAX_RADIUS, 10.0f);
-        builder.define(SPEED, 0.5f);
-        builder.define(HEIGHT, 1.0f);
-        builder.define(COLOR, 0xFFFFFFFF);
-    }
-
     public ShockwaveEntity(Level level, LivingEntity owner, float damage, float maxRadius, float speed, float height, int color) {
         this(ModEntities.SHOCKWAVE.get(), level);
         this.owner = owner;
@@ -49,6 +40,15 @@ public class ShockwaveEntity extends Entity {
         this.setHeight(height);
         this.setColor(color);
         this.setPos(owner.getX(), owner.getY(), owner.getZ());
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(RADIUS, 0.0f);
+        builder.define(MAX_RADIUS, 10.0f);
+        builder.define(SPEED, 0.5f);
+        builder.define(HEIGHT, 1.0f);
+        builder.define(COLOR, 0xFFFFFFFF);
     }
 
     @Override
@@ -67,17 +67,13 @@ public class ShockwaveEntity extends Entity {
     }
 
     private void checkCollisions(float innerRadius, float outerRadius) {
-        float h = getHeight(); 
-
+        float h = getHeight();
         AABB searchBox = this.getBoundingBox().inflate(outerRadius, h, outerRadius);
         List<Entity> targets = this.level().getEntities(this, searchBox, EntitySelector.NO_SPECTATORS);
-
         for (Entity entity : targets) {
             if (entity == owner || hitEntities.contains(entity)) continue;
-
             double dist = Math.sqrt(this.distanceToSqr(entity));
             if (dist >= innerRadius && dist <= outerRadius) {
-
                 if (entity.getY() < this.getY() + h && entity.getY() + entity.getBbHeight() > this.getY()) {
                     applyEffect(entity);
                     hitEntities.add(entity);
@@ -85,7 +81,6 @@ public class ShockwaveEntity extends Entity {
             }
         }
     }
-
 
     protected void applyEffect(Entity target) {
         target.hurt(this.damageSources().magic(), this.damage);
@@ -118,10 +113,23 @@ public class ShockwaveEntity extends Entity {
     public void setSpeed(float s) {
         this.entityData.set(SPEED, s);
     }
-    public float getHeight() { return this.entityData.get(HEIGHT); }
-    public void setHeight(float h) { this.entityData.set(HEIGHT, h); }
-    public int getColor() { return this.entityData.get(COLOR); }
-    public void setColor(int c) { this.entityData.set(COLOR, c); }
+
+    public float getHeight() {
+        return this.entityData.get(HEIGHT);
+    }
+
+    public void setHeight(float h) {
+        this.entityData.set(HEIGHT, h);
+    }
+
+    public int getColor() {
+        return this.entityData.get(COLOR);
+    }
+
+    public void setColor(int c) {
+        this.entityData.set(COLOR, c);
+    }
+
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
     }

@@ -5,7 +5,6 @@ import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.common.logic.state.PlayerAbilityState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerMovementState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
-import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncStaminaPacket;
 import com.maxwell.highspeedlib.init.ModEnchantments;
 import net.minecraft.core.registries.Registries;
@@ -13,10 +12,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 @EventBusSubscriber(modid = HighSpeedLib.MODID)
@@ -40,13 +38,11 @@ public class StaminaManager {
 
     public static double getMaxStamina(Player player) {
         PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
-
         int enchantmentLevel = player.level().registryAccess()
                 .lookupOrThrow(Registries.ENCHANTMENT)
                 .get(ModEnchantments.STAMINA_BOOST)
                 .map(holder -> EnchantmentHelper.getItemEnchantmentLevel(holder, player.getItemBySlot(EquipmentSlot.LEGS)))
                 .orElse(0);
-
         double enchantValue = HighSpeedServerConfig.STAMINA_BOOST_ENCHANT_VALUE.get();
         return settings.maxDashCount + (enchantmentLevel * enchantValue);
     }
