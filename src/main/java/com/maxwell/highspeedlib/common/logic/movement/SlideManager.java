@@ -100,7 +100,6 @@ public class SlideManager {
                     double jumpPower = HighSpeedServerConfig.SLIDE_JUMP_VERTICAL_BASE.get()
                             + (hSpeed * HighSpeedServerConfig.SLIDE_JUMP_VERTICAL_SPEED_MULT.get());
 
-                    // スラム直後（タイマー有効期間内）であればスラム用の水平倍率を使用
                     double hMult = (state.slamImpactTimer > 0)
                             ? HighSpeedServerConfig.SLAM_JUMP_HORIZONTAL_MULT.get()
                             : HighSpeedServerConfig.SLIDE_JUMP_HORIZONTAL_MULT.get();

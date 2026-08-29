@@ -24,15 +24,13 @@ public class HighSpeedLib {
     public static final String MODID = "highspeedlib";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
-    // ★ コンストラクタ引数を (IEventBus modEventBus, ModContainer modContainer) に変更
     public HighSpeedLib(IEventBus modEventBus, ModContainer modContainer) {
         PacketHandler.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModEntities.ENTITIES.register(modEventBus);
-        // ModEnchantments.ENCHANTMENTS はデータパック化に伴い削除
+
         ModAttributes.ATTRIBUTES.register(modEventBus);
 
-        // ★ modContainer 経由でコンフィグを登録
         modContainer.registerConfig(ModConfig.Type.CLIENT, HighSpeedClientConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.SERVER, HighSpeedServerConfig.SPEC);
 
@@ -57,7 +55,6 @@ public class HighSpeedLib {
         });
     }
 
-    // ★ エンティティレンダラーは RegisterRenderers イベントで登録
     private void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.TCOIN.get(), ThrownItemRenderer::new);
     }

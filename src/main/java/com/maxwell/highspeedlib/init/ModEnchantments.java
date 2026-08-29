@@ -11,7 +11,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class ModEnchantments {
-    // ★ 1.21.1では ResourceKey として定義する
+
     public static final ResourceKey<Enchantment> STAMINA_BOOST = ResourceKey.create(
             Registries.ENCHANTMENT,
             ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "stamina_boost")

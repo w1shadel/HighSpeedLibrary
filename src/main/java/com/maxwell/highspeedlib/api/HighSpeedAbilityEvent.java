@@ -3,7 +3,7 @@ package com.maxwell.highspeedlib.api;
 import com.maxwell.highspeedlib.common.logic.combat.ArmType;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.Event;
-import net.neoforged.bus.api.ICancellableEvent; // ★ 追加
+import net.neoforged.bus.api.ICancellableEvent; 
 
 public abstract class HighSpeedAbilityEvent extends Event {
     private final Player player;
@@ -16,7 +16,6 @@ public abstract class HighSpeedAbilityEvent extends Event {
         return player;
     }
 
-    // ★ @Cancelable の代わりに implements ICancellableEvent を付与
     public static class Punch extends HighSpeedAbilityEvent implements ICancellableEvent {
         private final ArmType armType;
 

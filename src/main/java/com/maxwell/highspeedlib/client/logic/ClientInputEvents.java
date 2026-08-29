@@ -52,15 +52,20 @@ public class ClientInputEvents {
                 PacketDistributor.sendToServer(new C2SKeyInputPacket(5));
             }
         }
+
         boolean isSlidingInput = KeyInputHandler.SLIDING_KEY.isDown();
         if (isSlidingInput != wasSliding) {
             if (isSlidingInput) {
                 boolean canPerform = mc.player.onGround() ? UltraHudRenderer.slidingUnlocked : UltraHudRenderer.slamUnlocked;
                 if (canPerform) {
-                    PacketDistributor.sendToServer(new C2SKeyInputPacket(3, mc.player.xxa, mc.player.zza,false));
+                    PacketDistributor.sendToServer(new C2SKeyInputPacket(3, mc.player.xxa, mc.player.zza, false));
+                    ClientSlideHandler.setSliding(true);
+                    mc.player.refreshDimensions();
                 }
             } else {
                 PacketDistributor.sendToServer(new C2SKeyInputPacket(4));
+                ClientSlideHandler.setSliding(false);
+                mc.player.refreshDimensions();
             }
             wasSliding = isSlidingInput;
         }

@@ -59,11 +59,9 @@ public class CommonEvents {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
 
-        // スラムストレージジャンプ
         if (state.slamStorageTimer > 0) {
             Vec3 motion = player.getDeltaMovement();
 
-            // コンフィグから垂直パワーと水平倍率を取得
             double verticalPower = HighSpeedServerConfig.SLAM_JUMP_VERTICAL_POWER.get();
             double hMult = HighSpeedServerConfig.SLAM_JUMP_HORIZONTAL_MULT.get();
 

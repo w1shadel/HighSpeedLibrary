@@ -3,7 +3,7 @@ package com.maxwell.highspeedlib.client.logic;
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader; // ★ 追加
+import com.mojang.blaze3d.vertex.BufferUploader; 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -14,7 +14,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent; // ★ 改名
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent; 
 import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.joml.Math;
@@ -70,7 +70,6 @@ public class ClientEffectManager {
             }
             RenderSystem.setShaderTexture(0, Minecraft.getInstance().getMainRenderTarget().getColorTextureId());
 
-            // ★ 1.21.1 新しい描画パイプラインの書き方
             Tesselator tesselator = Tesselator.getInstance();
             BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
@@ -79,7 +78,6 @@ public class ClientEffectManager {
             bufferbuilder.addVertex((float) width, 0.0F, 0.0F).setUv(1.0F, 1.0F);
             bufferbuilder.addVertex(0.0F, 0.0F, 0.0F).setUv(0.0F, 1.0F);
 
-            // バッファをビルドしてシェーダーで描画
             BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
 
             RenderSystem.depthMask(true);
@@ -113,7 +111,6 @@ public class ClientEffectManager {
             });
         }
 
-        // ★ RegisterGuiLayersEvent への変更
         @SubscribeEvent
         public static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
             event.registerAboveAll(

@@ -8,17 +8,15 @@
     "EntityTimeStopMixin",
     "LevelMixin",
     "LivingEntityMixin",
-    "PlayerMixin",
     "EntityMixin",
     "ServerLevelMixin",
     "parry.SynchedEntityDataMixin",
     "parry.LivingEntityAccessor",
-    "parry.SynchedEntityDataAccessor",
     "parry.SynchedEntityDataItemAccessor",
-    "parry.LivingEntityMixin"
+    "parry.LivingEntityMixin",
+    "PlayerAnimationMixin"
   ],
   "client": [
-    "HumanoidModelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

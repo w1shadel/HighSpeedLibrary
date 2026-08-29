@@ -92,7 +92,7 @@ public class C2SKeyInputPacket implements CustomPacketPayload {
                 if (player.onGround()) {
                     SlideManager.toggleSlide(player, true, msg.xInput, msg.zInput);
                 } else {
-                    // スラム開始時の入力を保存
+
                     PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
                     state.slamXInput = msg.xInput;
                     state.slamZInput = msg.zInput;

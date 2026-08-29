@@ -2,7 +2,7 @@ package com.maxwell.highspeedlib.api.main.mob;
 
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncMobModePacket;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation; // ★ UUIDの代わりにインポート
+import net.minecraft.resources.ResourceLocation; 
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -58,7 +58,7 @@ public class MobModeManager {
         double healthMult = (tier * 0.5) * hpFactor;
         double damageMult = (tier * 0.5) * dmgFactor;
         double speedMult = (tier * 0.2) * spdFactor;
-        // ★ 第4引数の name 文字列は不要
+
         applyModifier(entity, Attributes.MAX_HEALTH, HighSpeedAttributes.RADIANCE_HEALTH_ID, healthMult);
         applyModifier(entity, Attributes.ATTACK_DAMAGE, HighSpeedAttributes.RADIANCE_DAMAGE_ID, damageMult);
         applyModifier(entity, Attributes.MOVEMENT_SPEED, HighSpeedAttributes.RADIANCE_SPEED_ID, speedMult);
@@ -67,7 +67,6 @@ public class MobModeManager {
         sync(entity);
     }
 
-    // ★ 引数を (..., ResourceLocation id, double value) に変更
     private static void applyModifier(LivingEntity entity, Holder<Attribute> attr, ResourceLocation id, double value) {
         var instance = entity.getAttribute(attr);
         if (instance != null) {
@@ -81,7 +80,6 @@ public class MobModeManager {
         removeAttribute(entity, Attributes.MOVEMENT_SPEED, HighSpeedAttributes.RADIANCE_SPEED_ID);
     }
 
-    // ★ 引数を ResourceLocation id に変更
     private static void removeAttribute(LivingEntity entity, Holder<Attribute> attr, ResourceLocation id) {
         var instance = entity.getAttribute(attr);
         if (instance != null && instance.getModifier(id) != null) {

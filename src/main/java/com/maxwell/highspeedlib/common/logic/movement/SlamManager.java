@@ -92,7 +92,6 @@ public class SlamManager {
         double playerAttack = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
         double scalingDamage = slamBase + (playerAttack * HighSpeedServerConfig.SLAM_DAMAGE_ATTACK_FACTOR.get());
 
-        // ★ 1. registryAccess から Feather Falling の Holder を取得してレベル判定
         int featherFallingLevel = level.registryAccess()
                 .lookupOrThrow(Registries.ENCHANTMENT)
                 .get(Enchantments.FEATHER_FALLING)
@@ -102,7 +101,6 @@ public class SlamManager {
         float enchantMultiplier = 1.0f + (featherFallingLevel * HighSpeedServerConfig.SLAM_ENCHANT_FACTOR.get().floatValue());
         float finalDamage = (float) (scalingDamage * enchantMultiplier);
 
-        // ★ 2. SoundEvents.GENERIC_EXPLODE.value() で SoundEvent を渡す（または座標指定）
         level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.0f, 0.8f);
 
         double radius = HighSpeedServerConfig.SLAM_RADIUS.get();

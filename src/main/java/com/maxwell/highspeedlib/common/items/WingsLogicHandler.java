@@ -24,7 +24,7 @@ import top.theillusivec4.curios.api.CuriosApi;
 @SuppressWarnings("removal")
 @EventBusSubscriber(modid = HighSpeedLib.MODID)
 public class WingsLogicHandler {
-    // ★ UUID から ResourceLocation に変更
+
     private static final ResourceLocation ARMOR_PENALTY_ID = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "v1_wings_armor_penalty");
     private static final ResourceLocation TOUGHNESS_PENALTY_ID = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "v1_wings_toughness_penalty");
 
@@ -40,7 +40,7 @@ public class WingsLogicHandler {
         AttributeInstance toughnessAttr = player.getAttribute(Attributes.ARMOR_TOUGHNESS);
         if (hasWings(player)) {
             if (armorAttr != null && armorAttr.getModifier(ARMOR_PENALTY_ID) == null) {
-                // ★ 引数から名前文字列を削除
+
                 armorAttr.addTransientModifier(new AttributeModifier(ARMOR_PENALTY_ID, -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
             }
             if (toughnessAttr != null && toughnessAttr.getModifier(TOUGHNESS_PENALTY_ID) == null) {

@@ -2,16 +2,19 @@ package com.maxwell.highspeedlib.client.logic;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.client.renderer.ClientTrailRenderer;
+import com.maxwell.highspeedlib.common.logic.movement.SlideManager;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderBlockScreenEffectEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderBlockScreenEffectEvent;
+import net.neoforged.neoforge.client.event.RenderPlayerEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -47,6 +50,10 @@ public class ClientSlideHandler {
             }
         }
         clientIsSliding = sliding;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            mc.player.refreshDimensions();
+        }
         if (!sliding) {
             lockedSlideDir = null;
         }
@@ -68,51 +75,71 @@ public class ClientSlideHandler {
         return otherSlidingPlayers.contains(entityId);
     }
 
+
+
+    @SubscribeEvent
+    public static void onRenderPlayerPre(RenderPlayerEvent.Pre event) {
+        Player player = event.getEntity();
+        if (!SlideManager.isSliding(player)) return;
+
+        player.walkAnimation.setSpeed(0.0F);
+
+        float progress = getSlideProgress(event.getPartialTick());
+        var poseStack = event.getPoseStack();
+        float partialTicks = event.getPartialTick();
+
+        float bodyYaw = Mth.rotLerp(partialTicks, player.yBodyRotO, player.yBodyRot);
+
+        poseStack.translate(0.0D, -0.7D * progress, 0.0D);
+
+        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - bodyYaw));
+        poseStack.mulPose(Axis.XP.rotationDegrees(35.0F * progress));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-(180.0F - bodyYaw)));
+    }
+
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
-        {
-            prevSlideProgress = slideProgress;
-            Minecraft mc = Minecraft.getInstance();
-            if (clientIsSliding) {
-                Vec3 feetPos = mc.player.position();
-                Vec3 look = mc.player.getLookAngle().multiply(1, 0, 1).normalize();
-                Vec3 right = new Vec3(-look.z, 0, look.x);
-                Vec3 velocity = mc.player.getDeltaMovement();
-                int linesPerTick = 2;
-                var rand = mc.level.random;
-                long gameTime = mc.level.getGameTime();
-                for (int i = 0; i < linesPerTick; i++) {
-                    float sideOffset = 1.2f + rand.nextFloat() * 1.3f;
-                    float heightOffset = 0.5f + rand.nextFloat() * 1.5f;
-                    float forwardOffset = (rand.nextFloat() * 2.0f);
-                    String lineID = "slide_" + gameTime + "_" + i;
-                    Vec3 currentPos = feetPos.add(right.scale(sideOffset))
-                            .add(0, heightOffset, 0)
-                            .add(look.scale(forwardOffset));
-                    Vec3 tailPos = currentPos.subtract(velocity.scale(3.0));
-                    float thickness = 0.05f + rand.nextFloat() * 0.1f;
-                    var trailL = ClientTrailRenderer.getOrCreateTrail(mc.player.getUUID(), lineID + "L", 1, 1, 1, 0.4f, thickness);
-                    var trailR = ClientTrailRenderer.getOrCreateTrail(mc.player.getUUID(), lineID + "R", 1, 1, 1, 0.4f, thickness);
-                    trailL.addPoint(currentPos, 6);
-                    trailL.addPoint(tailPos, 6);
-                    Vec3 currentPosR = feetPos.add(right.scale(-sideOffset)).add(0, heightOffset, 0).add(look.scale(forwardOffset));
-                    Vec3 tailPosR = currentPosR.subtract(velocity.scale(3.0));
-                    trailR.addPoint(currentPosR, 6);
-                    trailR.addPoint(tailPosR, 6);
-                }
+        prevSlideProgress = slideProgress;
+        Minecraft mc = Minecraft.getInstance();
+        if (clientIsSliding) {
+            Vec3 feetPos = mc.player.position();
+            Vec3 look = mc.player.getLookAngle().multiply(1, 0, 1).normalize();
+            Vec3 right = new Vec3(-look.z, 0, look.x);
+            Vec3 velocity = mc.player.getDeltaMovement();
+            int linesPerTick = 2;
+            var rand = mc.level.random;
+            long gameTime = mc.level.getGameTime();
+            for (int i = 0; i < linesPerTick; i++) {
+                float sideOffset = 1.2f + rand.nextFloat() * 1.3f;
+                float heightOffset = 0.5f + rand.nextFloat() * 1.5f;
+                float forwardOffset = (rand.nextFloat() * 2.0f);
+                String lineID = "slide_" + gameTime + "_" + i;
+                Vec3 currentPos = feetPos.add(right.scale(sideOffset))
+                        .add(0, heightOffset, 0)
+                        .add(look.scale(forwardOffset));
+                Vec3 tailPos = currentPos.subtract(velocity.scale(3.0));
+                float thickness = 0.05f + rand.nextFloat() * 0.1f;
+                var trailL = ClientTrailRenderer.getOrCreateTrail(mc.player.getUUID(), lineID + "L", 1, 1, 1, 0.4f, thickness);
+                var trailR = ClientTrailRenderer.getOrCreateTrail(mc.player.getUUID(), lineID + "R", 1, 1, 1, 0.4f, thickness);
+                trailL.addPoint(currentPos, 6);
+                trailL.addPoint(tailPos, 6);
+                Vec3 currentPosR = feetPos.add(right.scale(-sideOffset)).add(0, heightOffset, 0).add(look.scale(forwardOffset));
+                Vec3 tailPosR = currentPosR.subtract(velocity.scale(3.0));
+                trailR.addPoint(currentPosR, 6);
+                trailR.addPoint(tailPosR, 6);
             }
-            if (mc.player != null && clientIsSliding && lockedSlideDir != null) {
-                Vec3 motion = mc.player.getDeltaMovement();
-                mc.player.setDeltaMovement(lockedSlideDir.x * SLIDE_SPEED, motion.y, lockedSlideDir.z * SLIDE_SPEED);
-            } else if (!clientIsSliding) {
-                lockedSlideDir = null;
-            }
-            float target = clientIsSliding ? SLIDE_FOV_TARGET : NORMAL_FOV_TARGET;
-            currentFovModifier = Mth.lerp(FOV_LERP_SPEED, currentFovModifier, target);
-            float slideTarget = clientIsSliding ? 1.0f : 0.0f;
-            float lerpAlpha = clientIsSliding ? 0.6f : 0.3f;
-            slideProgress = Mth.lerp(lerpAlpha, slideProgress, slideTarget);
         }
+        if (mc.player != null && clientIsSliding && lockedSlideDir != null) {
+            Vec3 motion = mc.player.getDeltaMovement();
+            mc.player.setDeltaMovement(lockedSlideDir.x * SLIDE_SPEED, motion.y, lockedSlideDir.z * SLIDE_SPEED);
+        } else if (!clientIsSliding) {
+            lockedSlideDir = null;
+        }
+        float target = clientIsSliding ? SLIDE_FOV_TARGET : NORMAL_FOV_TARGET;
+        currentFovModifier = Mth.lerp(FOV_LERP_SPEED, currentFovModifier, target);
+        float slideTarget = clientIsSliding ? 1.0f : 0.0f;
+        float lerpAlpha = clientIsSliding ? 0.6f : 0.3f;
+        slideProgress = Mth.lerp(lerpAlpha, slideProgress, slideTarget);
     }
 
     @SubscribeEvent
