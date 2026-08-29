@@ -11,13 +11,14 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import org.joml.Matrix4f;
-
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@SuppressWarnings("removal")
+@EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
 public class MobModeRenderer {
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
@@ -30,7 +31,7 @@ public class MobModeRenderer {
         boolean renderedAny = false;
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity instanceof LivingEntity living && MobModeManager.isEnraged(living)) {
-                renderEnrageCircle(poseStack, living, event.getPartialTick(), cameraPos, bufferSource);
+                renderEnrageCircle(poseStack, living, event.getPartialTick().getRealtimeDeltaTicks(), cameraPos, bufferSource);
                 renderedAny = true;
             }
         }
@@ -62,9 +63,9 @@ public class MobModeRenderer {
     }
 
     private static void drawSegment(Matrix4f matrix, VertexConsumer consumer, float a1, float a2, float r1, float r2, int r, int g, int b, int alpha) {
-        consumer.vertex(matrix, (float) Math.cos(a1) * r1, (float) Math.sin(a1) * r1, 0).color(r, g, b, alpha).endVertex();
-        consumer.vertex(matrix, (float) Math.cos(a2) * r1, (float) Math.sin(a2) * r1, 0).color(r, g, b, alpha).endVertex();
-        consumer.vertex(matrix, (float) Math.cos(a2) * r2, (float) Math.sin(a2) * r2, 0).color(r, g, b, alpha).endVertex();
-        consumer.vertex(matrix, (float) Math.cos(a1) * r2, (float) Math.sin(a1) * r2, 0).color(r, g, b, alpha).endVertex();
+        consumer.addVertex(matrix, (float) Math.cos(a1) * r1, (float) Math.sin(a1) * r1, 0).setColor(r, g, b, alpha);
+        consumer.addVertex(matrix, (float) Math.cos(a2) * r1, (float) Math.sin(a2) * r1, 0).setColor(r, g, b, alpha);
+        consumer.addVertex(matrix, (float) Math.cos(a2) * r2, (float) Math.sin(a2) * r2, 0).setColor(r, g, b, alpha);
+        consumer.addVertex(matrix, (float) Math.cos(a1) * r2, (float) Math.sin(a1) * r2, 0).setColor(r, g, b, alpha);
     }
 }

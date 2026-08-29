@@ -6,16 +6,17 @@ import com.maxwell.highspeedlib.client.state.UltraBossBarManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
 public class UltraBossBarRenderer {
     private static final List<UIParticle> particles = new ArrayList<>();
 
@@ -29,8 +30,8 @@ public class UltraBossBarRenderer {
     }
 
     @SubscribeEvent
-    public static void onRenderBossBar(RenderGuiOverlayEvent.Pre event) {
-        if (!event.getOverlay().id().equals(VanillaGuiOverlay.BOSS_EVENT_PROGRESS.id())) return;
+    public static void onRenderBossBar(RenderGuiLayerEvent.Pre event) {
+        if (!event.getName().equals(VanillaGuiLayers.BOSS_OVERLAY)) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null || mc.options.hideGui) return;
         List<LivingEntity> bosses = UltraBossBarManager.getActiveBosses();

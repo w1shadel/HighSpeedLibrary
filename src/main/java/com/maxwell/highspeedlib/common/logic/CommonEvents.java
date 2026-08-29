@@ -14,24 +14,26 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.network.PacketDistributor;
 
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID)
+@EventBusSubscriber(modid = HighSpeedLib.MODID)
 public class CommonEvents {
     @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) {
+    public static void onServerTick(ServerTickEvent.Pre event) {
+        {
             TimeManager.tick();
         }
     }
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) return;
-        ServerPlayer player = (ServerPlayer) event.player;
+    public static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity().level().isClientSide) return;
+        ServerPlayer player = (ServerPlayer) event.getEntity();
         PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
         if (state.slamImpactTimer > 0) {
             state.slamImpactTimer--;
@@ -45,8 +47,7 @@ public class CommonEvents {
             if (state.slamStorageTimer > 0) {
                 state.slamStorageTimer--;
                 if (state.slamStorageTimer == 0) {
-                    PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                            new S2CSyncSlamPacket(player.getId(), false, false));
+                    PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new S2CSyncSlamPacket(player.getId(), false, false));
                 }
             }
             WallJumpManager.tickWallJumpReseter(player);
@@ -70,10 +71,8 @@ public class CommonEvents {
             player.connection.send(new ClientboundSetEntityMotionPacket(player));
 
             state.slamStorageTimer = 0;
-            player.level().playSound(null, player.blockPosition(),
-                    SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0f, 1.2f);
-            PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                    new S2CSyncSlamPacket(player.getId(), false, false));
+            player.level().playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.0f, 1.2f);
+            PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new S2CSyncSlamPacket(player.getId(), false, false));
         }
     }
 }

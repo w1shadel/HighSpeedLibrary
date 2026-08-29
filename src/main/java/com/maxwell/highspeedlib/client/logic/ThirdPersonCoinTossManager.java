@@ -3,20 +3,21 @@ package com.maxwell.highspeedlib.client.logic;
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.client.state.ClientStateManager;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
 public class ThirdPersonCoinTossManager {
     public static void startAnimation(int entityId) {
         ClientStateManager.getEntityState(entityId).tossAnimationProgress = 0f;
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
+    public static void onClientTick(ClientTickEvent.Post event) {
+        {
             net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
             if (mc.level != null) {
                 for (Player player : mc.level.players()) {

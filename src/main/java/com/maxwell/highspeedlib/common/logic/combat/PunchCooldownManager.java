@@ -8,12 +8,13 @@ import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncPunchEnergyPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.network.PacketDistributor;
 
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID)
+@EventBusSubscriber(modid = HighSpeedLib.MODID)
 public class PunchCooldownManager {
     private static double clientEnergy = 2.0;
 
@@ -27,9 +28,9 @@ public class PunchCooldownManager {
     }
 
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) return;
-        Player player = event.player;
+    public static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity().level().isClientSide) return;
+        Player player = event.getEntity();
         PlayerCombatState state = PlayerStateManager.getState(player).getCombat();
         double current = state.punchEnergy;
         if (current < 2.0) {
@@ -59,7 +60,7 @@ public class PunchCooldownManager {
 
     private static void syncToClient(Player player, double energy) {
         if (player instanceof ServerPlayer serverPlayer) {
-            PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new S2CSyncPunchEnergyPacket(energy));
+            PacketDistributor.sendToPlayer(serverPlayer, new S2CSyncPunchEnergyPacket(energy));
         }
     }
 }

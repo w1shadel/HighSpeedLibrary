@@ -12,16 +12,17 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class SlideManager {
     public static void toggleSlide(ServerPlayer player, boolean start, float xInput, float zInput) {
-        if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Sliding(player))) {
+        if (NeoForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Sliding(player)).isCanceled()) {
             return;
         }
         PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
@@ -46,8 +47,7 @@ public class SlideManager {
             }
         }
         player.refreshDimensions();
-        PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                new S2CSyncSlidePacket(player.getId(), start));
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new S2CSyncSlidePacket(player.getId(), start));
     }
 
     public static boolean isSliding(Player player) {
@@ -58,12 +58,11 @@ public class SlideManager {
         return PlayerStateManager.getState(player).getMovement().isSliding;
     }
 
-    @Mod.EventBusSubscriber(modid = HighSpeedLib.MODID)
+    @EventBusSubscriber(modid = HighSpeedLib.MODID)
     public static class Events {
         @SubscribeEvent
-        public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-            if (event.phase != TickEvent.Phase.END) return;
-            Player player = event.player;
+        public static void onPlayerTick(PlayerTickEvent.Post event) {
+            Player player = event.getEntity();
             if (player.level().isClientSide) return;
             if (isSliding(player)) {
                 PlayerMovementState state = PlayerStateManager.getState(player).getMovement();

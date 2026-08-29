@@ -8,16 +8,18 @@ import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
 import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncStaminaPacket;
 import com.maxwell.highspeedlib.init.ModEnchantments;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.network.PacketDistributor;
 
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID)
+@EventBusSubscriber(modid = HighSpeedLib.MODID)
 public class StaminaManager {
     public static double getStamina(Player player) {
         PlayerMovementState state = PlayerStateManager.getState(player).getMovement();
@@ -38,7 +40,13 @@ public class StaminaManager {
 
     public static double getMaxStamina(Player player) {
         PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
-        int enchantmentLevel = EnchantmentHelper.getItemEnchantmentLevel(ModEnchantments.STAMINA_BOOST.get(), player.getItemBySlot(EquipmentSlot.LEGS));
+
+        int enchantmentLevel = player.level().registryAccess()
+                .lookupOrThrow(Registries.ENCHANTMENT)
+                .get(ModEnchantments.STAMINA_BOOST)
+                .map(holder -> EnchantmentHelper.getItemEnchantmentLevel(holder, player.getItemBySlot(EquipmentSlot.LEGS)))
+                .orElse(0);
+
         double enchantValue = HighSpeedServerConfig.STAMINA_BOOST_ENCHANT_VALUE.get();
         return settings.maxDashCount + (enchantmentLevel * enchantValue);
     }
@@ -53,14 +61,13 @@ public class StaminaManager {
     }
 
     public static void syncToClient(ServerPlayer player) {
-        PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player),
-                new S2CSyncStaminaPacket(getStamina(player), getMaxStamina(player)));
+        PacketDistributor.sendToPlayer(player, new S2CSyncStaminaPacket(getStamina(player), getMaxStamina(player)));
     }
 
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) return;
-        Player player = event.player;
+    public static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity().level().isClientSide) return;
+        Player player = event.getEntity();
         if (SlideManager.isSliding(player)) {
             return;
         }

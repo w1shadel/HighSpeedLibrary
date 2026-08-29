@@ -1,10 +1,11 @@
 package com.maxwell.highspeedlib.common.items;
 
 import com.maxwell.highspeedlib.HighSpeedLib;
-import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.effect.S2CBloodSplatPacket;
 import com.maxwell.highspeedlib.init.ModItems;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -12,57 +13,57 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import top.theillusivec4.curios.api.CuriosApi;
-
-import java.util.UUID;
-
 @SuppressWarnings("removal")
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID)
+@EventBusSubscriber(modid = HighSpeedLib.MODID)
 public class WingsLogicHandler {
-    private static final UUID ARMOR_NULL_UUID = UUID.fromString("6d58498c-87f4-4166-990d-2e16ee9e038a");
-    private static final UUID TOUGHNESS_NULL_UUID = UUID.fromString("9a4f6a96-686f-4796-b035-22e16ee9e039");
+    // ★ UUID から ResourceLocation に変更
+    private static final ResourceLocation ARMOR_PENALTY_ID = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "v1_wings_armor_penalty");
+    private static final ResourceLocation TOUGHNESS_PENALTY_ID = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "v1_wings_toughness_penalty");
 
     public static boolean hasWings(Player player) {
         return CuriosApi.getCuriosHelper().findFirstCurio(player, ModItems.V1_WINGS.get()).isPresent();
     }
 
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) return;
-        Player player = event.player;
+    public static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity().level().isClientSide) return;
+        Player player = event.getEntity();
         AttributeInstance armorAttr = player.getAttribute(Attributes.ARMOR);
         AttributeInstance toughnessAttr = player.getAttribute(Attributes.ARMOR_TOUGHNESS);
         if (hasWings(player)) {
-            if (armorAttr != null && armorAttr.getModifier(ARMOR_NULL_UUID) == null) {
-                armorAttr.addTransientModifier(new AttributeModifier(ARMOR_NULL_UUID, "V1 Wings Armor Penalty", -1.0, AttributeModifier.Operation.MULTIPLY_TOTAL));
+            if (armorAttr != null && armorAttr.getModifier(ARMOR_PENALTY_ID) == null) {
+                // ★ 引数から名前文字列を削除
+                armorAttr.addTransientModifier(new AttributeModifier(ARMOR_PENALTY_ID, -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
             }
-            if (toughnessAttr != null && toughnessAttr.getModifier(TOUGHNESS_NULL_UUID) == null) {
-                toughnessAttr.addTransientModifier(new AttributeModifier(TOUGHNESS_NULL_UUID, "V1 Wings Toughness Penalty", -1.0, AttributeModifier.Operation.MULTIPLY_TOTAL));
+            if (toughnessAttr != null && toughnessAttr.getModifier(TOUGHNESS_PENALTY_ID) == null) {
+                toughnessAttr.addTransientModifier(new AttributeModifier(TOUGHNESS_PENALTY_ID, -1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
             }
         } else {
-            if (armorAttr != null && armorAttr.getModifier(ARMOR_NULL_UUID) != null) {
-                armorAttr.removeModifier(ARMOR_NULL_UUID);
+            if (armorAttr != null && armorAttr.getModifier(ARMOR_PENALTY_ID) != null) {
+                armorAttr.removeModifier(ARMOR_PENALTY_ID);
             }
-            if (toughnessAttr != null && toughnessAttr.getModifier(TOUGHNESS_NULL_UUID) != null) {
-                toughnessAttr.removeModifier(TOUGHNESS_NULL_UUID);
+            if (toughnessAttr != null && toughnessAttr.getModifier(TOUGHNESS_PENALTY_ID) != null) {
+                toughnessAttr.removeModifier(TOUGHNESS_PENALTY_ID);
             }
         }
     }
 
     @SubscribeEvent
-    public static void onBloodIsFuel(LivingHurtEvent event) {
+    public static void onBloodIsFuel(LivingIncomingDamageEvent event) {
         if (event.getSource().getEntity() instanceof Player player && hasWings(player)) {
             LivingEntity victim = event.getEntity();
             if (player.level() instanceof ServerLevel serverLevel) {
                 Vec3 sprayDir = player.getEyePosition().subtract(victim.position()).normalize();
-                serverLevel.sendParticles(new net.minecraft.core.particles.BlockParticleOption(
-                                ParticleTypes.BLOCK, net.minecraft.world.level.block.Blocks.NETHER_WART_BLOCK.defaultBlockState()),
+                serverLevel.sendParticles(new BlockParticleOption(
+                                ParticleTypes.BLOCK, Blocks.NETHER_WART_BLOCK.defaultBlockState()),
                         victim.getX(), victim.getY() + 1.0, victim.getZ(),
                         20, 0.2, 0.2, 0.2, 0.15);
                 for (int i = 0; i < 2; i++) {
@@ -71,8 +72,7 @@ public class WingsLogicHandler {
                             0.05,
                             (serverLevel.random.nextDouble() - 0.5) * 1.2
                     );
-                    PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> victim),
-                            new S2CBloodSplatPacket(splatPos, sprayDir, 10));
+                    PacketDistributor.sendToPlayersTrackingEntityAndSelf(victim, new S2CBloodSplatPacket(splatPos, sprayDir, 10));
                 }
             }
             if (player.distanceTo(victim) <= 4.0) {

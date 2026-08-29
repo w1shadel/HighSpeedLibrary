@@ -5,11 +5,11 @@ import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.effect.S2CRenderTextPacket;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class TextSystem {
     public static void send(ServerPlayer player, TextData.Type type, String text, double x, double y, int color, int duration, float scale) {
-        PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CRenderTextPacket(type, Component.literal(text), x, y, color, duration, scale));
+        PacketDistributor.sendToPlayer(player, new S2CRenderTextPacket(type, Component.literal(text), x, y, color, duration, scale));
     }
 
     public static void sendSubtitle(ServerPlayer player, String message) {

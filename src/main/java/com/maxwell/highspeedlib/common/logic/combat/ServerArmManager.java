@@ -30,16 +30,17 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = com.maxwell.highspeedlib.HighSpeedLib.MODID)
+@EventBusSubscriber(modid = com.maxwell.highspeedlib.HighSpeedLib.MODID)
 public class ServerArmManager {
     @SubscribeEvent
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
@@ -58,9 +59,9 @@ public class ServerArmManager {
     }
 
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) return;
-        PlayerCombatState state = PlayerStateManager.getState(event.player).getCombat();
+    public static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity().level().isClientSide) return;
+        PlayerCombatState state = PlayerStateManager.getState(event.getEntity()).getCombat();
         if (state.activeParryWindow > 0) {
             state.activeParryWindow--;
         }
@@ -68,7 +69,7 @@ public class ServerArmManager {
 
     public static void attemptPunch(ServerPlayer player) {
         com.maxwell.highspeedlib.common.logic.combat.ArmType arm = com.maxwell.highspeedlib.client.state.ArmManager.getArm(player);
-        if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Punch(player, arm))) {
+        if (NeoForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Punch(player, arm)).isCanceled()) {
             return;
         }
         boolean isRed = (arm == com.maxwell.highspeedlib.common.logic.combat.ArmType.KNUCKLEBLASTER);
@@ -77,8 +78,7 @@ public class ServerArmManager {
                     SoundEvents.DISPENSER_FAIL, SoundSource.PLAYERS, 1.0f, 2.0f);
             return;
         }
-        PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                new S2CStartPunchAnimationPacket(player.getId()));
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new S2CStartPunchAnimationPacket(player.getId()));
         if (isRed) {
             performKnuckleBlast(player);
         } else {
@@ -226,7 +226,7 @@ public class ServerArmManager {
 
         PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
         double baseDamage = settings.punchDamageBase; 
-        double punchAttr = player.getAttributeValue(ModAttributes.PUNCH_DAMAGE.get()); 
+        double punchAttr = player.getAttributeValue(ModAttributes.PUNCH_DAMAGE);
         double rawAD = player.getAttributeValue(Attributes.ATTACK_DAMAGE); 
 
         double adBonus = (rawAD - 1.0) * HighSpeedServerConfig.PUNCH_AD_FACTOR.get();
@@ -284,10 +284,10 @@ public class ServerArmManager {
 
     public static void triggerParryEffects(ServerPlayer player) {
         TimeManager.setHitstop(HighSpeedServerConfig.PARRY_HITSTOP_TICKS.get());
-        PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CParryPacket());
+        PacketDistributor.sendToPlayer(player, new S2CParryPacket());
         float shakePower = HighSpeedServerConfig.PARRY_SCREEN_SHAKE_POWER.get().floatValue();
         int shakeTicks = HighSpeedServerConfig.PARRY_SCREEN_SHAKE_TICKS.get();
-        PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CScreenShakePacket(shakePower, shakeTicks));
+        PacketDistributor.sendToPlayer(player, new S2CScreenShakePacket(shakePower, shakeTicks));
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, SoundSource.PLAYERS, 1.0f, 1.8f);
     }

@@ -4,18 +4,19 @@ import com.maxwell.highspeedlib.HighSpeedLib;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
 public class CheatModeIndicatorRenderer {
     private static final int[] KONAMI_CODE = {
             GLFW.GLFW_KEY_UP, GLFW.GLFW_KEY_UP,
@@ -54,7 +55,7 @@ public class CheatModeIndicatorRenderer {
     }
 
     @SubscribeEvent
-    public static void onRenderHud(RenderGuiOverlayEvent.Post event) {
+    public static void onRenderHud(RenderGuiLayerEvent.Post event) {
         if (Minecraft.getInstance().screen == null) {
             renderIndicator(event.getGuiGraphics());
         }

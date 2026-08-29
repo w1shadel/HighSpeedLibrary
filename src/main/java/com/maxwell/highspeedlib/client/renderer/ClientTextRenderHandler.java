@@ -4,16 +4,17 @@ import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.client.state.TextData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGuiEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
 public class ClientTextRenderHandler {
     private static final List<TextData> activeTexts = new ArrayList<>();
 
@@ -54,8 +55,8 @@ public class ClientTextRenderHandler {
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
+    public static void onClientTick(ClientTickEvent.Post event) {
+        {
             activeTexts.removeIf(text -> {
                 text.tick();
                 return text.isExpired();

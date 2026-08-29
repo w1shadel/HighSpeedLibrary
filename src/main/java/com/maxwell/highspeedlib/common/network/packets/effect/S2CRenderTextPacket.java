@@ -1,16 +1,29 @@
 package com.maxwell.highspeedlib.common.network.packets.effect;
 
+import com.maxwell.highspeedlib.HighSpeedLib;
+
 import com.maxwell.highspeedlib.client.network.ClientPacketHandler;
 import com.maxwell.highspeedlib.client.state.TextData;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.chat.ComponentSerialization;
 
-import java.util.function.Supplier;
 
-public class S2CRenderTextPacket {
+
+
+
+
+public class S2CRenderTextPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<S2CRenderTextPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "s2c_render_text_packet"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, S2CRenderTextPacket> STREAM_CODEC = StreamCodec.of((RegistryFriendlyByteBuf buf, S2CRenderTextPacket msg) -> S2CRenderTextPacket.encode(msg, buf), S2CRenderTextPacket::decode);
+
+    @Override
+    public CustomPacketPayload.Type<S2CRenderTextPacket> type() { return TYPE; }
     private final TextData.Type type;
     private final Component text;
     private final double x, y;
@@ -30,7 +43,7 @@ public class S2CRenderTextPacket {
 
     public static void encode(S2CRenderTextPacket msg, FriendlyByteBuf buf) {
         buf.writeEnum(msg.type);
-        buf.writeComponent(msg.text);
+        buf.writeJsonWithCodec(ComponentSerialization.CODEC, msg.text);
         buf.writeDouble(msg.x);
         buf.writeDouble(msg.y);
         buf.writeInt(msg.color);
@@ -41,7 +54,7 @@ public class S2CRenderTextPacket {
     public static S2CRenderTextPacket decode(FriendlyByteBuf buf) {
         return new S2CRenderTextPacket(
                 buf.readEnum(TextData.Type.class),
-                buf.readComponent(),
+                buf.readJsonWithCodec(ComponentSerialization.CODEC),
                 buf.readDouble(),
                 buf.readDouble(),
                 buf.readInt(),
@@ -50,10 +63,9 @@ public class S2CRenderTextPacket {
         );
     }
 
-    public static void handle(S2CRenderTextPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleRenderText(msg.type, msg.text, msg.x, msg.y, msg.color, msg.duration, msg.scale));
+    public static void handle(S2CRenderTextPacket msg, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ClientPacketHandler.handleRenderText(msg.type, msg.text, msg.x, msg.y, msg.color, msg.duration, msg.scale);
         });
-        ctx.get().setPacketHandled(true);
     }
 }

@@ -8,15 +8,15 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterClientCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
 public class ClientCommands {
     @SubscribeEvent
     public static void onRegisterClientCommands(RegisterClientCommandsEvent event) {
@@ -118,4 +118,4 @@ public class ClientCommands {
         source.sendSuccess(() -> Component.literal("[Client] §a" + key + " §f= §b" + val), false);
         return 1;
     }
-}
+}

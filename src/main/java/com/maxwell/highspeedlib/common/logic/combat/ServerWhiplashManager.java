@@ -32,18 +32,19 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 
 import java.util.Optional;
 
 @SuppressWarnings("removal")
-@Mod.EventBusSubscriber(modid = com.maxwell.highspeedlib.HighSpeedLib.MODID)
+@EventBusSubscriber(modid = com.maxwell.highspeedlib.HighSpeedLib.MODID)
 public class ServerWhiplashManager {
     public static final int NONE = 0;
     public static final int FLYING = 1;
@@ -60,7 +61,7 @@ public class ServerWhiplashManager {
 
     public static void start(ServerPlayer player) {
         HookData data = getServerData(player);
-        if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Whiplash(player))) {
+        if (NeoForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Whiplash(player)).isCanceled()) {
             return;
         }
         if (data.state != NONE) return;
@@ -82,9 +83,9 @@ public class ServerWhiplashManager {
     }
 
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) return;
-        if (event.player instanceof ServerPlayer sp) {
+    public static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity().level().isClientSide) return;
+        if (event.getEntity() instanceof ServerPlayer sp) {
             tickServer(sp);
         }
     }
@@ -149,8 +150,7 @@ public class ServerWhiplashManager {
                     ItemStack itemstack = new ItemStack(state.getBlock());
                     BlockEntity be = level.getBlockEntity(pos);
                     if (be != null) {
-                        CompoundTag tag = be.saveWithFullMetadata();
-                        itemstack.getOrCreateTag().put("BlockEntityTag", tag);
+                        be.saveToItem(itemstack, level.registryAccess());
                     }
                     level.removeBlock(pos, false);
                     ItemEntity itemEntity = new ItemEntity(level,
@@ -231,7 +231,7 @@ public class ServerWhiplashManager {
             } else {
                 data.obstructionTicks = 0;
             }
-            TagKey<EntityType<?>> bossTag = TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation("forge:bosses"));
+            TagKey<EntityType<?>> bossTag = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath("neoforge", "bosses"));
             boolean isBoss = target.getType().is(bossTag);
             boolean pullPlayer = target.getBbHeight() >= player.getBbHeight() || isBoss;
             double distToTravel = data.distance - stopDistance;
@@ -260,7 +260,7 @@ public class ServerWhiplashManager {
     }
 
     private static void sync(ServerPlayer player, HookData data) {
-        PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player), new S2CSyncWhiplashPacket(player.getUUID(), data.state, data.distance, data.targetId, data.hitPos, data.shootDir));
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new S2CSyncWhiplashPacket(player.getUUID(), data.state, data.distance, data.targetId, data.hitPos, data.shootDir));
     }
 
     public static class HookData {

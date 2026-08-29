@@ -11,19 +11,20 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import org.joml.Matrix4f;
 
 import java.util.*;
 
 @SuppressWarnings("removal")
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
 public class BloodRenderManager {
-    private static final ResourceLocation WHITE_TEX = new ResourceLocation("minecraft", "textures/block/white_concrete.png");
+    private static final ResourceLocation WHITE_TEX = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/white_concrete.png");
     private static final int MAX_GROUND_SPLATS = 600;
     private static final int MAX_AIR_DROPS = 400;
     private static final List<GroundSplat> groundSplats = new ArrayList<>();
@@ -42,8 +43,8 @@ public class BloodRenderManager {
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || Minecraft.getInstance().level == null) return;
+    public static void onClientTick(ClientTickEvent.Post event) {
+        if (Minecraft.getInstance().level == null) return;
         synchronized (pendingAirDrops) {
             if (!pendingAirDrops.isEmpty()) {
                 airDrops.addAll(pendingAirDrops);
@@ -137,7 +138,7 @@ public class BloodRenderManager {
     }
 
     private static void addVertex(Matrix4f matrix, VertexConsumer builder, float x, float y, float z, int r, int g, int b, int a, float u, float v) {
-        builder.vertex(matrix, x, y, z).color(r, g, b, a).uv(u, v).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0, 1, 0).endVertex();
+        builder.addVertex(matrix, x, y, z).setColor(r, g, b, a).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, 1, 0);
     }
 
     private static class GroundSplat {

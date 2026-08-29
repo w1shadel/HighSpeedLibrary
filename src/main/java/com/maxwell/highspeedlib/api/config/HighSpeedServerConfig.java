@@ -1,73 +1,73 @@
 package com.maxwell.highspeedlib.api.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class HighSpeedServerConfig {
-    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-    public static final ForgeConfigSpec SPEC;
+    public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+    public static final ModConfigSpec SPEC;
 
-    public static final ForgeConfigSpec.BooleanValue ABILITY_PUNCH;
-    public static final ForgeConfigSpec.BooleanValue ABILITY_DASH;
-    public static final ForgeConfigSpec.BooleanValue ABILITY_WHIPLASH;
-    public static final ForgeConfigSpec.BooleanValue ABILITY_WALLJUMP;
-    public static final ForgeConfigSpec.BooleanValue ABILITY_SLIDE;
-    public static final ForgeConfigSpec.BooleanValue ABILITY_SLAM;
+    public static final ModConfigSpec.BooleanValue ABILITY_PUNCH;
+    public static final ModConfigSpec.BooleanValue ABILITY_DASH;
+    public static final ModConfigSpec.BooleanValue ABILITY_WHIPLASH;
+    public static final ModConfigSpec.BooleanValue ABILITY_WALLJUMP;
+    public static final ModConfigSpec.BooleanValue ABILITY_SLIDE;
+    public static final ModConfigSpec.BooleanValue ABILITY_SLAM;
 
-    public static final ForgeConfigSpec.IntValue DASH_INVUL_TICKS;
-    public static final ForgeConfigSpec.IntValue DASH_MAX_COUNT;
-    public static final ForgeConfigSpec.DoubleValue DASH_STAMINA_COST;
+    public static final ModConfigSpec.IntValue DASH_INVUL_TICKS;
+    public static final ModConfigSpec.IntValue DASH_MAX_COUNT;
+    public static final ModConfigSpec.DoubleValue DASH_STAMINA_COST;
 
-    public static final ForgeConfigSpec.IntValue STAMINA_MAX;
-    public static final ForgeConfigSpec.DoubleValue STAMINA_REGEN_PER_TICK;
-    public static final ForgeConfigSpec.DoubleValue STAMINA_BOOST_ENCHANT_VALUE;
+    public static final ModConfigSpec.IntValue STAMINA_MAX;
+    public static final ModConfigSpec.DoubleValue STAMINA_REGEN_PER_TICK;
+    public static final ModConfigSpec.DoubleValue STAMINA_BOOST_ENCHANT_VALUE;
 
-    public static final ForgeConfigSpec.DoubleValue SLIDE_SPEED;
-    public static final ForgeConfigSpec.IntValue SLIDE_AIR_TIMEOUT_TICKS;
-    public static final ForgeConfigSpec.DoubleValue SLIDE_JUMP_HORIZONTAL_MULT;
-    public static final ForgeConfigSpec.DoubleValue SLIDE_JUMP_VERTICAL_BASE;
-    public static final ForgeConfigSpec.DoubleValue SLIDE_JUMP_VERTICAL_SPEED_MULT;
+    public static final ModConfigSpec.DoubleValue SLIDE_SPEED;
+    public static final ModConfigSpec.IntValue SLIDE_AIR_TIMEOUT_TICKS;
+    public static final ModConfigSpec.DoubleValue SLIDE_JUMP_HORIZONTAL_MULT;
+    public static final ModConfigSpec.DoubleValue SLIDE_JUMP_VERTICAL_BASE;
+    public static final ModConfigSpec.DoubleValue SLIDE_JUMP_VERTICAL_SPEED_MULT;
 
-    public static final ForgeConfigSpec.IntValue WALLJUMP_MAX_COUNT;
-    public static final ForgeConfigSpec.DoubleValue WALLJUMP_VERTICAL_MULT;
-    public static final ForgeConfigSpec.DoubleValue WALLJUMP_HORIZONTAL_POWER;
+    public static final ModConfigSpec.IntValue WALLJUMP_MAX_COUNT;
+    public static final ModConfigSpec.DoubleValue WALLJUMP_VERTICAL_MULT;
+    public static final ModConfigSpec.DoubleValue WALLJUMP_HORIZONTAL_POWER;
 
-    public static final ForgeConfigSpec.DoubleValue SLAM_DOWNWARD_SPEED;
-    public static final ForgeConfigSpec.DoubleValue SLAM_RADIUS;
-    public static final ForgeConfigSpec.DoubleValue SLAM_KNOCKUP_POWER;
-    public static final ForgeConfigSpec.DoubleValue SLAM_DAMAGE_ATTACK_FACTOR;
-    public static final ForgeConfigSpec.DoubleValue SLAM_ENCHANT_FACTOR;
-    public static final ForgeConfigSpec.DoubleValue SLAM_JUMP_VERTICAL_POWER;
-    public static final ForgeConfigSpec.DoubleValue SLAM_JUMP_HORIZONTAL_MULT;
+    public static final ModConfigSpec.DoubleValue SLAM_DOWNWARD_SPEED;
+    public static final ModConfigSpec.DoubleValue SLAM_RADIUS;
+    public static final ModConfigSpec.DoubleValue SLAM_KNOCKUP_POWER;
+    public static final ModConfigSpec.DoubleValue SLAM_DAMAGE_ATTACK_FACTOR;
+    public static final ModConfigSpec.DoubleValue SLAM_ENCHANT_FACTOR;
+    public static final ModConfigSpec.DoubleValue SLAM_JUMP_VERTICAL_POWER;
+    public static final ModConfigSpec.DoubleValue SLAM_JUMP_HORIZONTAL_MULT;
 
-    public static final ForgeConfigSpec.DoubleValue PUNCH_DAMAGE_BASE;
-    public static final ForgeConfigSpec.DoubleValue PUNCH_ENERGY_REGEN_PER_TICK;
-    public static final ForgeConfigSpec.DoubleValue PUNCH_AD_FACTOR;
-    public static final ForgeConfigSpec.DoubleValue PUNCH_VELOCITY_FACTOR;
-    public static final ForgeConfigSpec.DoubleValue PUNCH_VELOCITY_MAX_MODIFIER;
-    public static final ForgeConfigSpec.DoubleValue PUNCH_FEEDBACKER_DAMAGE_MULT;
-    public static final ForgeConfigSpec.DoubleValue PUNCH_KNUCKLE_DAMAGE_MULT;
-    public static final ForgeConfigSpec.DoubleValue PUNCH_KNUCKLE_RADIUS;
+    public static final ModConfigSpec.DoubleValue PUNCH_DAMAGE_BASE;
+    public static final ModConfigSpec.DoubleValue PUNCH_ENERGY_REGEN_PER_TICK;
+    public static final ModConfigSpec.DoubleValue PUNCH_AD_FACTOR;
+    public static final ModConfigSpec.DoubleValue PUNCH_VELOCITY_FACTOR;
+    public static final ModConfigSpec.DoubleValue PUNCH_VELOCITY_MAX_MODIFIER;
+    public static final ModConfigSpec.DoubleValue PUNCH_FEEDBACKER_DAMAGE_MULT;
+    public static final ModConfigSpec.DoubleValue PUNCH_KNUCKLE_DAMAGE_MULT;
+    public static final ModConfigSpec.DoubleValue PUNCH_KNUCKLE_RADIUS;
 
-    public static final ForgeConfigSpec.DoubleValue PARRY_INVUL_SECONDS;
-    public static final ForgeConfigSpec.DoubleValue PARRY_COUNTER_DAMAGE;
-    public static final ForgeConfigSpec.IntValue PARRY_HITSTOP_TICKS;
-    public static final ForgeConfigSpec.DoubleValue PARRY_SCREEN_SHAKE_POWER;
-    public static final ForgeConfigSpec.IntValue PARRY_SCREEN_SHAKE_TICKS;
-    public static final ForgeConfigSpec.DoubleValue PARRY_EXPLOSION_SIZE;
+    public static final ModConfigSpec.DoubleValue PARRY_INVUL_SECONDS;
+    public static final ModConfigSpec.DoubleValue PARRY_COUNTER_DAMAGE;
+    public static final ModConfigSpec.IntValue PARRY_HITSTOP_TICKS;
+    public static final ModConfigSpec.DoubleValue PARRY_SCREEN_SHAKE_POWER;
+    public static final ModConfigSpec.IntValue PARRY_SCREEN_SHAKE_TICKS;
+    public static final ModConfigSpec.DoubleValue PARRY_EXPLOSION_SIZE;
 
-    public static final ForgeConfigSpec.DoubleValue WHIPLASH_MAX_RANGE;
-    public static final ForgeConfigSpec.DoubleValue WHIPLASH_FLY_SPEED;
-    public static final ForgeConfigSpec.DoubleValue WHIPLASH_PULL_SPEED;
-    public static final ForgeConfigSpec.IntValue WHIPLASH_OBSTRUCTION_MAX_TICKS;
-    public static final ForgeConfigSpec.DoubleValue WHIPLASH_PULL_PLAYER_MAX_SPEED;
-    public static final ForgeConfigSpec.DoubleValue WHIPLASH_PULL_TARGET_MAX_SPEED;
+    public static final ModConfigSpec.DoubleValue WHIPLASH_MAX_RANGE;
+    public static final ModConfigSpec.DoubleValue WHIPLASH_FLY_SPEED;
+    public static final ModConfigSpec.DoubleValue WHIPLASH_PULL_SPEED;
+    public static final ModConfigSpec.IntValue WHIPLASH_OBSTRUCTION_MAX_TICKS;
+    public static final ModConfigSpec.DoubleValue WHIPLASH_PULL_PLAYER_MAX_SPEED;
+    public static final ModConfigSpec.DoubleValue WHIPLASH_PULL_TARGET_MAX_SPEED;
 
-    public static final ForgeConfigSpec.IntValue COIN_MAX_COUNT;
-    public static final ForgeConfigSpec.DoubleValue COIN_REGEN_PER_TICK;
-    public static final ForgeConfigSpec.DoubleValue COIN_BASE_DAMAGE;
-    public static final ForgeConfigSpec.DoubleValue COIN_PARRY_DAMAGE_PER_COUNT;
+    public static final ModConfigSpec.IntValue COIN_MAX_COUNT;
+    public static final ModConfigSpec.DoubleValue COIN_REGEN_PER_TICK;
+    public static final ModConfigSpec.DoubleValue COIN_BASE_DAMAGE;
+    public static final ModConfigSpec.DoubleValue COIN_PARRY_DAMAGE_PER_COUNT;
 
-    public static final ForgeConfigSpec.DoubleValue PROJECTILE_PARRY_SPEED;
+    public static final ModConfigSpec.DoubleValue PROJECTILE_PARRY_SPEED;
 
     static {
         BUILDER.comment("HighSpeedLib Server Configuration");

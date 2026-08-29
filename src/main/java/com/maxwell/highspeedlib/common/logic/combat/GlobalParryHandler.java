@@ -11,13 +11,14 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.ProjectileImpactEvent;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
 @SuppressWarnings("removal")
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID)
+@EventBusSubscriber(modid = HighSpeedLib.MODID)
 public class GlobalParryHandler {
     @SubscribeEvent
     public static void onImpact(ProjectileImpactEvent event) {
@@ -46,7 +47,7 @@ public class GlobalParryHandler {
     }
 
     @SubscribeEvent
-    public static void onLivingHurt(LivingAttackEvent event) {
+    public static void onLivingHurt(LivingIncomingDamageEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (ServerArmManager.isPlayerParrying(player)) {
             Entity attacker = event.getSource().getDirectEntity();

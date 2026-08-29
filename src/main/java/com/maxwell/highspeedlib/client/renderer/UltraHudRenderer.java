@@ -12,18 +12,19 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import org.joml.Matrix4f;
 
 @SuppressWarnings("removal")
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT)
 public class UltraHudRenderer {
-    private static final ResourceLocation PUNCH1_ICON = new ResourceLocation(HighSpeedLib.MODID, "textures/gui/punch1.png");
-    private static final ResourceLocation PUNCH2_ICON = new ResourceLocation(HighSpeedLib.MODID, "textures/gui/punch2.png");
+    private static final ResourceLocation PUNCH1_ICON = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "textures/gui/punch1.png");
+    private static final ResourceLocation PUNCH2_ICON = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "textures/gui/punch2.png");
 
     private static final float Z_BG = 0.0f;
     private static final float Z_BAR = 5.0f;
@@ -73,22 +74,22 @@ public class UltraHudRenderer {
     }
 
     @SubscribeEvent
-    public static void onRenderHud(RenderGuiOverlayEvent.Pre event) {
+    public static void onRenderHud(RenderGuiLayerEvent.Pre event) {
         if (!HighSpeedClientConfig.ULTRAHUD_VISIBLE.get()) return;
-        var id = event.getOverlay().id();
-        if (id.equals(VanillaGuiOverlay.PLAYER_HEALTH.id()) ||
-                id.equals(VanillaGuiOverlay.HOTBAR.id()) ||
-                id.equals(VanillaGuiOverlay.FOOD_LEVEL.id()) ||
-                id.equals(VanillaGuiOverlay.EXPERIENCE_BAR.id()) ||
-                id.equals(VanillaGuiOverlay.ARMOR_LEVEL.id())) {
+        var id = event.getName();
+        if (id.equals(VanillaGuiLayers.PLAYER_HEALTH) ||
+                id.equals(VanillaGuiLayers.HOTBAR) ||
+                id.equals(VanillaGuiLayers.FOOD_LEVEL) ||
+                id.equals(VanillaGuiLayers.EXPERIENCE_BAR) ||
+                id.equals(VanillaGuiLayers.ARMOR_LEVEL)) {
             event.setCanceled(true);
         }
-        if (id.equals(VanillaGuiOverlay.HOTBAR.id())) {
-            renderUltraHud(event.getGuiGraphics());
+        if (id.equals(VanillaGuiLayers.HOTBAR)) {
+            renderUltraHud(event.getGuiGraphics(), event.getPartialTick().getGameTimeDeltaPartialTick(false));
         }
     }
 
-    private static void renderUltraHud(GuiGraphics graphics) {
+    private static void renderUltraHud(GuiGraphics graphics, float partialTick) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.options.hideGui) return;
         Player player = mc.player;
@@ -98,7 +99,6 @@ public class UltraHudRenderer {
 
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         int screenHeight = mc.getWindow().getGuiScaledHeight();
-        float partialTick = mc.getPartialTick();
 
         float yawDiff = player.getYRot() - lastYaw;
         float pitchDiff = player.getXRot() - lastPitch;
@@ -283,10 +283,10 @@ public class UltraHudRenderer {
 
         VertexConsumer builder = graphics.bufferSource().getBuffer(RenderType.gui());
 
-        builder.vertex(matrix, x, yBotL, z).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, x + w, yBotR, z).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, x + w, yTopR, z).color(r, g, b, a).endVertex();
-        builder.vertex(matrix, x, yTopL, z).color(r, g, b, a).endVertex();
+        builder.addVertex(matrix, x, yBotL, z).setColor(r, g, b, a);
+        builder.addVertex(matrix, x + w, yBotR, z).setColor(r, g, b, a);
+        builder.addVertex(matrix, x + w, yTopR, z).setColor(r, g, b, a);
+        builder.addVertex(matrix, x, yTopL, z).setColor(r, g, b, a);
     }
     private static void drawTextWithPerspective(GuiGraphics graphics, Minecraft mc, String text, float x, float y, int color, float z) {
         float progress = x / HUD_FULL_W;
@@ -339,10 +339,10 @@ public class UltraHudRenderer {
         Matrix4f matrix = graphics.pose().last().pose();
 
 
-        builder.vertex(matrix, x, yTopL, z).color(255, 255, 255, 255).uv(0, 0).uv2(15728880).endVertex();
-        builder.vertex(matrix, x, yBotL, z).color(255, 255, 255, 255).uv(0, 1).uv2(15728880).endVertex();
-        builder.vertex(matrix, x + w, yBotR, z).color(255, 255, 255, 255).uv(1, 1).uv2(15728880).endVertex();
-        builder.vertex(matrix, x + w, yTopR, z).color(255, 255, 255, 255).uv(1, 0).uv2(15728880).endVertex();
+        builder.addVertex(matrix, x, yTopL, z).setColor(255, 255, 255, 255).setUv(0, 0).setLight(15728880);
+        builder.addVertex(matrix, x, yBotL, z).setColor(255, 255, 255, 255).setUv(0, 1).setLight(15728880);
+        builder.addVertex(matrix, x + w, yBotR, z).setColor(255, 255, 255, 255).setUv(1, 1).setLight(15728880);
+        builder.addVertex(matrix, x + w, yTopR, z).setColor(255, 255, 255, 255).setUv(1, 0).setLight(15728880);
     }
 
 

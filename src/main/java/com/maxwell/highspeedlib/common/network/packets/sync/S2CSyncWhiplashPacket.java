@@ -1,13 +1,24 @@
 package com.maxwell.highspeedlib.common.network.packets.sync;
 
+import com.maxwell.highspeedlib.HighSpeedLib;
+
 import com.maxwell.highspeedlib.client.logic.ClientWhiplashManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkEvent;
 
-import java.util.function.Supplier;
 
-public class S2CSyncWhiplashPacket {
+
+public class S2CSyncWhiplashPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<S2CSyncWhiplashPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "s2c_sync_whiplash_packet"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, S2CSyncWhiplashPacket> STREAM_CODEC = StreamCodec.of((RegistryFriendlyByteBuf buf, S2CSyncWhiplashPacket msg) -> S2CSyncWhiplashPacket.encode(msg, buf), S2CSyncWhiplashPacket::decode);
+
+    @Override
+    public CustomPacketPayload.Type<S2CSyncWhiplashPacket> type() { return TYPE; }
     public final java.util.UUID playerUuid;
     public final int state;
     public final double distance;
@@ -55,10 +66,9 @@ public class S2CSyncWhiplashPacket {
         return new S2CSyncWhiplashPacket(playerUuid, state, distance, targetId, hitPos, shootDir);
     }
 
-    public static void handle(S2CSyncWhiplashPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
+    public static void handle(S2CSyncWhiplashPacket msg, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
             ClientWhiplashManager.handleSync(msg);
         });
-        ctx.get().setPacketHandled(true);
     }
 }

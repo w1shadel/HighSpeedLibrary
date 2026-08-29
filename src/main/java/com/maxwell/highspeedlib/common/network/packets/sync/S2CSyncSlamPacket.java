@@ -1,13 +1,25 @@
 package com.maxwell.highspeedlib.common.network.packets.sync;
 
+import com.maxwell.highspeedlib.HighSpeedLib;
+
 import com.maxwell.highspeedlib.client.logic.ClientSlamHandler;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkEvent;
 
-import java.util.function.Supplier;
 
-public class S2CSyncSlamPacket {
+
+
+public class S2CSyncSlamPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<S2CSyncSlamPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "s2c_sync_slam_packet"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, S2CSyncSlamPacket> STREAM_CODEC = StreamCodec.of((RegistryFriendlyByteBuf buf, S2CSyncSlamPacket msg) -> S2CSyncSlamPacket.encode(msg, buf), S2CSyncSlamPacket::decode);
+
+    @Override
+    public CustomPacketPayload.Type<S2CSyncSlamPacket> type() { return TYPE; }
     private final int entityId;
     private final boolean isSlamming;
     private final boolean isStorage;
@@ -63,13 +75,12 @@ public class S2CSyncSlamPacket {
 
         return new S2CSyncSlamPacket(id, slamming, impact, x, y, z, storage);
     }
-    public static void handle(S2CSyncSlamPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
+    public static void handle(S2CSyncSlamPacket msg, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
             ClientSlamHandler.updateSlamming(msg.entityId, msg.isSlamming, msg.isStorage);
             if (msg.hasImpact) {
                 ClientSlamHandler.spawnImpactWave(new Vec3(msg.x, msg.y, msg.z));
             }
         });
-        ctx.get().setPacketHandled(true);
     }
 }

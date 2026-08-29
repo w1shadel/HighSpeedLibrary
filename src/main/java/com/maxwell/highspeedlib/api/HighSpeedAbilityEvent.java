@@ -2,10 +2,10 @@ package com.maxwell.highspeedlib.api;
 
 import com.maxwell.highspeedlib.common.logic.combat.ArmType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.eventbus.api.Cancelable;
-import net.minecraftforge.eventbus.api.Event;
+import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.ICancellableEvent; // ★ 追加
 
-public class HighSpeedAbilityEvent extends Event {
+public abstract class HighSpeedAbilityEvent extends Event {
     private final Player player;
 
     public HighSpeedAbilityEvent(Player player) {
@@ -16,8 +16,8 @@ public class HighSpeedAbilityEvent extends Event {
         return player;
     }
 
-    @Cancelable
-    public static class Punch extends HighSpeedAbilityEvent {
+    // ★ @Cancelable の代わりに implements ICancellableEvent を付与
+    public static class Punch extends HighSpeedAbilityEvent implements ICancellableEvent {
         private final ArmType armType;
 
         public Punch(Player player, ArmType armType) {
@@ -30,43 +30,37 @@ public class HighSpeedAbilityEvent extends Event {
         }
     }
 
-    @Cancelable
-    public static class Whiplash extends HighSpeedAbilityEvent {
+    public static class Whiplash extends HighSpeedAbilityEvent implements ICancellableEvent {
         public Whiplash(Player player) {
             super(player);
         }
     }
 
-    @Cancelable
-    public static class CoinToss extends HighSpeedAbilityEvent {
+    public static class CoinToss extends HighSpeedAbilityEvent implements ICancellableEvent {
         public CoinToss(Player player) {
             super(player);
         }
     }
 
-    @Cancelable
-    public static class Sliding extends HighSpeedAbilityEvent {
+    public static class Sliding extends HighSpeedAbilityEvent implements ICancellableEvent {
         public Sliding(Player player) {
             super(player);
         }
     }
 
-    @Cancelable
-    public static class Slam extends HighSpeedAbilityEvent {
+    public static class Slam extends HighSpeedAbilityEvent implements ICancellableEvent {
         public Slam(Player player) {
             super(player);
         }
     }
 
-    @Cancelable
-    public static class Dash extends HighSpeedAbilityEvent {
+    public static class Dash extends HighSpeedAbilityEvent implements ICancellableEvent {
         public Dash(Player player) {
             super(player);
         }
     }
 
-    @Cancelable
-    public static class Walljump extends HighSpeedAbilityEvent {
+    public static class Walljump extends HighSpeedAbilityEvent implements ICancellableEvent {
         public Walljump(Player player) {
             super(player);
         }

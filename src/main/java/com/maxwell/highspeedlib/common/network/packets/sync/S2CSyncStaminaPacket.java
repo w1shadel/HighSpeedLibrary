@@ -1,14 +1,26 @@
 package com.maxwell.highspeedlib.common.network.packets.sync;
 
+import com.maxwell.highspeedlib.HighSpeedLib;
+
 import com.maxwell.highspeedlib.client.network.ClientPacketHandler;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
 
-public class S2CSyncStaminaPacket {
+
+
+
+
+public class S2CSyncStaminaPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<S2CSyncStaminaPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "s2c_sync_stamina_packet"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, S2CSyncStaminaPacket> STREAM_CODEC = StreamCodec.of((RegistryFriendlyByteBuf buf, S2CSyncStaminaPacket msg) -> S2CSyncStaminaPacket.encode(msg, buf), S2CSyncStaminaPacket::decode);
+
+    @Override
+    public CustomPacketPayload.Type<S2CSyncStaminaPacket> type() { return TYPE; }
     private final double stamina;
     private final double maxStamina;
 
@@ -26,10 +38,9 @@ public class S2CSyncStaminaPacket {
         return new S2CSyncStaminaPacket(buffer.readDouble(), buffer.readDouble());
     }
 
-    public static void handle(S2CSyncStaminaPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleStaminaSync(msg.stamina, msg.maxStamina));
+    public static void handle(S2CSyncStaminaPacket msg, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ClientPacketHandler.handleStaminaSync(msg.stamina, msg.maxStamina);
         });
-        ctx.get().setPacketHandled(true);
     }
 }

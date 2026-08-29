@@ -63,13 +63,12 @@ public class ShockwaveRenderer extends EntityRenderer<ShockwaveEntity> {
     }
 
     private void vertex(VertexConsumer builder, Matrix4f matrix, float x, float y, float z, float r, float g, float b, float a) {
-        builder.vertex(matrix, x, y, z)
-                .color(r, g, b, a)
-                .uv(0, 0)
-                .overlayCoords(0)
-                .uv2(240)
-                .normal(0, 1, 0)
-                .endVertex();
+        builder.addVertex(matrix, x, y, z)
+                .setColor(r, g, b, a)
+                .setUv(0, 0)
+                .setOverlay(0)
+                .setLight(240)
+                .setNormal(0, 1, 0);
     }
 
     @Override

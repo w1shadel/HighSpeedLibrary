@@ -9,15 +9,16 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import org.joml.Matrix4f;
 
 import java.util.UUID;
-
-@Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@SuppressWarnings("removal")
+@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
 public class ClientTrailRenderer {
     public static SpeedTrailManager.TrailInstance getOrCreateTrail(UUID id, String name, float r, float g, float b, float a, float width) {
         return ClientStateManager.getPlayerState(id).trailInstances.computeIfAbsent(name, k -> new SpeedTrailManager.TrailInstance(r, g, b, a, width));
@@ -67,14 +68,14 @@ public class ClientTrailRenderer {
     }
 
     private static void addQuad(Matrix4f matrix, VertexConsumer consumer, float x1, float y1, float z1, float x2, float y2, float z2, float offX, float offY, float offZ, int r, int g, int b, int a) {
-        consumer.vertex(matrix, x1 - offX, y1 - offY, z1 - offZ).color(r, g, b, a).uv2(15728880).endVertex();
-        consumer.vertex(matrix, x1 + offX, y1 + offY, z1 + offZ).color(r, g, b, a).uv2(15728880).endVertex();
-        consumer.vertex(matrix, x2 + offX, y2 + offY, z2 + offZ).color(r, g, b, a).uv2(15728880).endVertex();
-        consumer.vertex(matrix, x2 - offX, y2 - offY, z2 - offZ).color(r, g, b, a).uv2(15728880).endVertex();
-        consumer.vertex(matrix, x1 - offX, y1 - offY, z1 - offZ).color(r, g, b, a).uv2(15728880).endVertex();
-        consumer.vertex(matrix, x2 - offX, y2 - offY, z2 - offZ).color(r, g, b, a).uv2(15728880).endVertex();
-        consumer.vertex(matrix, x2 + offX, y2 + offY, z2 + offZ).color(r, g, b, a).uv2(15728880).endVertex();
-        consumer.vertex(matrix, x1 + offX, y1 + offY, z1 + offZ).color(r, g, b, a).uv2(15728880).endVertex();
+        consumer.addVertex(matrix, x1 - offX, y1 - offY, z1 - offZ).setColor(r, g, b, a).setLight(15728880);
+        consumer.addVertex(matrix, x1 + offX, y1 + offY, z1 + offZ).setColor(r, g, b, a).setLight(15728880);
+        consumer.addVertex(matrix, x2 + offX, y2 + offY, z2 + offZ).setColor(r, g, b, a).setLight(15728880);
+        consumer.addVertex(matrix, x2 - offX, y2 - offY, z2 - offZ).setColor(r, g, b, a).setLight(15728880);
+        consumer.addVertex(matrix, x1 - offX, y1 - offY, z1 - offZ).setColor(r, g, b, a).setLight(15728880);
+        consumer.addVertex(matrix, x2 - offX, y2 - offY, z2 - offZ).setColor(r, g, b, a).setLight(15728880);
+        consumer.addVertex(matrix, x2 + offX, y2 + offY, z2 + offZ).setColor(r, g, b, a).setLight(15728880);
+        consumer.addVertex(matrix, x1 + offX, y1 + offY, z1 + offZ).setColor(r, g, b, a).setLight(15728880);
     }
 
     public static void tick() {

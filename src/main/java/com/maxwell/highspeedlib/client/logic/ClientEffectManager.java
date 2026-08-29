@@ -3,26 +3,27 @@ package com.maxwell.highspeedlib.client.logic;
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader; // ★ 追加
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.minecraftforge.client.event.ViewportEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent; // ★ 改名
+import net.neoforged.neoforge.client.event.RegisterShadersEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.joml.Math;
 
 import java.io.IOException;
 import java.util.Objects;
 
 @SuppressWarnings("removal")
-@Mod.EventBusSubscriber(value = Dist.CLIENT)
+@EventBusSubscriber(value = Dist.CLIENT)
 public class ClientEffectManager {
     private static float parryAlpha = 0f;
     private static boolean isSpeeding = false;
@@ -40,8 +41,7 @@ public class ClientEffectManager {
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    public static void onClientTick(ClientTickEvent.Post event) {
         if (parryAlpha > 0) {
             parryAlpha = Math.max(0, parryAlpha - 0.04f);
         }
@@ -69,13 +69,19 @@ public class ClientEffectManager {
                 parryShader.safeGetUniform("Intensity").set(parryAlpha);
             }
             RenderSystem.setShaderTexture(0, Minecraft.getInstance().getMainRenderTarget().getColorTextureId());
-            BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
-            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-            bufferbuilder.vertex(0.0D, height, 0.0D).uv(0.0F, 0.0F).endVertex();
-            bufferbuilder.vertex(width, height, 0.0D).uv(1.0F, 0.0F).endVertex();
-            bufferbuilder.vertex(width, 0.0D, 0.0D).uv(1.0F, 1.0F).endVertex();
-            bufferbuilder.vertex(0.0D, 0.0D, 0.0D).uv(0.0F, 1.0F).endVertex();
-            Tesselator.getInstance().end();
+
+            // ★ 1.21.1 新しい描画パイプラインの書き方
+            Tesselator tesselator = Tesselator.getInstance();
+            BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+
+            bufferbuilder.addVertex(0.0F, (float) height, 0.0F).setUv(0.0F, 0.0F);
+            bufferbuilder.addVertex((float) width, (float) height, 0.0F).setUv(1.0F, 0.0F);
+            bufferbuilder.addVertex((float) width, 0.0F, 0.0F).setUv(1.0F, 1.0F);
+            bufferbuilder.addVertex(0.0F, 0.0F, 0.0F).setUv(0.0F, 1.0F);
+
+            // バッファをビルドしてシェーダーで描画
+            BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
+
             RenderSystem.depthMask(true);
             RenderSystem.enableDepthTest();
             RenderSystem.disableBlend();
@@ -98,20 +104,22 @@ public class ClientEffectManager {
         }
     }
 
-    @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
     public static class ModBusEvents {
         @SubscribeEvent
         public static void onRegisterShaders(RegisterShadersEvent event) throws IOException {
-            event.registerShader(new ShaderInstance(event.getResourceProvider(), new ResourceLocation(HighSpeedLib.MODID, "parry_flash"), DefaultVertexFormat.POSITION_TEX), s -> {
+            event.registerShader(new ShaderInstance(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "parry_flash"), DefaultVertexFormat.POSITION_TEX), s -> {
                 parryShader = s;
             });
         }
 
+        // ★ RegisterGuiLayersEvent への変更
         @SubscribeEvent
-        public static void onRegisterGuiOverlays(RegisterGuiOverlaysEvent event) {
-            event.registerAboveAll("parry_overlay", (gui, guiGraphics, partialTick, width, height) -> {
-                renderParryOverlay(width, height);
-            });
+        public static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
+            event.registerAboveAll(
+                    ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "parry_overlay"),
+                    (guiGraphics, deltaTracker) -> renderParryOverlay(guiGraphics.guiWidth(), guiGraphics.guiHeight())
+            );
         }
     }
 }

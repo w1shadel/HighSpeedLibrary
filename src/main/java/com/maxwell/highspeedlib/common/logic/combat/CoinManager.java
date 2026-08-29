@@ -14,15 +14,16 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID)
+@EventBusSubscriber(modid = HighSpeedLib.MODID)
 public class CoinManager {
     private static double getCoinStocks(ServerPlayer player, PlayerAbilityState settings, PlayerCombatState combat) {
         if (combat.coinStocks == 0 && !hasInitialized(player, combat)) {
@@ -40,7 +41,7 @@ public class CoinManager {
         PlayerCombatState combat = PlayerStateManager.getState(player).getCombat();
         if (combat.coinStocks == 0 && settings.maxCoinCount > 0) {
         }
-        if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.CoinToss(player))) return;
+        if (NeoForge.EVENT_BUS.post(new HighSpeedAbilityEvent.CoinToss(player)).isCanceled()) return;
         double current = combat.coinStocks;
         if (current < 1.0) {
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
@@ -67,16 +68,13 @@ public class CoinManager {
         player.level().addFreshEntity(coin);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5f, 2.0f);
-        PacketHandler.INSTANCE.send(
-                PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                new S2CStartTossAnimationPacket(player.getId())
-        );
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new S2CStartTossAnimationPacket(player.getId()));
     }
 
     @SubscribeEvent
-    public static void onServerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) return;
-        ServerPlayer player = (ServerPlayer) event.player;
+    public static void onServerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity().level().isClientSide) return;
+        ServerPlayer player = (ServerPlayer) event.getEntity();
         PlayerAbilityState settings = PlayerStateManager.getState(player).getAbility();
         PlayerCombatState combat = PlayerStateManager.getState(player).getCombat();
         if (combat.coinStocks == 0 && player.tickCount < 10) {
@@ -96,9 +94,6 @@ public class CoinManager {
 
     private static void syncCoinStock(ServerPlayer player) {
         double current = PlayerStateManager.getState(player).getCombat().coinStocks;
-        PacketHandler.INSTANCE.send(
-                PacketDistributor.PLAYER.with(() -> player),
-                new S2CSyncCoinStockPacket(current)
-        );
+        PacketDistributor.sendToPlayer(player, new S2CSyncCoinStockPacket(current));
     }
 }

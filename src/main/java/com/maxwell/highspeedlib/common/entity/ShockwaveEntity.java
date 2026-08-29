@@ -31,6 +31,15 @@ public class ShockwaveEntity extends Entity {
         this.noPhysics = true;
     }
 
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(RADIUS, 0.0f);
+        builder.define(MAX_RADIUS, 10.0f);
+        builder.define(SPEED, 0.5f);
+        builder.define(HEIGHT, 1.0f);
+        builder.define(COLOR, 0xFFFFFFFF);
+    }
+
     public ShockwaveEntity(Level level, LivingEntity owner, float damage, float maxRadius, float speed, float height, int color) {
         this(ModEntities.SHOCKWAVE.get(), level);
         this.owner = owner;
@@ -40,15 +49,6 @@ public class ShockwaveEntity extends Entity {
         this.setHeight(height);
         this.setColor(color);
         this.setPos(owner.getX(), owner.getY(), owner.getZ());
-    }
-
-    @Override
-    protected void defineSynchedData() {
-        this.entityData.define(RADIUS, 0.0f);
-        this.entityData.define(MAX_RADIUS, 10.0f);
-        this.entityData.define(SPEED, 0.5f);
-        this.entityData.define(HEIGHT, 1.0f);
-        this.entityData.define(COLOR, 0xFFFFFFFF); 
     }
 
     @Override

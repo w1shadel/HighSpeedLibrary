@@ -13,13 +13,14 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.world.InteractionHand;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderHandEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-
-@Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderHandEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+@SuppressWarnings("removal")
+@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
 public class ExtendsArmRenderer {
     private static float animationProgress = 0f;
     private static boolean isPunching = false;
@@ -59,8 +60,7 @@ public class ExtendsArmRenderer {
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    public static void onClientTick(ClientTickEvent.Post event) {
         if (!com.maxwell.highspeedlib.common.logic.TimeManager.shouldTick()) return;
         if (isPunching) {
             animationProgress += 0.08f;
@@ -136,11 +136,11 @@ public class ExtendsArmRenderer {
         model.leftArm.visible = true;
         model.leftSleeve.visible = true;
         int overlay = LivingEntityRenderer.getOverlayCoords(player, 0.0F);
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(player.getSkinTextureLocation()));
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(player.getSkin().texture()));
         float r = 1.0f, g = 1.0f, b = 1.0f;
-        model.leftArm.render(poseStack, vertexConsumer, packedLight, overlay, r, g, b, 1.0f);
+        model.leftArm.render(poseStack, vertexConsumer, packedLight, overlay);
         model.leftSleeve.copyFrom(model.leftArm);
-        model.leftSleeve.render(poseStack, vertexConsumer, packedLight, overlay, r, g, b, 1.0f);
+        model.leftSleeve.render(poseStack, vertexConsumer, packedLight, overlay);
         model.leftArm.visible = oldVisible;
         model.leftSleeve.visible = oldSleeveVisible;
         poseStack.popPose();
@@ -176,11 +176,11 @@ public class ExtendsArmRenderer {
         model.leftSleeve.visible = true;
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         int overlay = LivingEntityRenderer.getOverlayCoords(player, 0.0F);
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(player.getSkinTextureLocation()));
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(player.getSkin().texture()));
         float r = 1.0f, g = 1.0f, b = 1.0f;
-        model.leftArm.render(poseStack, vertexConsumer, packedLight, overlay, r, g, b, 1.0f);
+        model.leftArm.render(poseStack, vertexConsumer, packedLight, overlay);
         model.leftSleeve.copyFrom(model.leftArm);
-        model.leftSleeve.render(poseStack, vertexConsumer, packedLight, overlay, r, g, b, 1.0f);
+        model.leftSleeve.render(poseStack, vertexConsumer, packedLight, overlay);
         model.leftArm.visible = oldVisible;
         model.leftSleeve.visible = oldSleeveVisible;
         poseStack.popPose();
@@ -212,11 +212,11 @@ public class ExtendsArmRenderer {
         model.leftSleeve.visible = true;
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         int overlay = LivingEntityRenderer.getOverlayCoords(player, 0.0F);
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(player.getSkinTextureLocation()));
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(player.getSkin().texture()));
         float r = 1.0f, g = 1.0f, b = 1.0f;
-        model.leftArm.render(poseStack, vertexConsumer, packedLight, overlay, r, g, b, 1.0f);
+        model.leftArm.render(poseStack, vertexConsumer, packedLight, overlay);
         model.leftSleeve.copyFrom(model.leftArm);
-        model.leftSleeve.render(poseStack, vertexConsumer, packedLight, overlay, r, g, b, 1.0f);
+        model.leftSleeve.render(poseStack, vertexConsumer, packedLight, overlay);
         model.leftArm.visible = oldVisible;
         model.leftSleeve.visible = oldSleeveVisible;
         poseStack.popPose();

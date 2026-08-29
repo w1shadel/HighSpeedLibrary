@@ -1,16 +1,15 @@
 package com.maxwell.highspeedlib.api.main.mob;
 
-import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncMobModePacket;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation; // ★ UUIDの代わりにインポート
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.network.PacketDistributor;
-
-import java.util.UUID;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class MobModeManager {
     public static final String ENRAGE_TAG = "hs_enraged";
@@ -46,8 +45,7 @@ public class MobModeManager {
 
     public static void sync(LivingEntity entity) {
         if (entity.level().isClientSide) return;
-        PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-                new S2CSyncMobModePacket(entity.getId(), isEnraged(entity), getRadianceTier(entity), isBoss(entity)));
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new S2CSyncMobModePacket(entity.getId(), isEnraged(entity), getRadianceTier(entity), isBoss(entity)));
     }
 
     public static void applyRadiance(LivingEntity entity, int tier, double hpFactor, double dmgFactor, double spdFactor) {
@@ -60,18 +58,20 @@ public class MobModeManager {
         double healthMult = (tier * 0.5) * hpFactor;
         double damageMult = (tier * 0.5) * dmgFactor;
         double speedMult = (tier * 0.2) * spdFactor;
-        applyModifier(entity, Attributes.MAX_HEALTH, HighSpeedAttributes.RADIANCE_HEALTH_ID, "Radiance Health", healthMult);
-        applyModifier(entity, Attributes.ATTACK_DAMAGE, HighSpeedAttributes.RADIANCE_DAMAGE_ID, "Radiance Damage", damageMult);
-        applyModifier(entity, Attributes.MOVEMENT_SPEED, HighSpeedAttributes.RADIANCE_SPEED_ID, "Radiance Speed", speedMult);
+        // ★ 第4引数の name 文字列は不要
+        applyModifier(entity, Attributes.MAX_HEALTH, HighSpeedAttributes.RADIANCE_HEALTH_ID, healthMult);
+        applyModifier(entity, Attributes.ATTACK_DAMAGE, HighSpeedAttributes.RADIANCE_DAMAGE_ID, damageMult);
+        applyModifier(entity, Attributes.MOVEMENT_SPEED, HighSpeedAttributes.RADIANCE_SPEED_ID, speedMult);
         entity.setHealth(entity.getMaxHealth());
         setRadiance(entity, tier);
         sync(entity);
     }
 
-    private static void applyModifier(LivingEntity entity, Attribute attr, UUID id, String name, double value) {
+    // ★ 引数を (..., ResourceLocation id, double value) に変更
+    private static void applyModifier(LivingEntity entity, Holder<Attribute> attr, ResourceLocation id, double value) {
         var instance = entity.getAttribute(attr);
         if (instance != null) {
-            instance.addPermanentModifier(new AttributeModifier(id, name, value, AttributeModifier.Operation.MULTIPLY_TOTAL));
+            instance.addPermanentModifier(new AttributeModifier(id, value, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         }
     }
 
@@ -81,7 +81,8 @@ public class MobModeManager {
         removeAttribute(entity, Attributes.MOVEMENT_SPEED, HighSpeedAttributes.RADIANCE_SPEED_ID);
     }
 
-    private static void removeAttribute(LivingEntity entity, Attribute attr, UUID id) {
+    // ★ 引数を ResourceLocation id に変更
+    private static void removeAttribute(LivingEntity entity, Holder<Attribute> attr, ResourceLocation id) {
         var instance = entity.getAttribute(attr);
         if (instance != null && instance.getModifier(id) != null) {
             instance.removeModifier(id);
@@ -92,7 +93,7 @@ public class MobModeManager {
         if (entity.level().isClientSide) return;
         removeAttribute(entity, Attributes.MOVEMENT_SPEED, HighSpeedAttributes.ENRAGE_SPEED_ID);
         if (enraged) {
-            applyModifier(entity, Attributes.MOVEMENT_SPEED, HighSpeedAttributes.ENRAGE_SPEED_ID, "Enrage Speed", 0.5);
+            applyModifier(entity, Attributes.MOVEMENT_SPEED, HighSpeedAttributes.ENRAGE_SPEED_ID, 0.5);
             entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(),
                     SoundEvents.ZOMBIE_VILLAGER_CONVERTED, SoundSource.HOSTILE, 1.5f, 0.8f);
         }

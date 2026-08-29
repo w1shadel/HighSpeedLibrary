@@ -1,10 +1,13 @@
 package com.maxwell.highspeedlib.api.main.mob;
 
+import com.maxwell.highspeedlib.HighSpeedLib;
+import net.minecraft.resources.ResourceLocation;
+
 import java.util.UUID;
 
 public class HighSpeedAttributes {
-    public static final UUID RADIANCE_HEALTH_ID = UUID.fromString("7f4f6a96-686f-4796-b035-22e16ee9e038");
-    public static final UUID RADIANCE_DAMAGE_ID = UUID.fromString("8a4f6a96-686f-4796-b035-22e16ee9e039");
-    public static final UUID RADIANCE_SPEED_ID = UUID.fromString("9b4f6a96-686f-4796-b035-22e16ee9e040");
-    public static final UUID ENRAGE_SPEED_ID = UUID.fromString("1c4f6a96-686f-4796-b035-22e16ee9e041");
+    public static final ResourceLocation RADIANCE_HEALTH_ID = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "radiance_health");
+    public static final ResourceLocation RADIANCE_DAMAGE_ID = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "radiance_damage");
+    public static final ResourceLocation RADIANCE_SPEED_ID = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "radiance_speed");
+    public static final ResourceLocation ENRAGE_SPEED_ID = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "enrage_speed");
 }

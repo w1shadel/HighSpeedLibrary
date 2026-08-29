@@ -1,35 +1,35 @@
 package com.maxwell.highspeedlib.api.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class HighSpeedClientConfig {
-    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-    public static final ForgeConfigSpec SPEC;
+    public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+    public static final ModConfigSpec SPEC;
 
-    public static final ForgeConfigSpec.BooleanValue ULTRAHUD_VISIBLE;
-    public static final ForgeConfigSpec.BooleanValue CHEAT_INDICATOR_VISIBLE;
-    public static final ForgeConfigSpec.IntValue HUD_OFFSET_X;
-    public static final ForgeConfigSpec.IntValue HUD_OFFSET_Y;
+    public static final ModConfigSpec.BooleanValue ULTRAHUD_VISIBLE;
+    public static final ModConfigSpec.BooleanValue CHEAT_INDICATOR_VISIBLE;
+    public static final ModConfigSpec.IntValue HUD_OFFSET_X;
+    public static final ModConfigSpec.IntValue HUD_OFFSET_Y;
 
-    public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_HP;
-    public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_ABSORPTION;
-    public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_STAMINA_NORMAL;
-    public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_STAMINA_LOW;
-    public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_ENERGY;
-    public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_COIN;
-    public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_FOOD;
-    public static final ForgeConfigSpec.ConfigValue<String> HUD_COLOR_EXP;
+    public static final ModConfigSpec.ConfigValue<String> HUD_COLOR_HP;
+    public static final ModConfigSpec.ConfigValue<String> HUD_COLOR_ABSORPTION;
+    public static final ModConfigSpec.ConfigValue<String> HUD_COLOR_STAMINA_NORMAL;
+    public static final ModConfigSpec.ConfigValue<String> HUD_COLOR_STAMINA_LOW;
+    public static final ModConfigSpec.ConfigValue<String> HUD_COLOR_ENERGY;
+    public static final ModConfigSpec.ConfigValue<String> HUD_COLOR_COIN;
+    public static final ModConfigSpec.ConfigValue<String> HUD_COLOR_FOOD;
+    public static final ModConfigSpec.ConfigValue<String> HUD_COLOR_EXP;
 
-    public static final ForgeConfigSpec.DoubleValue HUD_SCALE_LEFT;
-    public static final ForgeConfigSpec.DoubleValue HUD_SCALE_RIGHT;
-    public static final ForgeConfigSpec.DoubleValue HUD_TILT;
-    public static final ForgeConfigSpec.DoubleValue HUD_YAW_SENSITIVITY;
-    public static final ForgeConfigSpec.DoubleValue HUD_PITCH_SENSITIVITY;
-    public static final ForgeConfigSpec.DoubleValue HUD_MAX_OFFSET_YAW;
-    public static final ForgeConfigSpec.DoubleValue HUD_MAX_OFFSET_PITCH;
+    public static final ModConfigSpec.DoubleValue HUD_SCALE_LEFT;
+    public static final ModConfigSpec.DoubleValue HUD_SCALE_RIGHT;
+    public static final ModConfigSpec.DoubleValue HUD_TILT;
+    public static final ModConfigSpec.DoubleValue HUD_YAW_SENSITIVITY;
+    public static final ModConfigSpec.DoubleValue HUD_PITCH_SENSITIVITY;
+    public static final ModConfigSpec.DoubleValue HUD_MAX_OFFSET_YAW;
+    public static final ModConfigSpec.DoubleValue HUD_MAX_OFFSET_PITCH;
 
-    public static final ForgeConfigSpec.DoubleValue HUD_POINTS_PER_HP;
-    public static final ForgeConfigSpec.IntValue HUD_SLOTS_TO_SHOW;
+    public static final ModConfigSpec.DoubleValue HUD_POINTS_PER_HP;
+    public static final ModConfigSpec.IntValue HUD_SLOTS_TO_SHOW;
 
     static {
         BUILDER.push("General Settings");
@@ -68,7 +68,7 @@ public class HighSpeedClientConfig {
         SPEC = BUILDER.build();
     }
 
-    public static int getColor(ForgeConfigSpec.ConfigValue<String> colorValue) {
+    public static int getColor(ModConfigSpec.ConfigValue<String> colorValue) {
         try {
             return (int) Long.parseLong(colorValue.get(), 16);
         } catch (NumberFormatException e) {

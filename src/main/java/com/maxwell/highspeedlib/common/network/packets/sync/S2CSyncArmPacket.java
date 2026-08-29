@@ -1,15 +1,27 @@
 package com.maxwell.highspeedlib.common.network.packets.sync;
 
+import com.maxwell.highspeedlib.HighSpeedLib;
+
 import com.maxwell.highspeedlib.client.network.ClientPacketHandler;
 import com.maxwell.highspeedlib.common.logic.combat.ArmType;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
 
-public class S2CSyncArmPacket {
+
+
+
+
+public class S2CSyncArmPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<S2CSyncArmPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "s2c_sync_arm_packet"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, S2CSyncArmPacket> STREAM_CODEC = StreamCodec.of((RegistryFriendlyByteBuf buf, S2CSyncArmPacket msg) -> S2CSyncArmPacket.encode(msg, buf), S2CSyncArmPacket::decode);
+
+    @Override
+    public CustomPacketPayload.Type<S2CSyncArmPacket> type() { return TYPE; }
     private final int armOrdinal;
 
     public S2CSyncArmPacket(ArmType arm) {
@@ -28,10 +40,9 @@ public class S2CSyncArmPacket {
         return new S2CSyncArmPacket(buffer.readInt());
     }
 
-    public static void handle(S2CSyncArmPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.handleArmSync(ArmType.values()[msg.armOrdinal]));
+    public static void handle(S2CSyncArmPacket msg, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ClientPacketHandler.handleArmSync(ArmType.values()[msg.armOrdinal]);
         });
-        ctx.get().setPacketHandled(true);
     }
 }

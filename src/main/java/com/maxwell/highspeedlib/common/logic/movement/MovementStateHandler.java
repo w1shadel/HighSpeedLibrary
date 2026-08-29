@@ -3,19 +3,20 @@ package com.maxwell.highspeedlib.common.logic.movement;
 import com.maxwell.highspeedlib.HighSpeedLib;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingFallEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID)
+@EventBusSubscriber(modid = HighSpeedLib.MODID)
 public class MovementStateHandler {
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && !event.player.level().isClientSide) {
-            if (event.player.onGround()) {
-                PlayerStateManager.getState(event.player).getMovement().wallJumpCount = 0;
+    public static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (!event.getEntity().level().isClientSide) {
+            if (event.getEntity().onGround()) {
+                PlayerStateManager.getState(event.getEntity()).getMovement().wallJumpCount = 0;
             }
         }
     }

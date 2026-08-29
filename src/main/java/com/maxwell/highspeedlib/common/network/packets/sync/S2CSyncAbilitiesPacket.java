@@ -1,12 +1,24 @@
 package com.maxwell.highspeedlib.common.network.packets.sync;
 
+import com.maxwell.highspeedlib.HighSpeedLib;
+
 import com.maxwell.highspeedlib.client.renderer.UltraHudRenderer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
 
-public class S2CSyncAbilitiesPacket {
+
+
+public class S2CSyncAbilitiesPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<S2CSyncAbilitiesPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "s2c_sync_abilities_packet"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, S2CSyncAbilitiesPacket> STREAM_CODEC = StreamCodec.of((RegistryFriendlyByteBuf buf, S2CSyncAbilitiesPacket msg) -> S2CSyncAbilitiesPacket.encode(msg, buf), S2CSyncAbilitiesPacket::decode);
+
+    @Override
+    public CustomPacketPayload.Type<S2CSyncAbilitiesPacket> type() { return TYPE; }
     private final boolean dash;
     private final boolean punch;
     private final boolean whiplash;
@@ -39,8 +51,8 @@ public class S2CSyncAbilitiesPacket {
         return new S2CSyncAbilitiesPacket(buffer.readBoolean(), buffer.readBoolean(), buffer.readBoolean(), buffer.readBoolean(), buffer.readBoolean(), buffer.readBoolean(), buffer.readInt());
     }
 
-    public static void handle(S2CSyncAbilitiesPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
+    public static void handle(S2CSyncAbilitiesPacket msg, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
             UltraHudRenderer.dashUnlocked = msg.dash;
             UltraHudRenderer.punchUnlocked = msg.punch;
             UltraHudRenderer.whiplashUnlocked = msg.whiplash;
@@ -49,6 +61,5 @@ public class S2CSyncAbilitiesPacket {
             UltraHudRenderer.walljumpUnlocked = msg.walljump;
             UltraHudRenderer.setMaxCoins(msg.maxCoins);
         });
-        ctx.get().setPacketHandled(true);
     }
 }

@@ -17,7 +17,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class WallJumpManager {
     public static void tickWallJumpReseter(ServerPlayer player) {
@@ -34,7 +34,7 @@ public class WallJumpManager {
         if (player.onGround()) {
             return;
         }
-        if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new com.maxwell.highspeedlib.api.HighSpeedAbilityEvent.Walljump(player))) {
+        if (net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new com.maxwell.highspeedlib.api.HighSpeedAbilityEvent.Walljump(player)).isCanceled()) {
             return;
         }
         if (!settings.wallJump) return;
@@ -46,8 +46,7 @@ public class WallJumpManager {
                 if (isStorageAttempt || state.isSlamming) {
                     state.slamStorageActive = true;
                     SlamManager.stopSlam(player);
-                    PacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                            new S2CSyncSlamPacket(player.getId(), false, true)); 
+                    PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new S2CSyncSlamPacket(player.getId(), false, true));
                 }
 
                 double baseJumpPower = player.getAttributeValue(Attributes.JUMP_STRENGTH);

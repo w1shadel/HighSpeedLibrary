@@ -19,7 +19,7 @@ import top.theillusivec4.curios.api.client.ICurioRenderer;
 
 @SuppressWarnings("removal")
 public class V1WingRenderer implements ICurioRenderer {
-    private static final ResourceLocation TEXTURE = new ResourceLocation(HighSpeedLib.MODID, "textures/item/v1wing_r.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "textures/item/v1wing_r.png");
     private final V1WingModel<LivingEntity> model;
 
     public V1WingRenderer() {
@@ -48,8 +48,7 @@ public class V1WingRenderer implements ICurioRenderer {
                 poseStack,
                 vertexConsumer,
                 15728880,
-                OverlayTexture.NO_OVERLAY,
-                1.0F, 1.0F, 1.0F, 1.0F
+                OverlayTexture.NO_OVERLAY
         );
         poseStack.popPose();
     }

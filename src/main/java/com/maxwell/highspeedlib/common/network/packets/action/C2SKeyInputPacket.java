@@ -1,5 +1,7 @@
 package com.maxwell.highspeedlib.common.network.packets.action;
 
+import com.maxwell.highspeedlib.HighSpeedLib;
+
 import com.maxwell.highspeedlib.api.HighSpeedAbilityEvent;
 import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.client.state.ArmManager;
@@ -11,14 +13,24 @@ import com.maxwell.highspeedlib.common.logic.state.PlayerAbilityState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerMovementState;
 import com.maxwell.highspeedlib.common.logic.state.PlayerStateManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
-import java.util.function.Supplier;
 
-public class C2SKeyInputPacket {
+
+
+public class C2SKeyInputPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<C2SKeyInputPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "c2s_key_input_packet"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, C2SKeyInputPacket> STREAM_CODEC = StreamCodec.of((RegistryFriendlyByteBuf buf, C2SKeyInputPacket msg) -> C2SKeyInputPacket.encode(msg, buf), C2SKeyInputPacket::decode);
+
+    @Override
+    public CustomPacketPayload.Type<C2SKeyInputPacket> type() { return TYPE; }
     private final int keyType;
     private final float xInput;
     private final float zInput;
@@ -46,12 +58,12 @@ public class C2SKeyInputPacket {
         return new C2SKeyInputPacket(buffer.readInt(), buffer.readFloat(), buffer.readFloat(),buffer.readBoolean());
     }
 
-    public static void handle(C2SKeyInputPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ServerPlayer player = ctx.get().getSender();
+    public static void handle(C2SKeyInputPacket msg, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = (ServerPlayer) ctx.player();
             if (player == null) return;
             if (msg.keyType == 0) {
-                if (MinecraftForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Dash(player))) {
+                if (NeoForge.EVENT_BUS.post(new HighSpeedAbilityEvent.Dash(player)).isCanceled()) {
                     return;
                 }
                 double dashCost = com.maxwell.highspeedlib.api.config.HighSpeedServerConfig.DASH_STAMINA_COST.get();
@@ -111,7 +123,6 @@ public class C2SKeyInputPacket {
                 }
             }
         });
-        ctx.get().setPacketHandled(true);
     }
 
 }

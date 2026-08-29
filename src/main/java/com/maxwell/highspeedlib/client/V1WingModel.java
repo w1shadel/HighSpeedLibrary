@@ -15,7 +15,7 @@ import net.minecraft.world.entity.player.Player;
 
 @SuppressWarnings("removal")
 public class V1WingModel<T extends LivingEntity> extends HierarchicalModel<T> {
-    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation(HighSpeedLib.MODID, "v1wingmodel"), "main");
+    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(HighSpeedLib.MODID, "v1wingmodel"), "main");
     private final ModelPart root;
     private final ModelPart wing_base;
     private final ModelPart wing_right;
@@ -101,8 +101,8 @@ public class V1WingModel<T extends LivingEntity> extends HierarchicalModel<T> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        root.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        root.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 
     @Override

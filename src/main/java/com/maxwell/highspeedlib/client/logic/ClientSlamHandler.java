@@ -9,19 +9,20 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-@Mod.EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@SuppressWarnings("removal")
+@EventBusSubscriber(modid = HighSpeedLib.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
 public class ClientSlamHandler {
     private static final Set<Integer> slammingEntities = new HashSet<>();
     private static final Set<Integer> storageEntities = new HashSet<>();
@@ -39,8 +40,7 @@ public class ClientSlamHandler {
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
 
@@ -117,7 +117,7 @@ public class ClientSlamHandler {
     }
 
     private static void addWaveVertex(Matrix4f matrix, VertexConsumer consumer, float x, float y, float z, int r, int g, int b, int a) {
-        consumer.vertex(matrix, x, y, z).color(r, g, b, a).uv2(15728880).endVertex();
+        consumer.addVertex(matrix, x, y, z).setColor(r, g, b, a).setLight(15728880);
     }
 
     private static class SlamWave {

@@ -5,7 +5,7 @@ import com.maxwell.highspeedlib.common.network.PacketHandler;
 import com.maxwell.highspeedlib.common.network.packets.sync.S2CSyncArmPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class ArmManager {
     public static ArmType getArm(Player player) {
@@ -18,6 +18,6 @@ public class ArmManager {
         ArmType current = getArm(player);
         ArmType next = (current == ArmType.FEEDBACKER) ? ArmType.KNUCKLEBLASTER : ArmType.FEEDBACKER;
         ClientStateManager.getPlayerState(player.getUUID()).currentArm = next;
-        PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CSyncArmPacket(next));
+        PacketDistributor.sendToPlayer(player, new S2CSyncArmPacket(next));
     }
 }
