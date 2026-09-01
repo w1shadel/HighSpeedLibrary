@@ -5,6 +5,9 @@ import com.maxwell.highspeedlib.api.config.HighSpeedServerConfig;
 import com.maxwell.highspeedlib.api.main.IParryable;
 import com.maxwell.highspeedlib.common.entity.ThrownCoinEntity;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -16,13 +19,15 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
-@SuppressWarnings("removal")
 @EventBusSubscriber(modid = HighSpeedLib.MODID)
 public class GlobalParryHandler {
+
+    
     @SubscribeEvent
     public static void onImpact(ProjectileImpactEvent event) {
         Projectile p = event.getProjectile();
         if (p.level().isClientSide) return;
+
         if (event.getRayTraceResult() instanceof EntityHitResult eHit && eHit.getEntity() instanceof ServerPlayer player) {
             if (ServerArmManager.isPlayerParrying(player)) {
                 if (p instanceof IParryable parryable && !parryable.canBeParried(player)) {
@@ -37,6 +42,7 @@ public class GlobalParryHandler {
                 }
             }
         }
+
         if (p.getPersistentData().getBoolean("hs_explosive")) {
             Vec3 pos = event.getRayTraceResult().getLocation();
             float explosionSize = HighSpeedServerConfig.PARRY_EXPLOSION_SIZE.get().floatValue();
@@ -45,23 +51,49 @@ public class GlobalParryHandler {
         }
     }
 
+    
     @SubscribeEvent
-    public static void onLivingHurt(LivingIncomingDamageEvent event) {
+    public static void onLivingDamage(LivingIncomingDamageEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
+
         if (ServerArmManager.isPlayerParrying(player)) {
-            Entity attacker = event.getSource().getDirectEntity();
-            if (attacker instanceof LivingEntity livingAttacker && attacker != player) {
-                if (attacker instanceof IParryable parryable && !parryable.canBeParried(player)) {
-                    return;
-                }
-                float counterDamage = HighSpeedServerConfig.PARRY_COUNTER_DAMAGE.get().floatValue();
-                livingAttacker.hurt(player.damageSources().mobAttack(player), counterDamage);
-                livingAttacker.hurtMarked = true;
-                ServerArmManager.triggerParryEffects(player);
-                if (attacker instanceof IParryable parryable) parryable.onParried(player);
-                player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                        net.minecraft.sounds.SoundEvents.ANVIL_PLACE, net.minecraft.sounds.SoundSource.PLAYERS, 0.5f, 4.0f);
+            var damageSource = event.getSource();
+            Entity attacker = damageSource.getDirectEntity();
+            if (attacker == null) {
+                attacker = damageSource.getEntity();
             }
+
+            boolean isExplosion = damageSource.is(DamageTypeTags.IS_EXPLOSION);
+
+            if (attacker instanceof IParryable parryable && !parryable.canBeParried(player)) {
+                return;
+            }
+
+            event.setCanceled(true);
+
+            ServerArmManager.triggerParryEffects(player);
+
+            if (attacker instanceof LivingEntity livingAttacker && attacker != player) {
+                float counterDamage = HighSpeedServerConfig.PARRY_COUNTER_DAMAGE.get().floatValue();
+                livingAttacker.hurt(player.damageSources().playerAttack(player), counterDamage);
+                livingAttacker.hurtMarked = true;
+
+                Vec3 look = player.getLookAngle();
+                livingAttacker.setDeltaMovement(look.scale(0.8).add(0, 0.2, 0));
+
+                if (attacker instanceof IParryable parryable) {
+                    parryable.onParried(player);
+                }
+            }
+
+            if (isExplosion) {
+                Vec3 forward = player.getEyePosition().add(player.getLookAngle().scale(2.0));
+                float explosionSize = HighSpeedServerConfig.PARRY_EXPLOSION_SIZE.get().floatValue();
+                player.level().explode(player, forward.x, forward.y, forward.z, explosionSize, Level.ExplosionInteraction.NONE);
+            }
+
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.ANVIL_PLACE, SoundSource.PLAYERS, 0.6f, 4.0f);
         }
     }
 }

@@ -13,7 +13,6 @@
     "parry.SynchedEntityDataMixin",
     "parry.LivingEntityAccessor",
     "parry.SynchedEntityDataItemAccessor",
-    "parry.LivingEntityMixin",
     "PlayerAnimationMixin"
   ],
   "client": [
